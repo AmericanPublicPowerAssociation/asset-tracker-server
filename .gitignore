@@ -1,0 +1,30 @@
+# Python
+*.egg*
+*.py[co]
+.cache
+.coverage
+.ipynb_checkpoints
+.pytest_cache
+__pycache__
+build
+dist
+# Sass
+.sass-cache
+# SQLite
+*.sqlite
+*.sqlite-journal
+# Transient
+*.log
+*.map
+*.out
+*.tmp
+.DS_Store
+data_*
+# Vim
+*.sw[op]
+*~
+# Node
+node_modules
+npm-debug.log*
+package-lock.json
+.env
