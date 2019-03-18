@@ -1,0 +1,3 @@
+[run]
+source = asset_tracker
+omit = asset_tracker/test*
