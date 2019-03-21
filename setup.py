@@ -1,13 +1,13 @@
 import os
 from setuptools import find_packages, setup
 
+
 ENTRY_POINTS = """
 [console_scripts]
 initialize_asset_tracker_db=asset_tracker.scripts.initialize_db:main
 [paste.app_factory]
 main = asset_tracker:main
 """
-
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.txt')) as f:
     README = f.read()
