@@ -36,7 +36,7 @@ TEST_REQUIREMENTS = [
 ]
 FOLDER = dirname(abspath(__file__))
 DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
-    'README.rst', 'CHANGES.rst'])
+    'README.md', 'CHANGES.md'])
 
 
 setup(
