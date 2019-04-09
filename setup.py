@@ -2,12 +2,12 @@ from os.path import abspath, dirname, join
 from setuptools import find_packages, setup
 
 
-ENTRY_POINTS = """
+ENTRY_POINTS = '''
 [console_scripts]
 initialize_asset_tracker_db=asset_tracker.scripts.initialize_db:main
 [paste.app_factory]
 main = asset_tracker:main
-"""
+'''
 APP_CLASSIFIERS = [
     'Programming Language :: Python',
     'Framework :: Pyramid',
@@ -40,7 +40,7 @@ DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
 
 
 setup(
-    name='asset_tracker',
+    name='asset-tracker',
     version='0.1',
     description='Asset Tracker',
     long_description=DESCRIPTION,
