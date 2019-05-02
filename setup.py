@@ -18,8 +18,8 @@ APP_REQUIREMENTS = [
     # Web
     'plaster_pastedeploy',
     'pyramid',
-    'pyramid_jinja2',
     'pyramid_debugtoolbar',
+    'pyramid_jinja2',
     'waitress',
     # Database
     'alembic',
@@ -47,7 +47,7 @@ setup(
     classifiers=APP_CLASSIFIERS,
     author='CrossCompute Inc.',
     author_email='support@crosscompute.com',
-    url='',
+    url='https://crosscompute.com',
     keywords='web pyramid pylons',
     packages=find_packages(),
     include_package_data=True,

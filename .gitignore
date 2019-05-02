@@ -5,11 +5,11 @@
 .coverage
 .ipynb_checkpoints
 .pytest_cache
+Pipfile*
 __pycache__
+alembic
 build
 dist
-alembic
-Pipfile*
 # Sass
 .sass-cache
 # SQLite
@@ -26,7 +26,7 @@ data_*
 *.sw[op]
 *~
 # Node
+.env
 node_modules
 npm-debug.log*
 package-lock.json
-.env
