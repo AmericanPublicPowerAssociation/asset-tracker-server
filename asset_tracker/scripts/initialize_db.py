@@ -1,15 +1,14 @@
 import argparse
 import sys
-
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
 
 from .. import models
 
 
-def setup_models(dbsession):
+def setup_models(db):
     model = models.mymodel.MyModel(name='one', value=1)
-    dbsession.add(model)
+    db.add(model)
 
 
 def parse_args(argv):
@@ -27,8 +26,8 @@ def main(argv=sys.argv):
 
     try:
         with env['request'].tm:
-            dbsession = env['request'].dbsession
-            setup_models(dbsession)
+            db = env['request'].db
+            setup_models(db)
     except OperationalError:
         print('''
 Pyramid is having a problem using your SQL database.  The problem

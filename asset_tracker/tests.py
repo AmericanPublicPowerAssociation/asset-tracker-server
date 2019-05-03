@@ -5,8 +5,8 @@ from pyramid import testing
 import transaction
 
 
-def dummy_request(dbsession):
-    return testing.DummyRequest(dbsession=dbsession)
+def dummy_request(db):
+    return testing.DummyRequest(db=db)
 
 
 class BaseTest(unittest.TestCase):
