@@ -1,4 +1,7 @@
-# Python
+# vim
+*.sw[op]
+*~
+# python
 *.egg*
 *.py[co]
 .cache
@@ -10,23 +13,15 @@ __pycache__
 alembic
 build
 dist
-# Sass
+# sass
 .sass-cache
-# SQLite
+# sqlite
 *.sqlite
 *.sqlite-journal
-# Transient
+# transient
 *.log
 *.map
 *.out
 *.tmp
 .DS_Store
 data_*
-# Vim
-*.sw[op]
-*~
-# Node
-.env
-node_modules
-npm-debug.log*
-package-lock.json
