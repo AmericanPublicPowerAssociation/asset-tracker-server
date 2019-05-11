@@ -6,4 +6,4 @@ def setup(env):
     request.tm.begin()
     env['tm'] = request.tm
     env['db'] = request.db
-    env['models'] = models
+    env['m'] = models

@@ -14,15 +14,14 @@ APP_CLASSIFIERS = [
 ]
 APP_REQUIREMENTS = [
     # Web
-    'plaster_pastedeploy',
+    'plaster-pastedeploy',
     'pyramid',
-    'pyramid_debugtoolbar',
-    'pyramid_jinja2',
+    'pyramid-ipython',
     'waitress',
     # Database
     'alembic',
-    'pyramid_retry',
-    'pyramid_tm',
+    'pyramid-retry',
+    'pyramid-tm',
     'sqlalchemy',
     'transaction',
     'zope.sqlalchemy',
