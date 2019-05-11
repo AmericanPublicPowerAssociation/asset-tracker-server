@@ -2,7 +2,7 @@ import zope.sqlalchemy
 from sqlalchemy import engine_from_config
 from sqlalchemy.orm import configure_mappers, sessionmaker
 
-from .mymodel import MyModel
+from .asset import Asset  # noqa
 
 
 configure_mappers()

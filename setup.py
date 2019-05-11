@@ -3,8 +3,6 @@ from setuptools import find_packages, setup
 
 
 ENTRY_POINTS = '''
-[console_scripts]
-initialize_asset_tracker_db=asset_tracker.scripts.initialize_db:main
 [paste.app_factory]
 main = asset_tracker:main
 '''
