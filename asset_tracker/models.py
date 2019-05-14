@@ -1,10 +1,10 @@
-import zope.sqlalchemy
 from sqlalchemy import Column, Index, engine_from_config
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import configure_mappers, sessionmaker
 from sqlalchemy.schema import MetaData
 from sqlalchemy.types import PickleType, String
+from zope.sqlalchemy import register as register_transaction_listener
 
 from .constants import RECORD_ID_LENGTH, RECORD_RETRY_COUNT
 from .exceptions import DatabaseRecordError
@@ -65,10 +65,9 @@ def includeme(config):
     config.include('pyramid_tm')
     config.include('pyramid_retry')
     database_engine = get_database_engine(settings)
-    database_session_factory = get_database_session_factory(database_engine)
+    get_database_session = define_get_database_session(database_engine)
     config.add_request_method(
-        lambda r: get_transaction_manager_session(
-            database_session_factory, r.tm),
+        lambda r: get_transaction_manager_session(get_database_session, r.tm),
         'db', reify=True)
 
 
@@ -76,15 +75,15 @@ def get_database_engine(settings, prefix='sqlalchemy.'):
     return engine_from_config(settings, prefix)
 
 
-def get_database_session_factory(engine):
-    factory = sessionmaker()
-    factory.configure(bind=engine)
-    return factory
+def define_get_database_session(database_engine):
+    get_database_session = sessionmaker()
+    get_database_session.configure(bind=database_engine)
+    return get_database_session
 
 
-def get_transaction_manager_session(session_factory, transaction_manager):
-    database_session = session_factory()
-    zope.sqlalchemy.register(
+def get_transaction_manager_session(get_database_session, transaction_manager):
+    database_session = get_database_session()
+    register_transaction_listener(
         database_session, transaction_manager=transaction_manager)
     return database_session
 
