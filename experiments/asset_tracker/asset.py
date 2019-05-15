@@ -51,9 +51,6 @@ class AssetType(enum.IntEnum):
 
 
 class Asset(Base):
-    __tablename__ = 'asset'
-    id = Column(String, primary_key=True)
-    name = Column(String)
     description = Column(String)
     latitude = Column(Float)
     longitude = Column(Float)
@@ -78,9 +75,6 @@ class Asset(Base):
             geometry = kwargs.pop('geometry')
             kwargs['_geometry'] = geometry.wkt
         super(Asset, self).__init__(**kwargs)
-
-    def __repr__(self):
-        return '<Asset(id={})>'.format(self.id)
 
     @property
     def contained_assets(self):
