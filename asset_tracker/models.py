@@ -1,8 +1,8 @@
-from sqlalchemy import Column, Index, engine_from_config
+from sqlalchemy import Column, engine_from_config
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import configure_mappers, sessionmaker
-from sqlalchemy.schema import MetaData
+from sqlalchemy.schema import MetaData, UniqueConstraint
 from sqlalchemy.types import PickleType, String
 from zope.sqlalchemy import register as register_transaction_listener
 
@@ -58,6 +58,11 @@ class Asset(RecordMixin, Base):
     def __repr__(self):
         return f'<Asset(id={self.id})>'
 
+    __table_args__ = (
+        UniqueConstraint(
+            'utility_id', 'name', name='unique_utility_asset_name'),
+    )
+
 
 def includeme(config):
     settings = config.get_settings()
@@ -86,9 +91,6 @@ def get_transaction_manager_session(get_database_session, transaction_manager):
     register_transaction_listener(
         database_session, transaction_manager=transaction_manager)
     return database_session
-
-
-Index('utility_asset_name', Asset.utility_id, Asset.name, unique=True)
 
 
 configure_mappers()

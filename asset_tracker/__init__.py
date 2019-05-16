@@ -1,4 +1,6 @@
+import json
 from pyramid.config import Configurator
+from pyramid.httpexceptions import HTTPBadRequest
 
 from .constants import RECORD_ID_LENGTH
 from .macros.configuration import set_default
@@ -22,4 +24,14 @@ def includeme(config):
         key = Class.__tablename__ + '.id.length'
         value = set_default(settings, key, RECORD_ID_LENGTH, int)
         setattr(Class, 'id_length', value)
+    config.add_view(handle_bad_request, context=HTTPBadRequest)
     config.scan()
+
+
+def handle_bad_request(context, request):
+    # Adapted from invisibleroads-posts
+    response = request.response
+    response.status_int = context.status_int
+    response.content_type = 'application/json'
+    response.text = json.dumps(context.detail)
+    return response
