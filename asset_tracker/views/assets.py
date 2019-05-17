@@ -1,7 +1,10 @@
-from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import (
+    HTTPBadRequest, HTTPInsufficientStorage)
 from pyramid.view import view_config
 from sqlalchemy.exc import IntegrityError
 
+from ..exceptions import DatabaseRecordError
+from ..macros.text import compact_whitespace
 from ..models import Asset
 
 
@@ -32,27 +35,37 @@ def see_asset_json(request):
     request_method='POST')
 def add_asset_json(request):
     params = request.json_body
-    utility_id = 'abc'
+    try:
+        utility_id = params['utilityId']
+    except KeyError:
+        raise HTTPBadRequest({'utilityId': 'is required'})
+    # !!! check valid utility id
     try:
         asset_type_id = params['typeId']
     except KeyError:
         raise HTTPBadRequest({'typeId': 'is required'})
     # !!! check valid type id
     try:
-        asset_name = params['name']
+        asset_name = compact_whitespace(params['name']).strip()
     except KeyError:
         # !!! consider filling asset name automatically
         raise HTTPBadRequest({'name': 'is required'})
-    # !!! check that name is unique within utility
+    if not asset_name:
+        raise HTTPBadRequest({'name': 'cannot be empty'})
     db = request.db
-    asset = Asset.make_unique_record(db)
+    if db.query(Asset.name.ilike(asset_name)).count():
+        raise HTTPBadRequest({'name': 'must be unique within utility'})
+    try:
+        asset = Asset.make_unique_record(db)
+    except DatabaseRecordError:
+        raise HTTPInsufficientStorage({'asset': 'could not make unique id'})
     asset.utility_id = utility_id
     asset.type_id = asset_type_id
     asset.name = asset_name
     try:
         db.flush()
     except IntegrityError:
-        raise HTTPBadRequest({'name': 'must be unique for utility'})
+        raise HTTPBadRequest({'name': 'must be unique within utility'})
     return {
         'id': asset.id,
         'typeId': asset.type_id,

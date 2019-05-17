@@ -1,6 +1,9 @@
 import json
 from pyramid.config import Configurator
-from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import (
+    HTTPBadRequest,
+    HTTPInsufficientStorage)
+from pyramid.view import exception_view_config
 
 from .constants import RECORD_ID_LENGTH
 from .macros.configuration import set_default
@@ -24,11 +27,12 @@ def includeme(config):
         key = Class.__tablename__ + '.id.length'
         value = set_default(settings, key, RECORD_ID_LENGTH, int)
         setattr(Class, 'id_length', value)
-    config.add_view(handle_bad_request, context=HTTPBadRequest)
     config.scan()
 
 
-def handle_bad_request(context, request):
+@exception_view_config(HTTPBadRequest)
+@exception_view_config(HTTPInsufficientStorage)
+def handle_exception(context, request):
     # Adapted from invisibleroads-posts
     response = request.response
     response.status_int = context.status_int
