@@ -55,6 +55,13 @@ class Asset(RecordMixin, Base):
     type_id = Column(String)
     attributes = PickleType()
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'typeId': self.type_id,
+            'name': self.name,
+        }
+
     def __repr__(self):
         return f'<Asset(id={self.id})>'
 

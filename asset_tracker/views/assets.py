@@ -1,10 +1,10 @@
 from pyramid.httpexceptions import (
-    HTTPBadRequest, HTTPInsufficientStorage)
+    HTTPBadRequest, HTTPInsufficientStorage, HTTPNotFound)
 from pyramid.view import view_config
 from sqlalchemy.exc import IntegrityError
 
 from ..exceptions import DatabaseRecordError
-from ..macros.text import compact_whitespace
+from ..macros.text import normalize_text
 from ..models import Asset
 
 
@@ -21,12 +21,14 @@ def see_assets_json(request):
     } for asset in db.query(Asset)]
 
 
+'''
 @view_config(
     route_name='asset.json',
     renderer='json',
     request_method='GET')
 def see_asset_json(request):
     return {}
+'''
 
 
 @view_config(
@@ -40,37 +42,32 @@ def add_asset_json(request):
     except KeyError:
         raise HTTPBadRequest({'utilityId': 'is required'})
     # !!! check valid utility id
+    # !!! check whether user can add assets to utility id
     try:
-        asset_type_id = params['typeId']
+        type_id = params['typeId']
     except KeyError:
         raise HTTPBadRequest({'typeId': 'is required'})
     # !!! check valid type id
+    db = request.db
     try:
-        asset_name = compact_whitespace(params['name']).strip()
+        name = params['name']
     except KeyError:
         # !!! consider filling asset name automatically
         raise HTTPBadRequest({'name': 'is required'})
-    if not asset_name:
-        raise HTTPBadRequest({'name': 'cannot be empty'})
-    db = request.db
-    if db.query(Asset.name.ilike(asset_name)).count():
-        raise HTTPBadRequest({'name': 'must be unique within utility'})
+    else:
+        name = validate_name(db, name, utility_id)
     try:
         asset = Asset.make_unique_record(db)
     except DatabaseRecordError:
         raise HTTPInsufficientStorage({'asset': 'could not make unique id'})
     asset.utility_id = utility_id
-    asset.type_id = asset_type_id
-    asset.name = asset_name
+    asset.type_id = type_id
+    asset.name = name
     try:
         db.flush()
     except IntegrityError:
         raise HTTPBadRequest({'name': 'must be unique within utility'})
-    return {
-        'id': asset.id,
-        'typeId': asset.type_id,
-        'name': asset.name,
-    }
+    return asset.serialize()
 
 
 @view_config(
@@ -78,7 +75,24 @@ def add_asset_json(request):
     renderer='json',
     request_method='PATCH')
 def change_asset_json(request):
-    return {}
+    params = request.json_body
+    try:
+        id = params['id']
+    except KeyError:
+        raise HTTPBadRequest({'id': 'is required'})
+    db = request.db
+    asset = db.query(Asset).get(id)
+    if not asset:
+        raise HTTPNotFound({'id': 'does not exist'})
+    utility_id = asset.utility_id
+    # !!! check whether user can update this asset
+    try:
+        name = params['name']
+    except KeyError:
+        pass
+    else:
+        asset.name = validate_name(db, name, utility_id)
+    return asset.serialize()
 
 
 @view_config(
@@ -87,3 +101,15 @@ def change_asset_json(request):
     request_method='DELETE')
 def drop_asset_json(request):
     return {}
+
+
+def validate_name(db, name, utility_id):
+    name = normalize_text(name)
+    if not name:
+        raise HTTPBadRequest({'name': 'cannot be empty'})
+    if db.query(Asset).filter(
+        Asset.utility_id == utility_id,
+        Asset.name.ilike(name),
+    ).count():
+        raise HTTPBadRequest({'name': 'must be unique within utility'})
+    return name

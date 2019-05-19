@@ -1,8 +1,6 @@
 import json
 from pyramid.config import Configurator
-from pyramid.httpexceptions import (
-    HTTPBadRequest,
-    HTTPInsufficientStorage)
+from pyramid.httpexceptions import HTTPException
 from pyramid.view import exception_view_config
 
 from .constants import RECORD_ID_LENGTH
@@ -30,8 +28,7 @@ def includeme(config):
     config.scan()
 
 
-@exception_view_config(HTTPBadRequest)
-@exception_view_config(HTTPInsufficientStorage)
+@exception_view_config(HTTPException)
 def handle_exception(context, request):
     # Adapted from invisibleroads-posts
     response = request.response
