@@ -21,16 +21,6 @@ def see_assets_json(request):
     } for asset in db.query(Asset)]
 
 
-'''
-@view_config(
-    route_name='asset.json',
-    renderer='json',
-    request_method='GET')
-def see_asset_json(request):
-    return {}
-'''
-
-
 @view_config(
     route_name='assets.json',
     renderer='json',
@@ -55,7 +45,7 @@ def add_asset_json(request):
         # !!! consider filling asset name automatically
         raise HTTPBadRequest({'name': 'is required'})
     else:
-        name = validate_name(db, name, utility_id)
+        name = validate_name(db, name, utility_id, existing=False)
     try:
         asset = Asset.make_unique_record(db)
     except DatabaseRecordError:
@@ -91,7 +81,7 @@ def change_asset_json(request):
     except KeyError:
         pass
     else:
-        asset.name = validate_name(db, name, utility_id)
+        asset.name = validate_name(db, name, utility_id, existing=True)
     return asset.serialize()
 
 
@@ -103,13 +93,14 @@ def drop_asset_json(request):
     return {}
 
 
-def validate_name(db, name, utility_id):
+def validate_name(db, name, utility_id, existing=False):
     name = normalize_text(name)
     if not name:
         raise HTTPBadRequest({'name': 'cannot be empty'})
+    maximum_duplicate_count = 1 if existing else 0
     if db.query(Asset).filter(
         Asset.utility_id == utility_id,
         Asset.name.ilike(name),
-    ).count():
+    ).count() > maximum_duplicate_count:
         raise HTTPBadRequest({'name': 'must be unique within utility'})
     return name
