@@ -1,7 +1,6 @@
 from pyramid.httpexceptions import (
     HTTPBadRequest, HTTPInsufficientStorage, HTTPNotFound)
 from pyramid.view import view_config
-from sqlalchemy.exc import IntegrityError
 
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
@@ -45,7 +44,7 @@ def add_asset_json(request):
         # !!! consider filling asset name automatically
         raise HTTPBadRequest({'name': 'is required'})
     else:
-        name = validate_name(db, name, utility_id, existing=False)
+        name = validate_name(db, name, utility_id)
     try:
         asset = Asset.make_unique_record(db)
     except DatabaseRecordError:
@@ -53,10 +52,6 @@ def add_asset_json(request):
     asset.utility_id = utility_id
     asset.type_id = type_id
     asset.name = name
-    try:
-        db.flush()
-    except IntegrityError:
-        raise HTTPBadRequest({'name': 'must be unique within utility'})
     return asset.serialize()
 
 
@@ -81,7 +76,7 @@ def change_asset_json(request):
     except KeyError:
         pass
     else:
-        asset.name = validate_name(db, name, utility_id, existing=True)
+        asset.name = validate_name(db, name, utility_id, id)
     return asset.serialize()
 
 
@@ -93,14 +88,14 @@ def drop_asset_json(request):
     return {}
 
 
-def validate_name(db, name, utility_id, existing=False):
+def validate_name(db, name, utility_id, id=None):
     name = normalize_text(name)
     if not name:
         raise HTTPBadRequest({'name': 'cannot be empty'})
-    maximum_duplicate_count = 1 if existing else 0
-    if db.query(Asset).filter(
-        Asset.utility_id == utility_id,
-        Asset.name.ilike(name),
-    ).count() > maximum_duplicate_count:
+    duplicate_query = db.query(Asset).filter(
+        Asset.utility_id == utility_id, Asset.name.ilike(name))
+    if id:
+        duplicate_query = duplicate_query.filter(Asset.id != id)
+    if duplicate_query.count():
         raise HTTPBadRequest({'name': 'must be unique within utility'})
     return name
