@@ -1,7 +1,9 @@
-from sqlalchemy import Column, engine_from_config
+from geoalchemy2 import Geometry
+from geoalchemy2.shape import from_shape, to_shape
+from sqlalchemy import Column, ForeignKey, Table, engine_from_config
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import configure_mappers, sessionmaker
+from sqlalchemy.orm import configure_mappers, relationship, sessionmaker
 from sqlalchemy.schema import MetaData, UniqueConstraint
 from sqlalchemy.types import PickleType, String
 from zope.sqlalchemy import register as register_transaction_listener
@@ -12,14 +14,22 @@ from .macros.security import make_random_string
 
 
 CLASS_REGISTRY = {}
-metaData = MetaData(naming_convention={
+metadata = MetaData(naming_convention={
     'ix': 'ix_%(column_0_label)s',
     'uq': 'uq_%(table_name)s_%(column_0_name)s',
     'ck': 'ck_%(table_name)s_%(constraint_name)s',
     'fk': 'fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s',
     'pk': 'pk_%(table_name)s',
 })
-Base = declarative_base(class_registry=CLASS_REGISTRY, metadata=metaData)
+Base = declarative_base(class_registry=CLASS_REGISTRY, metadata=metadata)
+asset_relation = Table(
+    'asset_relation', Base.metadata,
+    Column('parent_asset_id', String, ForeignKey('asset.id')),
+    Column('child_asset_id', String, ForeignKey('asset.id')))
+asset_connection = Table(
+    'asset_connection', Base.metadata,
+    Column('left_asset_id', String, ForeignKey('asset.id')),
+    Column('right_asset_id', String, ForeignKey('asset.id')))
 
 
 class RecordMixin(object):
@@ -49,11 +59,59 @@ class RecordMixin(object):
 
 
 class Asset(RecordMixin, Base):
+
     __tablename__ = 'asset'
     utility_id = Column(String)
     name = Column(String)
     type_id = Column(String)
+    children = relationship(
+        'Asset', secondary=asset_relation,
+        primaryjoin='asset_relation.c.parent_asset_id == Asset.id',
+        secondaryjoin='asset_relation.c.child_asset_id == Asset.id',
+        backref='parents')
+    connections = relationship(
+        'Asset', secondary=asset_connection,
+        primaryjoin='asset_connection.c.left_asset_id == Asset.id',
+        secondaryjoin='asset_connection.c.right_asset_id == Asset.id')
+    _geometry = Column(Geometry(management=True, use_st_prefix=False))
     attributes = PickleType()
+
+    def __init__(self, **kwargs):
+        if 'geometry' in kwargs:
+            kwargs['_geometry'] = from_shape(kwargs.pop('geometry'))
+        super(Asset, self).__init__(**kwargs)
+
+    @property
+    def geometry(self):
+        return to_shape(self._geometry)
+
+    @geometry.setter
+    def geometry(self, g):
+        self._geometry = from_shape(g)
+
+    def add_child(self, asset):
+        if self == asset:
+            return
+        if asset not in self.children:
+            self.children.append(asset)
+
+    def add_connection(self, asset):
+        if self == asset:
+            return
+        if asset not in self.connections:
+            self.connections.append(asset)
+        if self not in asset.connections:
+            self.connections.append(self)
+
+    def remove_child(self, asset):
+        if asset in self.children:
+            self.children.remove(asset)
+
+    def remove_connection(self, asset):
+        if asset in self.connections:
+            self.connections.remove(asset)
+        if self in asset.connections:
+            asset.connections.remove(self)
 
     def serialize(self):
         return {
@@ -84,7 +142,10 @@ def includeme(config):
 
 
 def get_database_engine(settings, prefix='sqlalchemy.'):
-    return engine_from_config(settings, prefix)
+    engine = engine_from_config(settings, prefix)
+    if settings[prefix + 'url'].startswith('sqlite'):
+        load_spatialite_sqlite_extension(engine)
+    return engine
 
 
 def define_get_database_session(database_engine):
@@ -98,6 +159,21 @@ def get_transaction_manager_session(get_database_session, transaction_manager):
     register_transaction_listener(
         database_session, transaction_manager=transaction_manager)
     return database_session
+
+
+def load_spatialite_sqlite_extension(engine):
+    from sqlalchemy.event import listen
+    from sqlalchemy.sql import func, select
+
+    def load_spatialite(api_connection, connection_record):
+        api_connection.enable_load_extension(True)
+        api_connection.load_extension('/usr/lib64/mod_spatialite.so')
+
+    listen(engine, 'connect', load_spatialite)
+    engine_connection = engine.connect()
+    engine_connection.execute(select([func.InitSpatialMetaData()]))
+    engine_connection.close()
+    return engine
 
 
 configure_mappers()
