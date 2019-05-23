@@ -91,14 +91,14 @@ def drop_asset_json(request):
 
 
 @view_config(
-    route_name='asset_link.json',
+    route_name='asset_relation.json',
     renderer='json',
     request_method='PATCH')
 @view_config(
-    route_name='asset_link.json',
+    route_name='asset_relation.json',
     renderer='json',
     request_method='DELETE')
-def change_asset_link_json(request):
+def change_asset_relation_json(request):
     matchdict = request.matchdict
     db = request.db
     method = request.method

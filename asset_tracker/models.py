@@ -22,8 +22,8 @@ metadata = MetaData(naming_convention={
     'pk': 'pk_%(table_name)s',
 })
 Base = declarative_base(class_registry=CLASS_REGISTRY, metadata=metadata)
-asset_relation = Table(
-    'asset_relation', Base.metadata,
+asset_content = Table(
+    'asset_content', Base.metadata,
     Column('parent_asset_id', String, ForeignKey('asset.id')),
     Column('child_asset_id', String, ForeignKey('asset.id')))
 asset_connection = Table(
@@ -65,9 +65,9 @@ class Asset(RecordMixin, Base):
     name = Column(String)
     type_id = Column(String)
     children = relationship(
-        'Asset', secondary=asset_relation,
-        primaryjoin='asset_relation.c.parent_asset_id == Asset.id',
-        secondaryjoin='asset_relation.c.child_asset_id == Asset.id',
+        'Asset', secondary=asset_content,
+        primaryjoin='asset_content.c.parent_asset_id == Asset.id',
+        secondaryjoin='asset_content.c.child_asset_id == Asset.id',
         backref='parents')
     connections = relationship(
         'Asset', secondary=asset_connection,
