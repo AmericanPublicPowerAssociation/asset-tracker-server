@@ -60,17 +60,19 @@ def add_asset_json(request):
     renderer='json',
     request_method='PATCH')
 def change_asset_json(request):
+    matchdict = request.matchdict
     params = request.json_body
-    try:
-        id = params['id']
-    except KeyError:
-        raise HTTPBadRequest({'id': 'is required'})
     db = request.db
+
+    id = matchdict['id']
     asset = db.query(Asset).get(id)
     if not asset:
         raise HTTPNotFound({'id': 'does not exist'})
+
     utility_id = asset.utility_id
+
     # !!! check whether user can update this asset
+
     try:
         name = params['name']
     except KeyError:
@@ -85,6 +87,52 @@ def change_asset_json(request):
     renderer='json',
     request_method='DELETE')
 def drop_asset_json(request):
+    return {}
+
+
+@view_config(
+    route_name='asset_link.json',
+    renderer='json',
+    request_method='PATCH')
+@view_config(
+    route_name='asset_link.json',
+    renderer='json',
+    request_method='DELETE')
+def change_asset_link_json(request):
+    matchdict = request.matchdict
+    db = request.db
+    method = request.method
+
+    id = matchdict['id']
+    asset = db.query(Asset).get(id)
+    if not asset:
+        raise HTTPNotFound({'id': 'does not exist'})
+
+    target_id = matchdict['other_id']
+    target_asset = db.query(Asset).get(target_id)
+    if not target_asset:
+        raise HTTPNotFound({'other_id': 'does not exist'})
+
+    # !!! Check edit permissions for both assets
+
+    type = matchdict['type']
+    if 'childIds' == type:
+        if method == 'PATCH':
+            asset.add_child(target_asset)
+        elif method == 'DELETE':
+            asset.remove_child(target_asset)
+    elif 'parentIds' == type:
+        if method == 'PATCH':
+            target_asset.add_child(asset)
+        elif method == 'DELETE':
+            target_asset.remove_child(asset)
+    elif 'connectedIds' == type:
+        if method == 'PATCH':
+            asset.add_connection(target_asset)
+        elif method == 'DELETE':
+            asset.remove_connection(target_asset)
+    else:
+        raise HTTPBadRequest({'type': 'is not recognized'})
     return {}
 
 
