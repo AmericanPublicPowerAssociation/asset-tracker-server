@@ -13,11 +13,7 @@ from ..models import Asset
     request_method='GET')
 def see_assets_json(request):
     db = request.db
-    return [{
-        'id': asset.id,
-        'typeId': asset.type_id,
-        'name': asset.name,
-    } for asset in db.query(Asset)]
+    return [asset.serialize() for asset in db.query(Asset)]
 
 
 @view_config(
@@ -61,7 +57,7 @@ def add_asset_json(request):
     request_method='PATCH')
 def change_asset_json(request):
     matchdict = request.matchdict
-    params = request.json_body
+    params = dict(request.json_body)
     db = request.db
 
     id = matchdict['id']
@@ -74,11 +70,15 @@ def change_asset_json(request):
     # !!! check whether user can update this asset
 
     try:
-        name = params['name']
+        name = params.pop('name')
     except KeyError:
         pass
     else:
         asset.name = validate_name(db, name, utility_id, id)
+
+    params.pop('id', None)
+    params.pop('typeId', None)
+    asset.attributes = params
     return asset.serialize()
 
 

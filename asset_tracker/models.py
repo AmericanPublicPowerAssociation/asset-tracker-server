@@ -74,7 +74,7 @@ class Asset(RecordMixin, Base):
         primaryjoin='asset_connection.c.left_asset_id == Asset.id',
         secondaryjoin='asset_connection.c.right_asset_id == Asset.id')
     _geometry = Column(Geometry(management=True, use_st_prefix=False))
-    attributes = PickleType()
+    attributes = Column(PickleType)
 
     def __init__(self, **kwargs):
         if 'geometry' in kwargs:
@@ -114,11 +114,11 @@ class Asset(RecordMixin, Base):
             asset.connections.remove(self)
 
     def serialize(self):
-        return {
+        return dict(self.attributes or {}, **{
             'id': self.id,
             'typeId': self.type_id,
             'name': self.name,
-        }
+        })
 
     def __repr__(self):
         return f'<Asset(id={self.id})>'
