@@ -108,31 +108,31 @@ def change_asset_relation_json(request):
     if not asset:
         raise HTTPNotFound({'id': 'does not exist'})
 
-    target_id = matchdict['other_id']
-    target_asset = db.query(Asset).get(target_id)
-    if not target_asset:
-        raise HTTPNotFound({'other_id': 'does not exist'})
+    other_id = matchdict['otherId']
+    other_asset = db.query(Asset).get(other_id)
+    if not other_asset:
+        raise HTTPNotFound({'otherId': 'does not exist'})
 
     # !!! Check edit permissions for both assets
 
-    type = matchdict['type']
-    if 'childIds' == type:
+    key = matchdict['key']
+    if 'childIds' == key:
         if method == 'PATCH':
-            asset.add_child(target_asset)
+            asset.add_child(other_asset)
         elif method == 'DELETE':
-            asset.remove_child(target_asset)
-    elif 'parentIds' == type:
+            asset.remove_child(other_asset)
+    elif 'parentIds' == key:
         if method == 'PATCH':
-            target_asset.add_child(asset)
+            other_asset.add_child(asset)
         elif method == 'DELETE':
-            target_asset.remove_child(asset)
-    elif 'connectedIds' == type:
+            other_asset.remove_child(asset)
+    elif 'connectedIds' == key:
         if method == 'PATCH':
-            asset.add_connection(target_asset)
+            asset.add_connection(other_asset)
         elif method == 'DELETE':
-            asset.remove_connection(target_asset)
+            asset.remove_connection(other_asset)
     else:
-        raise HTTPBadRequest({'type': 'is not recognized'})
+        raise HTTPBadRequest({'key': 'is not recognized'})
     return {}
 
 
