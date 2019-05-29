@@ -78,6 +78,9 @@ def change_asset_json(request):
 
     params.pop('id', None)
     params.pop('typeId', None)
+    params.pop('connectedIds', None)
+    params.pop('parentIds', None)
+    params.pop('childIds', None)
     asset.attributes = params
     return asset.serialize()
 

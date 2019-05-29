@@ -118,6 +118,9 @@ class Asset(RecordMixin, Base):
             'id': self.id,
             'typeId': self.type_id,
             'name': self.name,
+            'connectedIds': [_.id for _ in self.connections],
+            'parentIds': [_.id for _ in self.parents],
+            'childIds': [_.id for _ in self.children],
         })
 
     def __repr__(self):
