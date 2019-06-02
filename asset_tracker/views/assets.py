@@ -67,7 +67,7 @@ def change_asset_json(request):
 
     utility_id = asset.utility_id
 
-    # !!! check whether user can update this asset
+    # !!! Check whether user can update this asset
 
     try:
         name = params.pop('name')

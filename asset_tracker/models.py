@@ -73,7 +73,7 @@ class Asset(RecordMixin, Base):
         'Asset', secondary=asset_connection,
         primaryjoin='asset_connection.c.left_asset_id == Asset.id',
         secondaryjoin='asset_connection.c.right_asset_id == Asset.id')
-    _geometry = Column(Geometry(management=True, use_st_prefix=False))
+    _geometry = Column(Geometry(management=True))
     attributes = Column(PickleType)
 
     def __init__(self, **kwargs):

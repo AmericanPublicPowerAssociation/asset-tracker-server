@@ -1,0 +1,126 @@
+[
+  {
+    "id": "p",
+    "name": "Pole",
+    "connectedIds": [],
+    "parentIds": ["l", "s", "S"],
+    "childIds": ["m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "locatable": true
+  }, {
+    "id": "l",
+    "name": "Line",
+    "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "parentIds": [],
+    "childIds": ["p"]
+  }, {
+    "id": "m",
+    "name": "Meter",
+    "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "parentIds": ["p", "s", "S"],
+    "childIds": [],
+    "typeById": {
+      "r": {"name": "Residential"},
+      "c": {"name": "Commercial"},
+      "i": {"name": "Industrial"},
+      "X": {"name": "Other"}
+    },
+    "locatable": true
+  }, {
+    "id": "t",
+    "name": "Transformer",
+    "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "parentIds": ["p"],
+    "childIds": [],
+    "typeById": {
+      "d": {"name": "Distribution"},
+      "p": {"name": "Power"},
+      "X": {"name": "Other"}
+    }
+  }, {
+    "id": "x",
+    "name": "Switch",
+    "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "parentIds": ["p", "s", "S"],
+    "childIds": [],
+    "typeById": {
+      "f": {"name": "Fuse"},
+      "b": {"name": "Breaker"},
+      "c": {"name": "Recloser"},
+      "i": {"name": "Interrupter"},
+      "s": {"name": "Sectionalizer"},
+      "r": {"name": "Relay"},
+      "X": {"name": "Other"}
+    }
+  }, {
+    "id": "q",
+    "name": "Power Quality",
+    "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "parentIds": ["p", "s", "S"],
+    "childIds": [],
+    "typeById": {
+      "c": {"name": "Capacitor"},
+      "r": {"name": "Regulator"},
+      "b": {"name": "Booster"},
+      "X": {"name": "Other"}
+    }
+  }, {
+    "id": "c",
+    "name": "Control",
+    "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "parentIds": ["p", "s", "S"],
+    "childIds": [],
+    "typeById": {
+      "p": {"name": "PLC"},
+      "m": {"name": "Microcontroller"},
+      "X": {"name": "Other"}
+    }
+  }, {
+    "id": "b",
+    "name": "Busbar",
+    "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "parentIds": ["p", "s", "S"],
+    "childIds": []
+  }, {
+    "id": "o",
+    "name": "Storage",
+    "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "parentIds": ["p", "s", "S"],
+    "childIds": [],
+    "locatable": true
+  }, {
+    "id": "g",
+    "name": "Generator",
+    "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "parentIds": ["p", "s", "S"],
+    "childIds": [],
+    "locatable": true
+  }, {
+    "id": "s",
+    "name": "Substation",
+    "connectedIds": [],
+    "parentIds": [],
+    "childIds": ["p", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "typeById": {
+      "d": {"name": "Distribution"},
+      "t": {"name": "Transmission"},
+      "X": {"name": "Other"}
+    },
+    "locatable": true,
+    "unique": true
+  }, {
+    "id": "S",
+    "name": "Station",
+    "connectedIds": [],
+    "parentIds": [],
+    "childIds": ["p", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "locatable": true,
+    "unique": true
+  }, {
+    "id": "X",
+    "name": "Other",
+    "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+    "parentIds": ["p", "s", "S"],
+    "childIds": [],
+    "locatable": true
+  }
+]
