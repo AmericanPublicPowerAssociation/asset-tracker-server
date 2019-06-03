@@ -5,13 +5,18 @@
     "connectedIds": [],
     "parentIds": ["l", "s", "S"],
     "childIds": ["m", "t", "x", "q", "c", "b", "o", "g", "X"],
-    "locatable": true
+    "locatable": true,
+    "minimumSize": 2
   }, {
     "id": "l",
     "name": "Line",
     "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
     "parentIds": [],
-    "childIds": ["p"]
+    "childIds": ["p"],
+    "sizeAttribute": "KV",
+    "sizeByValue": {"10": 1, "50": 5},
+    "minimumSize": 1,
+    "maximumSize": 10
   }, {
     "id": "m",
     "name": "Meter",
@@ -24,7 +29,11 @@
       "i": {"name": "Industrial"},
       "X": {"name": "Other"}
     },
-    "locatable": true
+    "locatable": true,
+    "sizeAttribute": "KW",
+    "sizeByValue": {"10": 3, "50": 6},
+    "minimumSize": 3,
+    "maximumSize": 9
   }, {
     "id": "t",
     "name": "Transformer",
@@ -35,7 +44,8 @@
       "d": {"name": "Distribution"},
       "p": {"name": "Power"},
       "X": {"name": "Other"}
-    }
+    },
+    "minimumSize": 3
   }, {
     "id": "x",
     "name": "Switch",
@@ -50,7 +60,8 @@
       "s": {"name": "Sectionalizer"},
       "r": {"name": "Relay"},
       "X": {"name": "Other"}
-    }
+    },
+    "minimumSize": 4
   }, {
     "id": "q",
     "name": "Power Quality",
@@ -62,7 +73,8 @@
       "r": {"name": "Regulator"},
       "b": {"name": "Booster"},
       "X": {"name": "Other"}
-    }
+    },
+    "minimumSize": 5
   }, {
     "id": "c",
     "name": "Control",
@@ -73,27 +85,31 @@
       "p": {"name": "PLC"},
       "m": {"name": "Microcontroller"},
       "X": {"name": "Other"}
-    }
+    },
+    "minimumSize": 6
   }, {
     "id": "b",
     "name": "Busbar",
     "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
     "parentIds": ["p", "s", "S"],
-    "childIds": []
+    "childIds": [],
+    "minimumSize": 7
   }, {
     "id": "o",
     "name": "Storage",
     "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
     "parentIds": ["p", "s", "S"],
     "childIds": [],
-    "locatable": true
+    "locatable": true,
+    "minimumSize": 8
   }, {
     "id": "g",
     "name": "Generator",
     "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
     "parentIds": ["p", "s", "S"],
     "childIds": [],
-    "locatable": true
+    "locatable": true,
+    "minimumSize": 9
   }, {
     "id": "s",
     "name": "Substation",
@@ -106,7 +122,11 @@
       "X": {"name": "Other"}
     },
     "locatable": true,
-    "unique": true
+    "unique": true,
+    "sizeAttribute": "KV",
+    "sizeByValue": {"10": 10, "50": 20},
+    "minimumSize": 10,
+    "maximumSize": 30
   }, {
     "id": "S",
     "name": "Station",
@@ -114,13 +134,18 @@
     "parentIds": [],
     "childIds": ["p", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
     "locatable": true,
-    "unique": true
+    "unique": true,
+    "sizeAttribute": "KV",
+    "sizeByValue": {"10": 10, "50": 20},
+    "minimumSize": 10,
+    "maximumSize": 30
   }, {
     "id": "X",
     "name": "Other",
     "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
     "parentIds": ["p", "s", "S"],
     "childIds": [],
-    "locatable": true
+    "locatable": true,
+    "minimumSize": 10
   }
 ]
