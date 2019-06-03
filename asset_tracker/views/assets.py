@@ -91,7 +91,7 @@ def change_asset_json(request):
     params.pop('connectedIds', None)
     params.pop('parentIds', None)
     params.pop('childIds', None)
-    asset.attributes = dict(asset.attributes, **params)
+    asset.attributes = dict(asset.attributes or {}, **params)
 
     return [_.serialize() for _ in changed_assets]
 
