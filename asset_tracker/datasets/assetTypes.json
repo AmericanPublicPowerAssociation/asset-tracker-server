@@ -6,7 +6,7 @@
     "parentIds": ["l", "s", "S"],
     "childIds": ["m", "t", "x", "q", "c", "b", "o", "g", "X"],
     "locatable": true,
-    "minimumSize": 2
+    "sizeByValue": {"0": 2}
   }, {
     "id": "l",
     "name": "Line",
@@ -14,9 +14,7 @@
     "parentIds": [],
     "childIds": ["p"],
     "sizeAttribute": "KV",
-    "sizeByValue": {"10": 1, "50": 5},
-    "minimumSize": 1,
-    "maximumSize": 10
+    "sizeByValue": {"10": 1, "50": 5, "100": 10}
   }, {
     "id": "m",
     "name": "Meter",
@@ -31,9 +29,7 @@
     },
     "locatable": true,
     "sizeAttribute": "KW",
-    "sizeByValue": {"10": 3, "50": 6},
-    "minimumSize": 3,
-    "maximumSize": 9
+    "sizeByValue": {"10": 3, "50": 6, "100": 9}
   }, {
     "id": "t",
     "name": "Transformer",
@@ -45,7 +41,7 @@
       "p": {"name": "Power"},
       "X": {"name": "Other"}
     },
-    "minimumSize": 3
+    "sizeByValue": {"0": 3}
   }, {
     "id": "x",
     "name": "Switch",
@@ -61,7 +57,7 @@
       "r": {"name": "Relay"},
       "X": {"name": "Other"}
     },
-    "minimumSize": 4
+    "sizeByValue": {"0": 4}
   }, {
     "id": "q",
     "name": "Power Quality",
@@ -74,7 +70,7 @@
       "b": {"name": "Booster"},
       "X": {"name": "Other"}
     },
-    "minimumSize": 5
+    "sizeByValue": {"0": 5}
   }, {
     "id": "c",
     "name": "Control",
@@ -86,14 +82,14 @@
       "m": {"name": "Microcontroller"},
       "X": {"name": "Other"}
     },
-    "minimumSize": 6
+    "sizeByValue": {"0": 6}
   }, {
     "id": "b",
     "name": "Busbar",
     "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
     "parentIds": ["p", "s", "S"],
     "childIds": [],
-    "minimumSize": 7
+    "sizeByValue": {"0": 7}
   }, {
     "id": "o",
     "name": "Storage",
@@ -101,7 +97,7 @@
     "parentIds": ["p", "s", "S"],
     "childIds": [],
     "locatable": true,
-    "minimumSize": 8
+    "sizeByValue": {"0": 8}
   }, {
     "id": "g",
     "name": "Generator",
@@ -109,7 +105,7 @@
     "parentIds": ["p", "s", "S"],
     "childIds": [],
     "locatable": true,
-    "minimumSize": 9
+    "sizeByValue": {"0": 9}
   }, {
     "id": "s",
     "name": "Substation",
@@ -124,9 +120,7 @@
     "locatable": true,
     "unique": true,
     "sizeAttribute": "KV",
-    "sizeByValue": {"10": 10, "50": 20},
-    "minimumSize": 10,
-    "maximumSize": 30
+    "sizeByValue": {"10": 10, "50": 20, "100": 30}
   }, {
     "id": "S",
     "name": "Station",
@@ -136,9 +130,7 @@
     "locatable": true,
     "unique": true,
     "sizeAttribute": "KV",
-    "sizeByValue": {"10": 10, "50": 20},
-    "minimumSize": 10,
-    "maximumSize": 30
+    "sizeByValue": {"10": 10, "50": 20, "100": 30}
   }, {
     "id": "X",
     "name": "Other",
@@ -146,6 +138,6 @@
     "parentIds": ["p", "s", "S"],
     "childIds": [],
     "locatable": true,
-    "minimumSize": 10
+    "sizeByValue": {"0": 10}
   }
 ]
