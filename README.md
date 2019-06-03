@@ -1,5 +1,7 @@
 # Asset Tracker
 
+    sudo dnf -y install spatialite
+
     cd ~/Experiments/asset-tracker-server
     pip install --user --upgrade pipenv
     pipenv install --three -e .[testing]
