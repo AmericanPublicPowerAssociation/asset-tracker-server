@@ -1,6 +1,6 @@
 from geoalchemy2 import Geometry
 from geoalchemy2.shape import from_shape, to_shape
-from shapely.geometry import Point
+from shapely.geometry import LineString, Point
 from sqlalchemy import Column, ForeignKey, Table, engine_from_config
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -95,18 +95,36 @@ class Asset(RecordMixin, Base):
 
     @property
     def location(self):
-        if self.has_location:
-            return self.geometry.coords[0]
+        if not self.has_location:
+            return
+        return self.geometry.coords[0]
 
     @location.setter
     def location(self, location):
-        if self.is_locatable:
-            self.geometry = Point(location)
+        if not self.is_locatable:
+            return
+
+        point = Point(location)
+        self.geometry = point
+
+        for parent in self.parents:
+            if parent.type_id == 'l':
+                update_line_geometry(parent)
+                continue
+            if parent._geometry is not None:
+                continue
+            parent.geometry = point
+
+        for child in self.children:
+            if child._geometry is not None:
+                continue
+            child.geometry = point
 
     @property
     def geometry(self):
-        if self._geometry is not None:
-            return to_shape(self._geometry)
+        if self._geometry is None:
+            return
+        return to_shape(self._geometry)
 
     @geometry.setter
     def geometry(self, geometry):
@@ -115,8 +133,13 @@ class Asset(RecordMixin, Base):
     def add_child(self, asset):
         if self == asset:
             return
-        if asset not in self.children:
-            self.children.append(asset)
+
+        if asset in self.children:
+            return
+        self.children.append(asset)
+
+        if self.type_id == 'l':
+            update_line_geometry(self)
 
     def add_connection(self, asset):
         if self == asset:
@@ -203,6 +226,13 @@ def load_spatialite_sqlite_extension(engine):
     engine_connection.execute(select([func.InitSpatialMetaData()]))
     engine_connection.close()
     return engine
+
+
+def update_line_geometry(line_asset):
+    line_coordinates = []
+    for pole_asset in line_asset.children:
+        line_coordinates.append(pole_asset.location)
+    line_asset.geometry = LineString(line_coordinates)
 
 
 configure_mappers()
