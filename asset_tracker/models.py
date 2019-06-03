@@ -103,6 +103,9 @@ class Asset(RecordMixin, Base):
     def location(self, location):
         if not self.is_locatable:
             return
+        if location is None:
+            self._geometry = None
+            return
 
         point = Point(location)
         self.geometry = point
