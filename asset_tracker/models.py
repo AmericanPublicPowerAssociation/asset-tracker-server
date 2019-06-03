@@ -1,5 +1,6 @@
 from geoalchemy2 import Geometry
 from geoalchemy2.shape import from_shape, to_shape
+from shapely.geometry import Point
 from sqlalchemy import Column, ForeignKey, Table, engine_from_config
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -8,7 +9,10 @@ from sqlalchemy.schema import MetaData, UniqueConstraint
 from sqlalchemy.types import PickleType, String
 from zope.sqlalchemy import register as register_transaction_listener
 
-from .constants import RECORD_ID_LENGTH, RECORD_RETRY_COUNT
+from .constants import (
+    ASSET_TYPE_BY_ID,
+    RECORD_ID_LENGTH,
+    RECORD_RETRY_COUNT)
 from .exceptions import DatabaseRecordError
 from .macros.security import make_random_string
 
@@ -82,12 +86,31 @@ class Asset(RecordMixin, Base):
         super(Asset, self).__init__(**kwargs)
 
     @property
+    def is_locatable(self):
+        return ASSET_TYPE_BY_ID[self.type_id[0]].get('locatable', False)
+
+    @property
+    def has_location(self):
+        return self._geometry is not None and self.is_locatable
+
+    @property
+    def location(self):
+        if self.has_location:
+            return self.geometry.coords[0]
+
+    @location.setter
+    def location(self, location):
+        if self.is_locatable:
+            self.geometry = Point(location)
+
+    @property
     def geometry(self):
-        return to_shape(self._geometry)
+        if self._geometry is not None:
+            return to_shape(self._geometry)
 
     @geometry.setter
-    def geometry(self, g):
-        self._geometry = from_shape(g)
+    def geometry(self, geometry):
+        self._geometry = from_shape(geometry)
 
     def add_child(self, asset):
         if self == asset:
@@ -114,7 +137,7 @@ class Asset(RecordMixin, Base):
             asset.connections.remove(self)
 
     def serialize(self):
-        return dict(self.attributes or {}, **{
+        d = dict(self.attributes or {}, **{
             'id': self.id,
             'typeId': self.type_id,
             'name': self.name,
@@ -122,6 +145,9 @@ class Asset(RecordMixin, Base):
             'parentIds': [_.id for _ in self.parents],
             'childIds': [_.id for _ in self.children],
         })
+        if self.has_location:
+            d['location'] = self.location
+        return d
 
     def __repr__(self):
         return f'<Asset(id={self.id})>'

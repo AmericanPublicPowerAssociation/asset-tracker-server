@@ -25,8 +25,9 @@ APP_REQUIREMENTS = [
     'sqlalchemy',
     'transaction',
     'zope.sqlalchemy',
-    # Geospatial
+    # Spatial
     'geoalchemy2',
+    'shapely',
 ]
 TEST_REQUIREMENTS = [
     'pytest >= 3.7.4',

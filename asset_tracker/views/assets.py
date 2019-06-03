@@ -76,6 +76,13 @@ def change_asset_json(request):
     else:
         asset.name = validate_name(db, name, utility_id, id)
 
+    try:
+        location = params.pop('location')
+    except KeyError:
+        pass
+    else:
+        asset.location = location
+
     params.pop('id', None)
     params.pop('typeId', None)
     params.pop('connectedIds', None)
