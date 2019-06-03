@@ -64,6 +64,7 @@ def change_asset_json(request):
     asset = db.query(Asset).get(id)
     if not asset:
         raise HTTPNotFound({'id': 'does not exist'})
+    changed_assets = [asset]
 
     utility_id = asset.utility_id
 
@@ -82,6 +83,8 @@ def change_asset_json(request):
         pass
     else:
         asset.location = location
+        changed_assets.extend(asset.parents)
+        changed_assets.extend(asset.children)
 
     params.pop('id', None)
     params.pop('typeId', None)
@@ -89,7 +92,8 @@ def change_asset_json(request):
     params.pop('parentIds', None)
     params.pop('childIds', None)
     asset.attributes = params
-    return asset.serialize()
+
+    return [_.serialize() for _ in changed_assets]
 
 
 @view_config(
@@ -143,7 +147,9 @@ def change_asset_relation_json(request):
             asset.remove_connection(other_asset)
     else:
         raise HTTPBadRequest({'key': 'is not recognized'})
-    return {}
+
+    changed_assets = [asset] + asset.parents + asset.children
+    return [_.serialize() for _ in changed_assets]
 
 
 def validate_name(db, name, utility_id, id=None):

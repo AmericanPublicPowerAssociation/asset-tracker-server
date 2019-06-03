@@ -1,6 +1,6 @@
 from geoalchemy2 import Geometry
 from geoalchemy2.shape import from_shape, to_shape
-from shapely.geometry import LineString, Point
+from shapely.geometry import LineString, Point, mapping
 from sqlalchemy import Column, ForeignKey, Table, engine_from_config
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -128,7 +128,9 @@ class Asset(RecordMixin, Base):
 
     @geometry.setter
     def geometry(self, geometry):
-        self._geometry = from_shape(geometry)
+        if geometry is not None:
+            geometry = from_shape(geometry)
+        self._geometry = geometry
 
     def add_child(self, asset):
         if self == asset:
@@ -138,7 +140,16 @@ class Asset(RecordMixin, Base):
             return
         self.children.append(asset)
 
-        if self.type_id == 'l':
+        # If the child has no location,
+        if asset.location is None:
+            # Give parent location to child
+            asset.location = self.location
+        # If the child has a location but parent has no location,
+        elif self.location is None:
+            # Give location to parent
+            self.location = asset.location
+
+        if 'l' == self.type_id:
             update_line_geometry(self)
 
     def add_connection(self, asset):
@@ -152,6 +163,9 @@ class Asset(RecordMixin, Base):
     def remove_child(self, asset):
         if asset in self.children:
             self.children.remove(asset)
+
+        if 'l' == self.type_id:
+            update_line_geometry(self)
 
     def remove_connection(self, asset):
         if asset in self.connections:
@@ -170,6 +184,8 @@ class Asset(RecordMixin, Base):
         })
         if self.has_location:
             d['location'] = self.location
+        if self._geometry is not None:
+            d['geometry'] = mapping(self.geometry)
         return d
 
     def __repr__(self):
@@ -231,8 +247,18 @@ def load_spatialite_sqlite_extension(engine):
 def update_line_geometry(line_asset):
     line_coordinates = []
     for pole_asset in line_asset.children:
-        line_coordinates.append(pole_asset.location)
-    line_asset.geometry = LineString(line_coordinates)
+        location = pole_asset.location
+        if location is None:
+            continue
+        line_coordinates.append(location)
+    coordinate_count = len(line_coordinates)
+    if coordinate_count == 0:
+        geometry = None
+    elif coordinate_count == 1:
+        geometry = Point(line_coordinates)
+    else:
+        geometry = LineString(line_coordinates)
+    line_asset.geometry = geometry
 
 
 configure_mappers()
