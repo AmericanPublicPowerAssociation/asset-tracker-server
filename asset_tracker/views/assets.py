@@ -82,6 +82,9 @@ def change_asset_json(request):
     except KeyError:
         pass
     else:
+        if not asset.is_locatable:
+            raise HTTPBadRequest({
+                'location': 'is not accepted for this asset type'})
         asset.location = location
         changed_assets.extend(asset.parents)
         changed_assets.extend(asset.children)

@@ -90,19 +90,13 @@ class Asset(RecordMixin, Base):
         return ASSET_TYPE_BY_ID[self.type_id[0]].get('locatable', False)
 
     @property
-    def has_location(self):
-        return self._geometry is not None and self.is_locatable
-
-    @property
     def location(self):
-        if not self.has_location:
+        if self._geometry is None:
             return
         return self.geometry.coords[0]
 
     @location.setter
     def location(self, location):
-        if not self.is_locatable:
-            return
         if location is None:
             self._geometry = None
             return
@@ -185,9 +179,8 @@ class Asset(RecordMixin, Base):
             'parentIds': [_.id for _ in self.parents],
             'childIds': [_.id for _ in self.children],
         })
-        if self.has_location:
-            d['location'] = self.location
         if self._geometry is not None:
+            d['location'] = self.location
             d['geometry'] = mapping(self.geometry)
         return d
 
