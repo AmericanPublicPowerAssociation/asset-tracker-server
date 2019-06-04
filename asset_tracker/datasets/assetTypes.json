@@ -6,7 +6,8 @@
     "parentIds": ["l", "s", "S"],
     "childIds": ["m", "t", "x", "q", "c", "b", "o", "g", "X"],
     "locatable": true,
-    "sizeByValue": {"0": 2}
+    "sizeByValue": {"0": 2},
+    "color": "black"
   }, {
     "id": "l",
     "name": "Line",
@@ -14,7 +15,8 @@
     "parentIds": [],
     "childIds": ["p"],
     "sizeAttribute": "KV",
-    "sizeByValue": {"10": 1, "50": 5, "100": 10}
+    "sizeByValue": {"10": 1, "50": 5, "100": 10},
+    "color": "yellow"
   }, {
     "id": "m",
     "name": "Meter",
@@ -29,7 +31,8 @@
     },
     "locatable": true,
     "sizeAttribute": "KW",
-    "sizeByValue": {"10": 3, "50": 6, "100": 9}
+    "sizeByValue": {"10": 3, "50": 6, "100": 9},
+    "color": "blue"
   }, {
     "id": "t",
     "name": "Transformer",
@@ -41,7 +44,8 @@
       "p": {"name": "Power"},
       "X": {"name": "Other"}
     },
-    "sizeByValue": {"0": 3}
+    "sizeByValue": {"0": 3},
+    "color": "pink"
   }, {
     "id": "x",
     "name": "Switch",
@@ -57,7 +61,8 @@
       "r": {"name": "Relay"},
       "X": {"name": "Other"}
     },
-    "sizeByValue": {"0": 4}
+    "sizeByValue": {"0": 4},
+    "color": "magenta"
   }, {
     "id": "q",
     "name": "Power Quality",
@@ -70,7 +75,8 @@
       "b": {"name": "Booster"},
       "X": {"name": "Other"}
     },
-    "sizeByValue": {"0": 5}
+    "sizeByValue": {"0": 5},
+    "color": "green"
   }, {
     "id": "c",
     "name": "Control",
@@ -82,14 +88,16 @@
       "m": {"name": "Microcontroller"},
       "X": {"name": "Other"}
     },
-    "sizeByValue": {"0": 6}
+    "sizeByValue": {"0": 6},
+    "color": "violet"
   }, {
     "id": "b",
     "name": "Busbar",
     "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
     "parentIds": ["p", "s", "S"],
     "childIds": [],
-    "sizeByValue": {"0": 7}
+    "sizeByValue": {"0": 7},
+    "color": "gray"
   }, {
     "id": "o",
     "name": "Storage",
@@ -97,7 +105,8 @@
     "parentIds": ["p", "s", "S"],
     "childIds": [],
     "locatable": true,
-    "sizeByValue": {"0": 8}
+    "sizeByValue": {"0": 8},
+    "color": "brown"
   }, {
     "id": "g",
     "name": "Generator",
@@ -105,7 +114,8 @@
     "parentIds": ["p", "s", "S"],
     "childIds": [],
     "locatable": true,
-    "sizeByValue": {"0": 9}
+    "sizeByValue": {"0": 9},
+    "color": "darkred"
   }, {
     "id": "s",
     "name": "Substation",
@@ -120,7 +130,8 @@
     "locatable": true,
     "unique": true,
     "sizeAttribute": "KV",
-    "sizeByValue": {"10": 10, "50": 20, "100": 30}
+    "sizeByValue": {"10": 10, "50": 20, "100": 30},
+    "color": "orange"
   }, {
     "id": "S",
     "name": "Station",
@@ -130,7 +141,8 @@
     "locatable": true,
     "unique": true,
     "sizeAttribute": "KV",
-    "sizeByValue": {"10": 10, "50": 20, "100": 30}
+    "sizeByValue": {"10": 10, "50": 20, "100": 30},
+    "color": "red"
   }, {
     "id": "X",
     "name": "Other",
@@ -138,6 +150,7 @@
     "parentIds": ["p", "s", "S"],
     "childIds": [],
     "locatable": true,
-    "sizeByValue": {"0": 10}
+    "sizeByValue": {"0": 10},
+    "color": "white"
   }
 ]
