@@ -2,5 +2,5 @@ class AssetTrackerError(Exception):
     pass
 
 
-class DatabaseRecordError(AssetTrackerError):
+class DatabaseRecordError(IOError, AssetTrackerError):
     pass
