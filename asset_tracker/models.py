@@ -1,6 +1,5 @@
 from geoalchemy2 import Geometry
 from geoalchemy2.shape import from_shape, to_shape
-from os.path import exists
 from shapely.geometry import LineString, Point, mapping
 from sqlalchemy import Column, ForeignKey, Table, engine_from_config
 from sqlalchemy.exc import IntegrityError
@@ -230,17 +229,9 @@ def load_spatialite_sqlite_extension(engine):
     from sqlalchemy.event import listen
     from sqlalchemy.sql import func, select
 
-    for extension_folder in [
-        '/usr/lib/x86_64-linux-gnu',
-        '/usr/lib64',
-    ]:
-        extension_path = join(extension_folder, 'mod_spatialite.so')
-        if exists(extension_path):
-            break
-
     def load_spatialite(api_connection, connection_record):
         api_connection.enable_load_extension(True)
-        api_connection.load_extension(extension_path)
+        api_connection.load_extension('mod_spatialite.so')
 
     listen(engine, 'connect', load_spatialite)
     engine_connection = engine.connect()
