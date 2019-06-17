@@ -1,2 +1,2 @@
 include *.ini *.md
-recursive-include asset_tracker *.ico *.png *.css *.js *.jinja2
+recursive-include asset_tracker *.ico *.png *.json
