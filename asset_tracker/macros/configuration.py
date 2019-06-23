@@ -1,3 +1,5 @@
+from os.path import expandvars
+
 from .log import get_log
 
 
@@ -15,3 +17,7 @@ def set_default(settings, key, default, parse=None):
         value = parse(value)
     settings[key] = value
     return value
+
+
+def expand_environment_variables(settings):
+    return {k: expandvars(v) for k, v in settings.items()}

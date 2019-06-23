@@ -4,11 +4,12 @@ from pyramid.httpexceptions import HTTPException
 from pyramid.view import exception_view_config
 
 from .constants import RECORD_ID_LENGTH
-from .macros.configuration import set_default
+from .macros.configuration import expand_environment_variables, set_default
 from .models import CLASS_REGISTRY
 
 
 def main(global_config, **settings):
+    settings = expand_environment_variables(settings)
     with Configurator(settings=settings) as config:
         config.include('appa_auth_client')
         config.include('asset_tracker')
@@ -18,6 +19,7 @@ def main(global_config, **settings):
 
 def includeme(config):
     settings = config.get_settings()
+    config.include('pyramid_redis_sessions')
     config.include('.models')
     config.include('.routes')
     # Adapted from invisibleroads-records
