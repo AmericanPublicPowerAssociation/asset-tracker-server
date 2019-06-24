@@ -11,7 +11,7 @@ from .models import CLASS_REGISTRY
 def main(global_config, **settings):
     settings = expand_environment_variables(settings)
     with Configurator(settings=settings) as config:
-        config.include('appa_auth_client')
+        config.include('appa_auth_consumer')
         config.include('asset_tracker')
         config.include('asset_vulnerability_report')
     return config.make_wsgi_app()
