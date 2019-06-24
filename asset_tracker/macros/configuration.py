@@ -6,6 +6,15 @@ from .log import get_log
 L = get_log(__name__)
 
 
+class Settings(dict):
+
+    def set(self, settings, prefix, key, default=None, parse=None):
+        # Adapted from invisibleroads-macros
+        value = set_default(settings, prefix + key, default, parse)
+        self[key] = value
+        return value
+
+
 def set_default(settings, key, default, parse=None):
     # Adapted from invisibleroads-macros
     value = settings.get(key, default)
@@ -21,3 +30,10 @@ def set_default(settings, key, default, parse=None):
 
 def expand_environment_variables(settings):
     return {k: expandvars(v) for k, v in settings.items()}
+
+
+def parse_list(x):
+    # Adapted from invisibleroads-macros
+    if isinstance(x, str):
+        x = x.split()
+    return x
