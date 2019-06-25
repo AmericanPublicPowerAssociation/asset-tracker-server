@@ -16,7 +16,6 @@ APP_REQUIREMENTS = [
     # Web
     'plaster-pastedeploy',
     'pyramid',
-    'pyramid-redis-sessions',
     # 'pyramid-ipython',
     'waitress',
     # Database

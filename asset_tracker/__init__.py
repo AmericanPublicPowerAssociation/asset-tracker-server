@@ -19,7 +19,6 @@ def main(global_config, **settings):
 
 def includeme(config):
     settings = config.get_settings()
-    config.include('pyramid_redis_sessions')
     config.include('.models')
     config.include('.routes')
     # Adapted from invisibleroads-records
