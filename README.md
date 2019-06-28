@@ -1,6 +1,7 @@
 # Asset Tracker
 
-    sudo dnf -y install spatialite
+    sudo dnf -y install redis spatialite
+    sudo systemctl start redis
 
     cd ~/Experiments/asset-tracker-server
     pip install --user --upgrade pipenv
