@@ -155,7 +155,7 @@ class Asset(RecordMixin, Base):
         if asset not in self.connections:
             self.connections.append(asset)
         if self not in asset.connections:
-            self.connections.append(self)
+            asset.connections.append(self)
 
     def remove_child(self, asset):
         if asset in self.children:
