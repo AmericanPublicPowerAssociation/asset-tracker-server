@@ -57,7 +57,7 @@ def add_asset_json(request):
     request_method='PATCH')
 def change_asset_json(request):
     matchdict = request.matchdict
-    params = dict(request.json_body)
+    params = request.json_body
     db = request.db
 
     id = matchdict['id']
@@ -71,14 +71,14 @@ def change_asset_json(request):
     # !!! Check whether user can update this asset
 
     try:
-        name = params.pop('name')
+        name = params['name']
     except KeyError:
         pass
     else:
         asset.name = validate_name(db, name, utility_id, id)
 
     try:
-        location = params.pop('location')
+        location = params['location']
     except KeyError:
         pass
     else:
@@ -89,12 +89,25 @@ def change_asset_json(request):
         changed_assets.extend(asset.parents)
         changed_assets.extend(asset.children)
 
-    params.pop('id', None)
-    params.pop('typeId', None)
-    params.pop('connectedIds', None)
-    params.pop('parentIds', None)
-    params.pop('childIds', None)
-    asset.attributes = dict(asset.attributes or {}, **params)
+    # !!! Consider separating attributes into separate field
+    ASSET_PROPERTIES = [
+        'id',
+        'typeId',
+        'name',
+        'location',
+        'connectedIds',
+        'parentIds',
+        'childIds',
+    ]
+    attributes = dict(asset.attributes or {})
+    for k, v in params.items():
+        if k in ASSET_PROPERTIES:
+            continue
+        if v is None:
+            attributes.pop(k, None)
+            continue
+        attributes[k] = v
+    asset.attributes = attributes
 
     return [_.serialize() for _ in changed_assets]
 
