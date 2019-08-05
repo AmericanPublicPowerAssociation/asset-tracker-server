@@ -16,7 +16,7 @@ APP_REQUIREMENTS = [
     # Web
     'plaster-pastedeploy',
     'pyramid',
-    # 'pyramid-ipython',
+    'pyramid-ipython',
     'waitress',
     # Database
     'alembic',
@@ -26,7 +26,7 @@ APP_REQUIREMENTS = [
     'transaction',
     'zope.sqlalchemy',
     # Spatial
-    'geoalchemy2',
+    'geoalchemy2>=0.6.3',
     'shapely',
 ]
 TEST_REQUIREMENTS = [
