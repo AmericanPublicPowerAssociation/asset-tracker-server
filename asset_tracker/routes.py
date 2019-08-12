@@ -7,7 +7,11 @@ def includeme(config):
         '/assets.json')
     config.add_route(
         'asset.json',
-        '/assets/{id}.json')
+        '/assets/{id}.json'),
     config.add_route(
         'asset_relation.json',
-        '/assets/{id}/{key}/{otherId}.json')
+        '/assets/{id}/{key}/{otherId}.json',
+    config.add_route(
+        'assets.csv',
+        '/assets/'
+    ))

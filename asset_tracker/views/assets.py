@@ -1,7 +1,13 @@
+from cgi import FieldStorage
+from sqlite3 import IntegrityError
+
+import pandas as pd
 from pyramid.httpexceptions import (
     HTTPBadRequest, HTTPInsufficientStorage, HTTPNotFound)
 from pyramid.view import view_config
 
+from asset_tracker.utils.errors import map_errors
+from asset_tracker.validations.assets import validate_assets_df
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
 from ..models import Asset
@@ -160,6 +166,51 @@ def change_asset_relation_json(request):
 
     changed_assets = [asset] + asset.parents + asset.children
     return [_.serialize() for _ in changed_assets]
+
+
+@view_config(
+    route_name='assets.csv',
+    renderer='json',
+    request_method='POST')
+def upload_assets_file(request):
+    file = request.POST.get('file', None)
+
+    if not isinstance(file, FieldStorage):
+        raise HTTPBadRequest({
+            'file': 'is required'})
+
+    validated_assets, errors = validate_assets_df(pd.read_csv(file.file))
+
+    db = request.db
+    for name, row in validated_assets.iterrows():
+        asset = db.query(Asset).get(row['id'])
+        if asset:
+            continue
+
+        # TODO: move this logic to model or helper function
+        asset = Asset(id=row['id'])
+        asset.utility_id = row['utilityId']
+        asset.type_id = row['typeId']
+        asset.name = row['name']
+
+        db.add(asset)
+        try:
+            db.flush()
+        except IntegrityError:
+            db.rollback()
+
+        # for child in row['childIds']:
+        #    asset.add_child(child)
+
+        # for connected in row['connectedIds']:
+        #    asset.add_connection(connected)
+
+    if errors:
+        raise HTTPBadRequest(errors)
+
+    return {
+        'error': False
+    }
 
 
 def validate_name(db, name, utility_id, id=None):
