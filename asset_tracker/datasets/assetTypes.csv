@@ -1,0 +1,5 @@
+id,typeId,utilityId,name,location,childIds,KW,KV,geometry_type,geometry_coordinates,connectedIds,parentIds,vendorName,productName
+"aiJN","m","abc","Transmission Substation 1", "-79.63505549806237 36.20536376246419", "bhA8 akM1 abkD abkH abkI", 300000.0, 69.0, "Point", "-79.63505549806237 36.20536376246419",,,
+"abcd","p","abd","Distribution Substation 1", "-79.60684769101411 36.19285069559501", "bht4", 12.47, , "Point", "-79.60684769101411 36.19285069559501",,,
+"abkD",t,"abc","Microcontroller 1", , , , , "Point", "-79.63505549806237 36.20536376246419", "abkH abkI" ,"bhA8 aiJN",  "Schweitzer Engineering Laboratories", "SEL-352"
+"abkH",t,"abc","Relay 1", , , , , "Point", "-79.63505549806237 36.20536376246419", "akM1 abkD ahwT", "bhA8 aiJN", "Schweitzer Engineering Laboratories", "SEL-351"
