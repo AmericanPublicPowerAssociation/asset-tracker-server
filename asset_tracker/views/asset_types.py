@@ -7,5 +7,5 @@ from ..constants import ASSET_TYPES
     route_name='asset_types.json',
     renderer='json',
     request_method='GET')
-def see_asset_types(request):
+def see_asset_types_json(request):
     return ASSET_TYPES
