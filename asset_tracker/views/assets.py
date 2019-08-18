@@ -1,11 +1,13 @@
 from cgi import FieldStorage
 from sqlite3 import IntegrityError
 
+import numpy as np
 import pandas as pd
 from pyramid.httpexceptions import (
     HTTPBadRequest, HTTPInsufficientStorage, HTTPNotFound)
 from pyramid.view import view_config
 
+from asset_tracker.utils.data import restore_array_to_csv
 from asset_tracker.utils.errors import map_errors
 from asset_tracker.validations.assets import validate_assets_df
 from ..exceptions import DatabaseRecordError
@@ -181,32 +183,63 @@ def upload_assets_file(request):
 
     validated_assets, errors = validate_assets_df(pd.read_csv(file.file))
 
+    restore_array_to_csv(validated_assets, 'location', cast=float)
+    restore_array_to_csv(validated_assets, 'childIds')
+    restore_array_to_csv(validated_assets, 'parentIds')
+    restore_array_to_csv(validated_assets, 'connectedIds')
+    restore_array_to_csv(validated_assets, 'geometry_coordinates')
+
     db = request.db
+
+    def get_extra_columns_df(df, fields):
+        columns = df.columns.tolist()
+        return [field for field in columns if field not in fields]
+
+    # TODO: move this logic to model or helper function
+    extra_columns = get_extra_columns_df(validated_assets,
+                                         ['id', 'utilityId', 'typeId', 'name', 'location', 'childIds', 'connectedIds'])
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
         if asset:
             continue
 
-        # TODO: move this logic to model or helper function
         asset = Asset(id=row['id'])
         asset.utility_id = row['utilityId']
         asset.type_id = row['typeId']
         asset.name = row['name']
+        if len(row['location']) == 2:
+            asset.location = row['location']
+        extra = {}
+        for column in extra_columns:
+            value = row[column]
+            if isinstance(value, float) and np.isnan(value):
+                continue
+            extra[column] = value
+
+        asset.attributes = extra
 
         db.add(asset)
-        try:
-            db.flush()
-        except IntegrityError:
-            db.rollback()
 
-        # for child in row['childIds']:
-        #    asset.add_child(child)
+    for name, row in validated_assets.iterrows():
+        asset = db.query(Asset).get(row['id'])
 
-        # for connected in row['connectedIds']:
-        #    asset.add_connection(connected)
+        for child_id in row['childIds']:
+            child = db.query(Asset).get(child_id)
+            if child:
+                asset.add_child(child)
+
+        for connected_id in row['connectedIds']:
+            connected = db.query(Asset).get(connected_id)
+            if connected:
+                asset.add_connection(connected)
 
     if errors:
         raise HTTPBadRequest(errors)
+
+    try:
+        db.flush()
+    except:
+        db.rollback()
 
     return {
         'error': False
