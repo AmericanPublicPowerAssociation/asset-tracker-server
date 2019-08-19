@@ -1,4 +1,5 @@
 from cgi import FieldStorage
+from functools import partial
 from sqlite3 import IntegrityError
 
 import numpy as np
@@ -6,8 +7,9 @@ import pandas as pd
 from pyramid.httpexceptions import (
     HTTPBadRequest, HTTPInsufficientStorage, HTTPNotFound)
 from pyramid.view import view_config
+from shapely.geometry import Point, LineString
 
-from asset_tracker.utils.data import restore_array_to_csv
+from asset_tracker.utils.data import restore_array_to_csv, cast_coordinate_or_list, get_extra_columns_df
 from asset_tracker.utils.errors import map_errors
 from asset_tracker.validations.assets import validate_assets_df
 from ..exceptions import DatabaseRecordError
@@ -183,21 +185,23 @@ def upload_assets_file(request):
 
     validated_assets, errors = validate_assets_df(pd.read_csv(file.file))
 
+    if errors:
+        raise HTTPBadRequest(errors)
+
     restore_array_to_csv(validated_assets, 'location', cast=float)
     restore_array_to_csv(validated_assets, 'childIds')
     restore_array_to_csv(validated_assets, 'parentIds')
     restore_array_to_csv(validated_assets, 'connectedIds')
-    restore_array_to_csv(validated_assets, 'geometry_coordinates')
+    restore_array_to_csv(validated_assets, 'geometry_coordinates',
+                         cast=partial(cast_coordinate_or_list, separator='\t'))
 
     db = request.db
 
-    def get_extra_columns_df(df, fields):
-        columns = df.columns.tolist()
-        return [field for field in columns if field not in fields]
-
     # TODO: move this logic to model or helper function
     extra_columns = get_extra_columns_df(validated_assets,
-                                         ['id', 'utilityId', 'typeId', 'name', 'location', 'childIds', 'connectedIds'])
+                                         ['id', 'utilityId', 'typeId', 'name', 'location', 'childIds',
+                                          'connectedIds', 'geometry_coordinates', 'geometry_type',
+                                          'parentIds'])
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
         if asset:
@@ -217,6 +221,11 @@ def upload_assets_file(request):
             extra[column] = value
 
         asset.attributes = extra
+        geometry_type = row['geometry_type']
+        if geometry_type == 'Point':
+            asset.geometry = Point(row['geometry_coordinates'])
+        elif geometry_type == 'LineString':
+            asset.geometry = LineString(row['geometry_coordinates'])
 
         db.add(asset)
 
@@ -232,9 +241,6 @@ def upload_assets_file(request):
             connected = db.query(Asset).get(connected_id)
             if connected:
                 asset.add_connection(connected)
-
-    if errors:
-        raise HTTPBadRequest(errors)
 
     try:
         db.flush()
