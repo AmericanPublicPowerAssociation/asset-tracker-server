@@ -2,22 +2,30 @@ from pyramid.httpexceptions import (
     HTTPBadRequest, HTTPInsufficientStorage, HTTPNotFound)
 from pyramid.view import view_config
 
+from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
 from ..models import Asset
-from .asset_types import see_asset_types_json
 
 
 @view_config(
-    route_name='assets_pack.json',
+    route_name='assets_kit.json',
     renderer='json',
     request_method='GET')
-def see_assets_pack_json(request):
+def see_assets_kit_json(request):
     return {
         'assetTypes': see_asset_types_json(request),
         'assets': see_assets_json(request),
         'boundingBox': [[-122.4, 37.7], [-122.5, 37.8]]
     }
+
+
+@view_config(
+    route_name='asset_types.json',
+    renderer='json',
+    request_method='GET')
+def see_asset_types_json(request):
+    return ASSET_TYPES
 
 
 @view_config(
