@@ -3,10 +3,10 @@ from pyramid.httpexceptions import (
 from pyramid.view import view_config
 from math import inf
 
+from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
 from ..models import Asset
-from .asset_types import see_asset_types_json
 
 
 @view_config(
@@ -32,6 +32,14 @@ def see_assets_kit_json(request):
         'assets': assets,
         'boundingBox': [bounding_box[:2], bounding_box[-2:]]
     }
+
+
+@view_config(
+    route_name='asset_types.json',
+    renderer='json',
+    request_method='GET')
+def see_asset_types_json(request):
+    return ASSET_TYPES
 
 
 @view_config(
