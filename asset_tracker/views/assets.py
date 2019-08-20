@@ -1,3 +1,4 @@
+import json
 from cgi import FieldStorage
 from functools import partial
 from sqlite3 import IntegrityError
@@ -6,10 +7,12 @@ import numpy as np
 import pandas as pd
 from pyramid.httpexceptions import (
     HTTPBadRequest, HTTPInsufficientStorage, HTTPNotFound)
+from pyramid.response import FileResponse, Response
 from pyramid.view import view_config
 from shapely.geometry import Point, LineString
 
-from asset_tracker.utils.data import restore_array_to_csv, cast_coordinate_or_list, get_extra_columns_df
+from asset_tracker.utils.data import restore_array_to_csv, cast_coordinate_or_list, get_extra_columns_df, \
+    build_flat_dict_structure, transform_array_to_csv
 from asset_tracker.utils.errors import map_errors
 from asset_tracker.validations.assets import validate_assets_df
 from ..exceptions import DatabaseRecordError
@@ -174,6 +177,28 @@ def change_asset_relation_json(request):
 
 @view_config(
     route_name='assets.csv',
+    renderer='',
+    request_method='GET')
+def download_assets_file(request):
+    db = request.db
+    assets = db.query(Asset)
+    csv = 'id,name,location,childIds,parentIds,connectedIds,utilityId,typeId,geometry_coordinates,geometry_type\n'
+
+    if assets.count() > 0:
+        assets = [build_flat_dict_structure(asset) for asset in assets]
+        data = pd.read_json(json.dumps(assets))
+        transform_array_to_csv(data, 'location')
+        transform_array_to_csv(data, 'childIds')
+        transform_array_to_csv(data, 'parentIds')
+        transform_array_to_csv(data, 'connectedIds')
+        transform_array_to_csv(data, 'geometry_coordinates')
+
+        csv = data.to_csv(index=False)
+
+    return Response(body=csv, status=200, content_type='text/csv', content_disposition='attachment')
+
+@view_config(
+    route_name='assets',
     renderer='json',
     request_method='POST')
 def upload_assets_file(request):
