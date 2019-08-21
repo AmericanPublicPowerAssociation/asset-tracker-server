@@ -1,12 +1,12 @@
 from pyramid.httpexceptions import (
     HTTPBadRequest, HTTPInsufficientStorage, HTTPNotFound)
 from pyramid.view import view_config
-from math import inf
 
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
 from ..models import Asset
+from ..routines.geometry import get_bounding_box
 
 
 @view_config(
@@ -14,23 +14,12 @@ from ..models import Asset
     renderer='json',
     request_method='GET')
 def see_assets_kit_json(request):
-    assets = see_assets_json(request)
-    bounding_box = [inf, inf, -inf, -inf]
-    for asset in assets:
-        coord = asset.get('location', [])
-        if len(coord) > 0:
-            if bounding_box[0] > coord[0]:
-                bounding_box[0] = coord[0]
-            if bounding_box[1] > coord[1]:
-                bounding_box[1] = coord[1]
-            if bounding_box[2] < coord[0]:
-                bounding_box[2] = coord[0]
-            if bounding_box[3] < coord[1]:
-                bounding_box[3] = coord[1]
+    assets = see_assets(request)
+    bounding_box = get_bounding_box(assets)
     return {
         'assetTypes': see_asset_types_json(request),
-        'assets': assets,
-        'boundingBox': [bounding_box[:2], bounding_box[-2:]]
+        'assets': [_.serialize() for _ in assets],
+        'boundingBox': bounding_box,
     }
 
 
@@ -42,13 +31,18 @@ def see_asset_types_json(request):
     return ASSET_TYPES
 
 
+def see_assets(request):
+    db = request.db
+    return db.query(Asset).all()
+
+
 @view_config(
     route_name='assets.json',
     renderer='json',
     request_method='GET')
 def see_assets_json(request):
-    db = request.db
-    return [asset.serialize() for asset in db.query(Asset)]
+    assets = see_assets(request)
+    return [_.serialize() for _ in assets]
 
 
 @view_config(
