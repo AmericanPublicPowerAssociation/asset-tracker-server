@@ -28,6 +28,8 @@ APP_REQUIREMENTS = [
     # Spatial
     'geoalchemy2>=0.6.3',
     'shapely',
+    # Data wrangling
+    'pandas>=0.25.0',
 ]
 TEST_REQUIREMENTS = [
     'pytest >= 3.7.4',
