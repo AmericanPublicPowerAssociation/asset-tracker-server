@@ -12,9 +12,39 @@ from shapely.geometry import Point, LineString
 from asset_tracker.utils.data import restore_array_to_csv, cast_coordinate_or_list, get_extra_columns_df
 from asset_tracker.utils.errors import map_errors
 from asset_tracker.validations.assets import validate_assets_df
+
+from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
 from ..models import Asset
+from ..routines.geometry import get_bounding_box
+
+
+@view_config(
+    route_name='assets_kit.json',
+    renderer='json',
+    request_method='GET')
+def see_assets_kit_json(request):
+    assets = see_assets(request)
+    bounding_box = get_bounding_box(assets)
+    return {
+        'assetTypes': see_asset_types_json(request),
+        'assets': [_.serialize() for _ in assets],
+        'boundingBox': bounding_box,
+    }
+
+
+@view_config(
+    route_name='asset_types.json',
+    renderer='json',
+    request_method='GET')
+def see_asset_types_json(request):
+    return ASSET_TYPES
+
+
+def see_assets(request):
+    db = request.db
+    return db.query(Asset).all()
 
 
 @view_config(
@@ -22,8 +52,8 @@ from ..models import Asset
     renderer='json',
     request_method='GET')
 def see_assets_json(request):
-    db = request.db
-    return [asset.serialize() for asset in db.query(Asset)]
+    assets = see_assets(request)
+    return [_.serialize() for _ in assets]
 
 
 @view_config(
