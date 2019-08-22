@@ -193,6 +193,12 @@ class Asset(RecordMixin, Base):
     )
 
 
+class AssetLog(RecordMixin, Base):
+
+    __tablename__ = 'asset_log'
+    asset_id = Column(String, ForeignKey('asset.id'))
+
+
 def includeme(config):
     settings = config.get_settings()
     settings['tm.manager_hook'] = 'pyramid_tm.explicit_manager'
