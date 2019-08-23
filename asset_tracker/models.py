@@ -11,6 +11,7 @@ from sqlalchemy.orm import configure_mappers, relationship, sessionmaker
 from sqlalchemy.schema import MetaData, UniqueConstraint
 from sqlalchemy.types import (
     DateTime,
+    Enum,
     PickleType,
     String,
     Unicode,
@@ -245,20 +246,20 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
     )
 
 
-class Task(ModificationMixin, CreationMixin, RecordMixin, Base):
+class AssetTask(ModificationMixin, CreationMixin, RecordMixin, Base):
 
-    __tablename__ = 'task'
+    __tablename__ = 'asset_task'
     asset_id = Column(String, ForeignKey('asset.id'))
     reference_id = Column(String)
     user_id = Column(String)
     name = Column(Unicode)
     description = Column(UnicodeText)
-    status = Column()
+    status = Column(Enum(TaskStatus))
 
 
-class Event(CreationMixin, RecordMixin, Base):
+class UserEvent(CreationMixin, RecordMixin, Base):
 
-    __tablename__ = 'event'
+    __tablename__ = 'user_event'
     user_id = Column(String)
     attributes = Column(PickleType)
 
