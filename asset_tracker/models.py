@@ -1,3 +1,6 @@
+import enum
+import pendulum
+from datetime import datetime
 from geoalchemy2 import Geometry
 from geoalchemy2.shape import from_shape, to_shape
 from shapely.geometry import LineString, Point, mapping
@@ -6,7 +9,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import configure_mappers, relationship, sessionmaker
 from sqlalchemy.schema import MetaData, UniqueConstraint
-from sqlalchemy.types import PickleType, String
+from sqlalchemy.types import (
+    DateTime,
+    Enum,
+    PickleType,
+    String,
+    Unicode,
+    UnicodeText)
 from zope.sqlalchemy import register as register_transaction_listener
 
 from .constants import (
@@ -15,6 +24,7 @@ from .constants import (
     RECORD_RETRY_COUNT)
 from .exceptions import DatabaseRecordError
 from .macros.security import make_random_string
+from .macros.timestamp import get_timestamp
 
 
 CLASS_REGISTRY = {}
@@ -36,14 +46,21 @@ asset_connection = Table(
     Column('right_asset_id', String, ForeignKey('asset.id')))
 
 
+class TaskStatus(enum.Enum):
+    cancelled = -100
+    new = 0
+    pending = 50
+    done = 100
+
+
 class RecordMixin(object):
+    # Adapted from invisibleroads-records
 
     id = Column(String, primary_key=True)
     id_length = RECORD_ID_LENGTH
 
     @classmethod
     def make_unique_record(Class, database, retry_count=RECORD_RETRY_COUNT):
-        # Adapted from invisibleroads-records
         count = 0
         id_length = Class.id_length
         while count < retry_count:
@@ -62,11 +79,47 @@ class RecordMixin(object):
         return record
 
 
-class Asset(RecordMixin, Base):
+class CreationMixin(object):
+    # Adapted from invisibleroads-records
+
+    creation_datetime = Column(DateTime, default=datetime.utcnow)
+
+    @property
+    def creation_timestamp(self):
+        return get_timestamp(self.creation_datetime)
+
+    @property
+    def creation_when(self):
+        return pendulum.instance(self.creation_datetime).diff_for_humans()
+
+    @classmethod
+    def get_datetime(Class):
+        return Class.creation_datetime
+
+
+class ModificationMixin(object):
+    # Adapted from invisibleroads-records
+
+    modification_datetime = Column(DateTime)
+
+    @property
+    def modification_timestamp(self):
+        return get_timestamp(self.modification_datetime)
+
+    @property
+    def modification_when(self):
+        return pendulum.instance(self.modification_datetime).diff_for_humans()
+
+    @classmethod
+    def get_datetime(Class):
+        return Class.modification_datetime
+
+
+class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
 
     __tablename__ = 'asset'
     utility_id = Column(String)
-    name = Column(String)
+    name = Column(Unicode)
     type_id = Column(String)
     children = relationship(
         'Asset', secondary=asset_content,
@@ -191,6 +244,24 @@ class Asset(RecordMixin, Base):
         UniqueConstraint(
             'utility_id', 'name', name='unique_utility_asset_name'),
     )
+
+
+class AssetTask(ModificationMixin, CreationMixin, RecordMixin, Base):
+
+    __tablename__ = 'asset_task'
+    asset_id = Column(String, ForeignKey('asset.id'))
+    reference_id = Column(String)
+    user_id = Column(String)
+    name = Column(Unicode)
+    description = Column(UnicodeText)
+    status = Column(Enum(TaskStatus))
+
+
+class UserEvent(CreationMixin, RecordMixin, Base):
+
+    __tablename__ = 'user_event'
+    user_id = Column(String)
+    attributes = Column(PickleType)
 
 
 def includeme(config):
