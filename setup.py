@@ -13,23 +13,25 @@ APP_CLASSIFIERS = [
     'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
 ]
 APP_REQUIREMENTS = [
-    # Web
+    # web
     'plaster-pastedeploy',
     'pyramid',
     'pyramid-ipython',
     'waitress',
-    # Database
+    # database
     'alembic',
     'pyramid-retry',
     'pyramid-tm',
     'sqlalchemy',
     'transaction',
     'zope.sqlalchemy',
-    # Spatial
+    # time
+    'pendulum',
+    # table
+    'pandas>=0.25.0',
+    # geotable
     'geoalchemy2>=0.6.3',
     'shapely',
-    # Data wrangling
-    'pandas>=0.25.0',
 ]
 TEST_REQUIREMENTS = [
     'pytest >= 3.7.4',
