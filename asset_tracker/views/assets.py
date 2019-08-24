@@ -1,19 +1,20 @@
+import json
 from cgi import FieldStorage
-from functools import partial
-from sqlite3 import IntegrityError
 
 import numpy as np
 import pandas as pd
+import shapely.wkt as wkt
 from pyramid.httpexceptions import (
     HTTPBadRequest, HTTPInsufficientStorage, HTTPNotFound)
+from pyramid.response import Response
 from pyramid.view import view_config
-from shapely.geometry import Point, LineString
 
-from asset_tracker.utils.data import restore_array_to_csv, cast_coordinate_or_list, get_extra_columns_df
-from asset_tracker.utils.errors import map_errors
+from asset_tracker.utils.data import restore_array_to_csv, get_extra_columns_df, build_flat_dict_structure, \
+    transform_array_to_csv
 from asset_tracker.validations.assets import validate_assets_df
 
 from ..constants import ASSET_TYPES
+
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
 from ..models import Asset
@@ -204,6 +205,30 @@ def change_asset_relation_json(request):
 
 @view_config(
     route_name='assets.csv',
+    renderer='',
+    request_method='GET')
+def download_assets_file(request):
+    db = request.db
+    assets = db.query(Asset)
+    order_columns = ['id', 'utilityId', 'typeId', 'name', 'vendorName', 'productName', 'productVersion',
+                     'KV', 'KW', 'KWH', 'location', 'wkt', 'parentIds', 'childIds', 'connectedIds']
+    csv = ','.join(order_columns)
+
+    if assets.count() > 0:
+        assets = [build_flat_dict_structure(asset) for asset in assets]
+        data = pd.read_json(json.dumps(assets))
+        transform_array_to_csv(data, 'location')
+        transform_array_to_csv(data, 'childIds', sep=' ')
+        transform_array_to_csv(data, 'parentIds', sep=' ')
+        transform_array_to_csv(data, 'connectedIds', sep=' ')
+
+        csv = data[order_columns].to_csv(index=False)
+
+    return Response(body=csv, status=200, content_type='text/csv', content_disposition='attachment')
+
+
+@view_config(
+    route_name='assets',
     renderer='json',
     request_method='POST')
 def upload_assets_file(request):
@@ -219,19 +244,16 @@ def upload_assets_file(request):
         raise HTTPBadRequest(errors)
 
     restore_array_to_csv(validated_assets, 'location', cast=float)
-    restore_array_to_csv(validated_assets, 'childIds')
-    restore_array_to_csv(validated_assets, 'parentIds')
-    restore_array_to_csv(validated_assets, 'connectedIds')
-    restore_array_to_csv(validated_assets, 'geometry_coordinates',
-                         cast=partial(cast_coordinate_or_list, separator='\t'))
+    restore_array_to_csv(validated_assets, 'childIds', sep=' ')
+    restore_array_to_csv(validated_assets, 'parentIds', sep=' ')
+    restore_array_to_csv(validated_assets, 'connectedIds', sep=' ')
 
     db = request.db
 
     # TODO: move this logic to model or helper function
     extra_columns = get_extra_columns_df(validated_assets,
                                          ['id', 'utilityId', 'typeId', 'name', 'location', 'childIds',
-                                          'connectedIds', 'geometry_coordinates', 'geometry_type',
-                                          'parentIds'])
+                                          'connectedIds', 'geometry', 'wkt', 'parentIds'])
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
         if asset:
@@ -251,11 +273,9 @@ def upload_assets_file(request):
             extra[column] = value
 
         asset.attributes = extra
-        geometry_type = row['geometry_type']
-        if geometry_type == 'Point':
-            asset.geometry = Point(row['geometry_coordinates'])
-        elif geometry_type == 'LineString':
-            asset.geometry = LineString(row['geometry_coordinates'])
+        geometry = row['wkt']
+        if not (isinstance(geometry, float) and np.isnan(geometry)):
+            asset.geometry = wkt.loads(geometry)
 
         db.add(asset)
 

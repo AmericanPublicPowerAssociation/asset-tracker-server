@@ -8,12 +8,10 @@ def validate_field_existence_df(df, fields):
     invalid_ids = set()
 
     for field in fields:
-        print(field)
         invalid_rows[field] = df[df[field].isnull()]
         invalid_ids.update(invalid_rows[field]['id'])
 
     valid_df = df[~df.id.isin(invalid_ids)]
-    print(valid_df)
 
     return valid_df, invalid_rows
 
@@ -30,7 +28,7 @@ def validate_assets_df(assets_data_frame):
     df.replace(r'^\s*$', pd.np.nan, regex=True, inplace=True)
 
     errors = validate_row_existence_df(df, ['utilityId', 'typeId', 'name', 'id', 'childIds', 'connectedIds',
-                                            'location', 'parentIds', 'geometry_coordinates', 'geometry_type'])
+                                            'location', 'parentIds', 'wkt'])
     all_errors = map_errors(errors, lambda _: 'Missing column', {})
     if errors:
         return pd.DataFrame(), all_errors
