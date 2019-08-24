@@ -46,6 +46,14 @@ asset_connection = Table(
     Column('right_asset_id', String, ForeignKey('asset.id')))
 
 
+class AssetStatus(enum.Enum):
+    broken = -100
+    planned = 0
+    installing = 25
+    fixing = 50
+    working = 100
+
+
 class TaskStatus(enum.Enum):
     cancelled = -100
     new = 0
@@ -120,6 +128,7 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
     __tablename__ = 'asset'
     utility_id = Column(String)
     name = Column(Unicode)
+    status = Column(Enum(AssetStatus))
     type_id = Column(String)
     children = relationship(
         'Asset', secondary=asset_content,
@@ -247,18 +256,18 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
 
 
 class AssetTask(ModificationMixin, CreationMixin, RecordMixin, Base):
-
+    # Record asset tasks for maintenance log
     __tablename__ = 'asset_task'
     asset_id = Column(String, ForeignKey('asset.id'))
     reference_id = Column(String)
     user_id = Column(String)
     name = Column(Unicode)
-    description = Column(UnicodeText)
     status = Column(Enum(TaskStatus))
+    description = Column(UnicodeText)
 
 
 class UserEvent(CreationMixin, RecordMixin, Base):
-
+    # Record user events for audit trail
     __tablename__ = 'user_event'
     user_id = Column(String)
     attributes = Column(PickleType)
