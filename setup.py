@@ -28,7 +28,7 @@ APP_REQUIREMENTS = [
     # time
     'pendulum',
     # table
-    'pandas>=0.25.0',
+    'pandas>=0.25.1',
     # geotable
     'geoalchemy2>=0.6.3',
     'shapely',
@@ -45,7 +45,7 @@ DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
 
 setup(
     name='asset-tracker',
-    version='0.0.1',
+    version='0.0.2',
     description='Asset Tracker',
     long_description=DESCRIPTION,
     classifiers=APP_CLASSIFIERS,

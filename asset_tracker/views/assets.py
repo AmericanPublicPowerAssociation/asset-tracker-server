@@ -1,6 +1,6 @@
 from cgi import FieldStorage
 from functools import partial
-from sqlite3 import IntegrityError
+# from sqlite3 import IntegrityError
 
 import numpy as np
 import pandas as pd
@@ -21,6 +21,14 @@ from ..routines.geometry import get_bounding_box
 
 
 @view_config(
+    route_name='asset_types.json',
+    renderer='json',
+    request_method='GET')
+def see_asset_types_json(request):
+    return ASSET_TYPES
+
+
+@view_config(
     route_name='assets_kit.json',
     renderer='json',
     request_method='GET')
@@ -32,14 +40,6 @@ def see_assets_kit_json(request):
         'assets': [_.serialize() for _ in assets],
         'boundingBox': bounding_box,
     }
-
-
-@view_config(
-    route_name='asset_types.json',
-    renderer='json',
-    request_method='GET')
-def see_asset_types_json(request):
-    return ASSET_TYPES
 
 
 def see_assets(request):

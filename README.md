@@ -9,4 +9,4 @@
     alembic -c development.ini upgrade head
 
     cd ~/Experiments/asset-tracker-server
-    pserve development.ini
+    pserve development.ini --reload
