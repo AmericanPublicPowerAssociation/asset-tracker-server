@@ -27,8 +27,17 @@ def validate_assets_df(assets_data_frame):
     df = assets_data_frame.dropna(how='all')
     df.replace(r'^\s*$', pd.np.nan, regex=True, inplace=True)
 
-    errors = validate_row_existence_df(df, ['utilityId', 'typeId', 'name', 'id', 'childIds', 'connectedIds',
-                                            'location', 'parentIds', 'wkt'])
+    errors = validate_row_existence_df(df, [
+        'id',
+        'utilityId',
+        'typeId',
+        'name',
+        'parentIds',
+        'childIds',
+        'connectedIds',
+        'location',
+        'wkt',
+    ])
     all_errors = map_errors(errors, lambda _: 'Missing column', {})
     if errors:
         return pd.DataFrame(), all_errors
@@ -38,11 +47,13 @@ def validate_assets_df(assets_data_frame):
     for col in cols:
         entry = errors.get(col, None)
         if entry is not None:
-            all_errors = map_errors(entry.id.tolist(), lambda _: f'{col} requires not empty value', all_errors)
+            all_errors = map_errors(
+                entry.id.tolist(),
+                lambda _: f'{col} requires not empty value',
+                all_errors)
 
     # !!! check valid utility id
     # !!! check whether user can add assets to utility id
     # !!! check valid type id
-
 
     return valid, all_errors

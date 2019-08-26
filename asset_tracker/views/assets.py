@@ -231,7 +231,6 @@ def download_assets_file(request):
         transform_array_to_csv(data, 'childIds', sep=' ')
         transform_array_to_csv(data, 'parentIds', sep=' ')
         transform_array_to_csv(data, 'connectedIds', sep=' ')
-
         csv = data[order_columns].to_csv(index=False)
 
     return Response(
@@ -266,8 +265,17 @@ def upload_assets_file(request):
 
     # TODO: move this logic to model or helper function
     extra_columns = get_extra_columns_df(validated_assets, [
-        'id', 'utilityId', 'typeId', 'name', 'location', 'childIds',
-        'connectedIds', 'geometry', 'wkt', 'parentIds'])
+        'id',
+        'utilityId',
+        'typeId',
+        'name',
+        'parentIds',
+        'childIds',
+        'connectedIds',
+        'wkt',
+        'location',
+        'geometry',
+    ])
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
         if asset:
