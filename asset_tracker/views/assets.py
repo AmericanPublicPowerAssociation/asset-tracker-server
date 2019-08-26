@@ -210,9 +210,9 @@ def change_asset_relation_json(request):
 
 @view_config(
     route_name='assets.csv',
-    renderer='',
+    # renderer='',
     request_method='GET')
-def download_assets_file(request):
+def see_assets_csv(request):
     db = request.db
     assets = db.query(Asset)
     order_columns = [
@@ -241,8 +241,9 @@ def download_assets_file(request):
 
 
 @view_config(
-    route_name='assets',
+    route_name='assets.csv',
     renderer='json',
+    # request_method='PATCH',
     request_method='POST')
 def upload_assets_file(request):
     file = request.POST.get('file', None)

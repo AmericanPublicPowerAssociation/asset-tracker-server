@@ -17,6 +17,3 @@ def includeme(config):
     config.add_route(
         'asset_relation.json',
         '/assets/{id}/{key}/{otherId}.json')
-    config.add_route(
-        'assets',
-        '/assets/')
