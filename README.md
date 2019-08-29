@@ -10,3 +10,8 @@
 
     cd ~/Experiments/asset-tracker-server
     pserve development.ini --reload
+
+## Test
+
+    pip install --user -e .[testing]
+    py.test
