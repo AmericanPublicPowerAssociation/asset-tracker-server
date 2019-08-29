@@ -264,6 +264,17 @@ class AssetTask(ModificationMixin, CreationMixin, RecordMixin, Base):
     name = Column(Unicode)
     status = Column(Enum(TaskStatus))
     description = Column(UnicodeText)
+    def serialize(self):
+        d = dict(self.attributes or {}, **{
+            'id': self.id,
+            'assetId': self.asset_id,
+            'referenceId': self.reference_id,
+            'userId': self.user_id,
+            'name': self.name,
+            'status': self.status,
+            'description': description
+        })
+        return d
 
 
 class UserEvent(CreationMixin, RecordMixin, Base):
