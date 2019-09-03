@@ -1,7 +1,7 @@
 import json
 from cgi import FieldStorage
-# from functools import partial
-# from sqlite3 import IntegrityError
+from functools import partial
+from sqlite3 import IntegrityError
 
 import numpy as np
 import pandas as pd
@@ -24,7 +24,7 @@ from asset_tracker.utils.data import (
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
 # from ..models import Asset
-from ..models import AssetTask
+from ..models import AssetTask, TaskStatus
 
 
 def see_tasks(request):
@@ -53,9 +53,9 @@ def add_task_json(request):
         raise HTTPBadRequest({'assetId': 'is required'})
     #!!! check valid asset id
     try:
-        user_id = params['usereId']
+        user_id = params['userId']
     except KeyError:
-        raise HTTPBadRequest({'usereId': 'is required'})
+        raise HTTPBadRequest({'userId': 'is required'})
     #!!! check valid user id
     try:
         reference_id = params['referenceId']
@@ -73,7 +73,7 @@ def add_task_json(request):
     else:
         name = validate_name(db, name, reference_id)
     try:
-        status = params['status']
+        status = TaskStatus(int(params['status']))
     except KeyError:
         raise HTTPBadRequest({'status': 'is required'})
     # !!! check valid status
@@ -90,6 +90,7 @@ def add_task_json(request):
     task.reference_id = reference_id
     task.name = name
     task.status = status
+    task.description = description
     return task.serialize()
 
 
