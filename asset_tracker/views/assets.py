@@ -58,6 +58,7 @@ def see_assets(request):
     renderer='json',
     request_method='GET')
 def see_assets_json(request):
+    # import pudb; pudb.set_trace()
     assets = see_assets(request)
     return [_.serialize() for _ in assets]
 

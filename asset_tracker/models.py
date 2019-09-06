@@ -265,6 +265,18 @@ class AssetTask(ModificationMixin, CreationMixin, RecordMixin, Base):
     status = Column(Enum(TaskStatus))
     description = Column(UnicodeText)
 
+    def serialize(self):
+        d = dict({}, **{
+            'id': self.id,
+            'assetId': self.asset_id,
+            'referenceId': self.reference_id,
+            'userId': self.user_id,
+            'name': self.name,
+            'status': self.status,
+            'description': self.description
+        })
+        return d
+
 
 class UserEvent(CreationMixin, RecordMixin, Base):
     # Record user events for audit trail
