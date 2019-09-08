@@ -1,7 +1,13 @@
+import json
+import numpy as np
+import pandas as pd
+import shapely.wkt as wkt
+from cgi import FieldStorage
 from pyramid.httpexceptions import (
     HTTPBadRequest,
     HTTPInsufficientStorage,
     HTTPNotFound)
+from pyramid.response import Response
 from pyramid.view import view_config
 
 from ..constants import ASSET_TYPES
@@ -9,6 +15,12 @@ from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
 from ..models import Asset
 from ..routines.geometry import get_bounding_box
+from ..utils.data import (
+    build_flat_dict_structure,
+    get_extra_columns_df,
+    restore_array_to_csv,
+    transform_array_to_csv)
+from ..validations.assets import validate_assets_df
 
 
 @view_config(
@@ -23,6 +35,37 @@ def see_assets_kit_json(request):
         'assets': [_.get_json_d() for _ in assets],
         'boundingBox': get_bounding_box(assets),
     }
+
+
+@view_config(
+    route_name='assets.csv',
+    request_method='GET')
+def see_assets_csv(request):
+    db = request.db
+    assets = db.query(Asset)
+    order_columns = [
+        'id', 'utilityId', 'typeId', 'name',
+        'vendorName', 'productName', 'productVersion',
+        'KV', 'KW', 'KWH',
+        'location', 'wkt',
+        'parentIds', 'childIds', 'connectedIds',
+    ]
+    csv = ','.join(order_columns)
+
+    if assets.count() > 0:
+        assets = [build_flat_dict_structure(asset) for asset in assets]
+        data = pd.read_json(json.dumps(assets))
+        transform_array_to_csv(data, 'location')
+        transform_array_to_csv(data, 'childIds', sep=' ')
+        transform_array_to_csv(data, 'parentIds', sep=' ')
+        transform_array_to_csv(data, 'connectedIds', sep=' ')
+        csv = data[order_columns].to_csv(index=False)
+
+    return Response(
+        body=csv,
+        status=200,
+        content_type='text/csv',
+        content_disposition='attachment')
 
 
 @view_config(
@@ -169,6 +212,90 @@ def change_asset_relation_json(request):
 
     changed_assets = [asset] + asset.parents + asset.children
     return [_.get_json_d() for _ in changed_assets]
+
+
+@view_config(
+    route_name='assets.csv',
+    renderer='json',
+    request_method='PATCH')
+def receive_assets_file(request):
+    file = request.POST.get('file', None)
+
+    if not isinstance(file, FieldStorage):
+        raise HTTPBadRequest({
+            'file': 'is required'})
+
+    validated_assets, errors = validate_assets_df(pd.read_csv(file.file))
+
+    if errors:
+        raise HTTPBadRequest(errors)
+
+    restore_array_to_csv(validated_assets, 'location', cast=float)
+    restore_array_to_csv(validated_assets, 'childIds', sep=' ')
+    restore_array_to_csv(validated_assets, 'parentIds', sep=' ')
+    restore_array_to_csv(validated_assets, 'connectedIds', sep=' ')
+
+    db = request.db
+
+    # TODO: move this logic to model or helper function
+    extra_columns = get_extra_columns_df(validated_assets, [
+        'id',
+        'utilityId',
+        'typeId',
+        'name',
+        'parentIds',
+        'childIds',
+        'connectedIds',
+        'wkt',
+        'location',
+        'geometry',
+    ])
+    for name, row in validated_assets.iterrows():
+        asset = db.query(Asset).get(row['id'])
+        if asset:
+            continue
+
+        asset = Asset(id=row['id'])
+        asset.utility_id = row['utilityId']
+        asset.type_id = row['typeId']
+        asset.name = row['name']
+        if len(row['location']) == 2:
+            asset.location = row['location']
+        extra = {}
+        for column in extra_columns:
+            value = row[column]
+            if isinstance(value, float) and np.isnan(value):
+                continue
+            extra[column] = value
+
+        asset.attributes = extra
+        geometry = row['wkt']
+        if not (isinstance(geometry, float) and np.isnan(geometry)):
+            asset.geometry = wkt.loads(geometry)
+
+        db.add(asset)
+
+    for name, row in validated_assets.iterrows():
+        asset = db.query(Asset).get(row['id'])
+
+        for child_id in row['childIds']:
+            child = db.query(Asset).get(child_id)
+            if child:
+                asset.add_child(child)
+
+        for connected_id in row['connectedIds']:
+            connected = db.query(Asset).get(connected_id)
+            if connected:
+                asset.add_connection(connected)
+
+    try:
+        db.flush()
+    except Exception:
+        db.rollback()
+
+    return {
+        'error': False
+    }
 
 
 def validate_name(db, name, utility_id, id=None):

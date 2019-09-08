@@ -9,13 +9,10 @@
 .coverage
 .ipynb_checkpoints
 .pytest_cache
-Pipfile*
 __pycache__
-alembic
 build
 dist
-# sass
-.sass-cache
+alembic
 # sqlite
 *.sqlite
 *.sqlite-journal

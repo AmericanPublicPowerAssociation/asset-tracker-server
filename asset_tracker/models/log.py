@@ -6,7 +6,7 @@ from sqlalchemy.types import (
 from .meta import Base, CreationMixin, RecordMixin
 
 
-class UserEvent(CreationMixin, RecordMixin, Base):
-    __tablename__ = 'user_event'
+class Log(CreationMixin, RecordMixin, Base):
+    __tablename__ = 'log'
     user_id = Column(String)
     attributes = Column(PickleType)

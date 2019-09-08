@@ -20,18 +20,20 @@ class Task(ModificationMixin, CreationMixin, RecordMixin, Base):
     __tablename__ = 'task'
     asset_id = Column(String, ForeignKey('asset.id'))
     reference_uri = Column(String)
-    user_id = Column(String)
     name = Column(Unicode)
     status = Column(Enum(TaskStatus), default=TaskStatus.new)
+    creation_user_id = Column(String)
+    assignment_user_id = Column(String)
 
     def get_json_d(self):
         return {
             'id': self.id,
             'assetId': self.asset_id,
             'referenceUri': self.reference_uri,
-            'userId': self.user_id,
             'name': self.name,
             'status': self.status,
+            'creationUserId': self.creation_user_id,
+            'assignmentUserId': self.assignment_user_id,
         }
 
 

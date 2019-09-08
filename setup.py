@@ -34,7 +34,7 @@ APP_REQUIREMENTS = [
     'shapely',
 ]
 TEST_REQUIREMENTS = [
-    'pytest >= 3.7.4',
+    'pytest>=3.7.4',
     'pytest-cov',
 ]
 FOLDER = dirname(abspath(__file__))
