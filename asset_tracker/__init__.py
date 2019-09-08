@@ -5,7 +5,7 @@ from pyramid.view import exception_view_config
 
 from .constants import RECORD_ID_LENGTH
 from .macros.configuration import expand_environment_variables, set_default
-from .models import CLASS_REGISTRY
+from .models.meta import CLASS_REGISTRY
 
 
 def main(global_config, **settings):
@@ -13,7 +13,7 @@ def main(global_config, **settings):
     with Configurator(settings=settings) as config:
         config.include('appa_auth_consumer')
         config.include('asset_tracker')
-        config.include('asset_vulnerability_report')
+        config.include('asset_report_risks')
     return config.make_wsgi_app()
 
 
@@ -34,9 +34,8 @@ def includeme(config):
 @exception_view_config(HTTPException)
 def handle_exception(context, request):
     # Adapted from invisibleroads-posts
-    status_int = context.status_int
     response = request.response
-    response.status_int = status_int
+    response.status_int = status_int = context.status_int
     if status_int == 400:
         response.content_type = 'application/json'
         response.text = json.dumps(context.detail)

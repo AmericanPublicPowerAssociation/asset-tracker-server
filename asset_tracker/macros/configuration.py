@@ -28,12 +28,12 @@ def set_default(settings, key, default, parse=None):
     return value
 
 
+def expand_environment_variables(settings):
+    return {k: expandvars(v) for k, v in settings.items()}
+
+
 def parse_list(x):
     # Adapted from invisibleroads-macros
     if isinstance(x, str):
         x = x.split()
     return x
-
-
-def expand_environment_variables(settings):
-    return {k: expandvars(v) for k, v in settings.items()}

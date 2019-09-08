@@ -60,5 +60,4 @@ def config(settings):
 def settings():
     return {
         'sqlalchemy.url': 'sqlite:///:memory:',
-        'asset.id.length': 4,
     }

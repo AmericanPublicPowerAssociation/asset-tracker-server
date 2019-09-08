@@ -2,7 +2,8 @@
 *.sw[op]
 *~
 # python
-*.egg*
+*.egg
+*.egg-info
 *.py[co]
 .cache
 .coverage

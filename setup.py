@@ -36,7 +36,6 @@ APP_REQUIREMENTS = [
 TEST_REQUIREMENTS = [
     'pytest >= 3.7.4',
     'pytest-cov',
-    'webtest >= 1.3.1',
 ]
 FOLDER = dirname(abspath(__file__))
 DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
@@ -45,7 +44,7 @@ DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
 
 setup(
     name='asset-tracker',
-    version='0.0.2',
+    version='0.0.3',
     description='Asset Tracker',
     long_description=DESCRIPTION,
     classifiers=APP_CLASSIFIERS,
