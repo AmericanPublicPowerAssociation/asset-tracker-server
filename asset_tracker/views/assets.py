@@ -217,7 +217,8 @@ def change_asset_relation_json(request):
 @view_config(
     route_name='assets.csv',
     renderer='json',
-    request_method='PATCH')
+    # request_method='POST')
+    request_method='POST')
 def receive_assets_file(request):
     file = request.POST.get('file', None)
 
