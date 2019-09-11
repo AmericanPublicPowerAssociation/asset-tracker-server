@@ -29,7 +29,8 @@ from ..validations.assets import validate_assets_df
     request_method='GET')
 def see_assets_kit_json(request):
     db = request.db
-    assets = db.query(Asset)
+    assets = db.query(Asset).all()
+    # !!! Filter assets by utility ids to which user has read access
     return {
         'assetTypes': ASSET_TYPES,
         'assets': [_.get_json_d() for _ in assets],
@@ -42,7 +43,7 @@ def see_assets_kit_json(request):
     request_method='GET')
 def see_assets_csv(request):
     db = request.db
-    assets = db.query(Asset)
+    assets = db.query(Asset).all()
     order_columns = [
         'id', 'utilityId', 'typeId', 'name',
         'vendorName', 'productName', 'productVersion',
@@ -53,7 +54,7 @@ def see_assets_csv(request):
     csv = ','.join(order_columns)
 
     if assets.count() > 0:
-        assets = [build_flat_dict_structure(asset) for asset in assets]
+        assets = [build_flat_dict_structure(_) for _ in assets]
         data = pd.read_json(json.dumps(assets))
         transform_array_to_csv(data, 'location')
         transform_array_to_csv(data, 'childIds', sep=' ')
@@ -110,9 +111,9 @@ def add_asset_json(request):
 def change_asset_json(request):
     matchdict = request.matchdict
     params = dict(request.json_body)
-    db = request.db
 
     id = matchdict['id']
+    db = request.db
     asset = db.query(Asset).get(id)
     if not asset:
         raise HTTPNotFound({'id': 'does not exist'})
@@ -122,6 +123,7 @@ def change_asset_json(request):
 
     # !!! Check whether user can update this asset
 
+    db = request.db
     try:
         name = params.pop('name')
     except KeyError:

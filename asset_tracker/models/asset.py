@@ -3,7 +3,7 @@ from geoalchemy2 import Geometry
 from geoalchemy2.shape import from_shape, to_shape
 from shapely.geometry import LineString, Point, mapping as get_geometry_d
 from sqlalchemy import Column, ForeignKey, Table
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.types import (
     Enum,
@@ -47,11 +47,15 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
         'Asset', secondary=asset_child,
         primaryjoin='asset_child.c.parent_asset_id == Asset.id',
         secondaryjoin='asset_child.c.child_asset_id == Asset.id',
-        backref='parents')
+        backref=backref('parents', lazy='selectin', join_depth=1),
+        lazy='selectin',
+        join_depth=1)
     connections = relationship(
         'Asset', secondary=asset_connection,
         primaryjoin='asset_connection.c.left_asset_id == Asset.id',
-        secondaryjoin='asset_connection.c.right_asset_id == Asset.id')
+        secondaryjoin='asset_connection.c.right_asset_id == Asset.id',
+        lazy='selectin',
+        join_depth=1)
     attributes = Column(PickleType)
     _geometry = Column(Geometry(management=True))
 
