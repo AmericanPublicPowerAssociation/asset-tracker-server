@@ -9,6 +9,7 @@ from pyramid.httpexceptions import (
     HTTPNotFound)
 from pyramid.response import Response
 from pyramid.view import view_config
+from sqlalchemy.orm import selectinload
 
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
@@ -29,7 +30,11 @@ from ..validations.assets import validate_assets_df
     request_method='GET')
 def see_assets_kit_json(request):
     db = request.db
-    assets = db.query(Asset).all()
+    assets = db.query(Asset).options(
+        selectinload(Asset.parents),
+        selectinload(Asset.children),
+        selectinload(Asset.connections),
+    ).all()
     # !!! Filter assets by utility ids to which user has read access
     return {
         'assetTypes': ASSET_TYPES,
@@ -43,7 +48,11 @@ def see_assets_kit_json(request):
     request_method='GET')
 def see_assets_csv(request):
     db = request.db
-    assets = db.query(Asset).all()
+    assets = db.query(Asset).options(
+        selectinload(Asset.parents),
+        selectinload(Asset.children),
+        selectinload(Asset.connections),
+    ).all()
     order_columns = [
         'id', 'utilityId', 'typeId', 'name',
         'vendorName', 'productName', 'productVersion',
@@ -114,7 +123,11 @@ def change_asset_json(request):
 
     id = matchdict['id']
     db = request.db
-    asset = db.query(Asset).get(id)
+    asset = db.query(Asset).options(
+        selectinload(Asset.parents),
+        selectinload(Asset.children),
+        selectinload(Asset.connections),
+    ).get(id)
     if not asset:
         raise HTTPNotFound({'id': 'does not exist'})
     changed_assets = [asset]
@@ -182,7 +195,11 @@ def change_asset_relation_json(request):
     method = request.method
 
     id = matchdict['id']
-    asset = db.query(Asset).get(id)
+    asset = db.query(Asset).options(
+        selectinload(Asset.parents),
+        selectinload(Asset.children),
+        selectinload(Asset.connections),
+    ).get(id)
     if not asset:
         raise HTTPNotFound({'id': 'does not exist'})
 
@@ -219,7 +236,7 @@ def change_asset_relation_json(request):
 @view_config(
     route_name='assets.csv',
     renderer='json',
-    # request_method='POST')
+    # request_method='PATCH')
     request_method='POST')
 def receive_assets_file(request):
     file = request.POST.get('file', None)
