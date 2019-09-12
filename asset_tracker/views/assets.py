@@ -10,6 +10,8 @@ from pyramid.httpexceptions import (
 from pyramid.response import Response
 from pyramid.view import view_config
 from sqlalchemy.orm import selectinload
+from sqlalchemy import desc, asc
+
 
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
@@ -41,6 +43,32 @@ def see_assets_kit_json(request):
         'assets': [_.get_json_d() for _ in assets],
         'boundingBox': get_bounding_box(assets),
     }
+
+
+@view_config(
+    route_name='sort_assets.json',
+    renderer='json',
+    request_method='GET')
+def sort_assets_json(request):
+    valid_columns = {
+        'typeId': Asset.type_id,
+        'name': Asset.name
+    }
+    try:
+        key = request.GET['column']
+        column = valid_columns[key]
+        query = (
+            desc(column) if request.GET['desc'].lower() == 'true' 
+            else column)
+    except KeyError:
+        raise HTTPBadRequest('column to sort by is required as url parameter')
+    db = request.db
+    assets = db.query(Asset).options(
+        selectinload(Asset.parents),
+        selectinload(Asset.children),
+        selectinload(Asset.connections)
+    ).order_by(query).all()
+    return [_.get_json_d() for _ in assets]
 
 
 @view_config(
