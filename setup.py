@@ -25,6 +25,8 @@ APP_REQUIREMENTS = [
     'sqlalchemy',
     'transaction',
     'zope.sqlalchemy',
+    # cache
+    'dogpile.cache',
     # time
     'pendulum',
     # table

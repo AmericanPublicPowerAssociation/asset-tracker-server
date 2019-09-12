@@ -1,4 +1,3 @@
-import json
 import numpy as np
 import pandas as pd
 import shapely.wkt as wkt
@@ -16,12 +15,13 @@ from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
 from ..models import Asset
 from ..routines.geometry import get_bounding_box
+from ..routines.table import (
+    prepare_column)
 from ..utils.data import (
     build_flat_dict_structure,
     get_extra_columns_df,
-    restore_array_to_csv,
     transform_array_to_csv)
-from ..validations.assets import validate_assets_df
+from ..validators.assets import validate_assets_df
 
 
 @view_config(
@@ -64,7 +64,7 @@ def see_assets_csv(request):
 
     if assets.count() > 0:
         assets = [build_flat_dict_structure(_) for _ in assets]
-        data = pd.read_json(json.dumps(assets))
+        data = pd.DataFrame(assets)
         transform_array_to_csv(data, 'location')
         transform_array_to_csv(data, 'childIds', sep=' ')
         transform_array_to_csv(data, 'parentIds', sep=' ')
@@ -236,24 +236,27 @@ def change_asset_relation_json(request):
 @view_config(
     route_name='assets.csv',
     renderer='json',
-    # request_method='PATCH')
-    request_method='POST')
+    request_method='PATCH')
 def receive_assets_file(request):
-    file = request.POST.get('file', None)
+    try:
+        f = request.params['file']
+    except KeyError:
+        raise HTTPBadRequest({'file': 'is required'})
+    if not isinstance(f, FieldStorage):
+        raise HTTPBadRequest({'file': 'must be an upload'})
+    # try:
+    # except FileUploadError as e:
 
-    if not isinstance(file, FieldStorage):
-        raise HTTPBadRequest({
-            'file': 'is required'})
-
-    validated_assets, errors = validate_assets_df(pd.read_csv(file.file))
+    # !!! raise exception here
+    validated_assets, errors = validate_assets_df(pd.read_csv(f.file))
 
     if errors:
         raise HTTPBadRequest(errors)
 
-    restore_array_to_csv(validated_assets, 'location', cast=float)
-    restore_array_to_csv(validated_assets, 'childIds', sep=' ')
-    restore_array_to_csv(validated_assets, 'parentIds', sep=' ')
-    restore_array_to_csv(validated_assets, 'connectedIds', sep=' ')
+    prepare_column(validated_assets, 'location', cast=float)
+    prepare_column(validated_assets, 'childIds', separator=' ')
+    prepare_column(validated_assets, 'parentIds', separator=' ')
+    prepare_column(validated_assets, 'connectedIds', separator=' ')
 
     db = request.db
 

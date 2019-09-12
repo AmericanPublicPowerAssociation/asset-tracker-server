@@ -171,6 +171,18 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
             d['geometry'] = get_geometry_d(self.geometry)
         return d
 
+    def is_readable(self, request):
+        return True
+
+    def is_editable(self, request):
+        return True
+
+    @classmethod
+    def get_readable_ids(Class, request):
+        db = request.db
+        # !!! Limit to asset ids that the user has permission to view
+        return [_[0] for _ in db.query(Class.id)]
+
     def __repr__(self):
         return f'<Asset(id={self.id})>'
 

@@ -1,22 +1,6 @@
 from collections import Iterable
 
 
-def split(value, cast=None, sep=','):
-    if isinstance(value, str):
-        elements = value.split(sep)
-
-        if cast:
-            elements = [cast(element) for element in elements]
-
-        return elements
-    return []
-
-
-def restore_array_to_csv(df, column, cast=None, sep=','):
-    df[column] = df[column].apply(split, cast=cast, sep=sep)
-    return df
-
-
 def cast_coordinate_or_list(data, separator, cast=float):
     data_split = data.split(separator)
     if len(data_split) >= 2:
