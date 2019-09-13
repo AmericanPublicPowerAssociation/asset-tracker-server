@@ -3,9 +3,25 @@ import numpy as np
 
 
 def get_downstream_meters(asset):
+    assets = [asset] + asset.parents + asset.children
+    downstream_meters = []
+    for asset in assets:
+        downstream_meters.extend(_get_downstream_meters(asset))
+    unique_downstream_meters = []
+    meter_asset_ids = []
+    for meter in downstream_meters:
+        meter_id = meter.id
+        if meter_id in meter_asset_ids:
+            continue
+        meter_asset_ids.append(meter_id)
+        unique_downstream_meters.append(meter)
+    return unique_downstream_meters
+
+
+def _get_downstream_meters(connected_asset):
     downstream_meter_asset_ids = []
-    asset_id = asset.id
-    g = get_graph(asset)
+    asset_id = connected_asset.id
+    g = get_graph(connected_asset)
     # Get all connected sources
     source_asset_ids = [node_id for node_id, node_d in g.nodes(
         data=True) if node_d['is_power_source']]
@@ -15,7 +31,7 @@ def get_downstream_meters(asset):
     # Compute path from the nearest power source to the asset
     source_asset_path = get_path(g, source_asset_ids, asset_id)
     if not source_asset_path:
-        return []
+        return get_assets(g, meter_asset_ids)
     # Get downstream meter ids
     for meter_asset_id in meter_asset_ids:
         asset_meter_path = get_path(g, [asset_id], meter_asset_id)
@@ -27,7 +43,7 @@ def get_downstream_meters(asset):
             continue
         downstream_meter_asset_ids.append(meter_asset_id)
     # Get downstream meters
-    return [g.nodes[_]['asset'] for _ in downstream_meter_asset_ids]
+    return get_assets(g, downstream_meter_asset_ids)
 
 
 def get_graph(asset):
@@ -67,3 +83,7 @@ def get_path(g, source_asset_ids, target_asset_id):
     path_lengths = [len(_) for _ in paths]
     shortest_path_index = np.argmin(path_lengths)
     return paths[shortest_path_index][:-1]
+
+
+def get_assets(g, asset_ids):
+    return [g.nodes[_]['asset'] for _ in asset_ids]
