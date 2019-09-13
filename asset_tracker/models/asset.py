@@ -73,7 +73,15 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
         return self.primary_type_id == 'l'
 
     @property
-    def is_locatable(self):
+    def can_be_mass_produced(self):
+        return not self.primary_type.get('unique', False)
+
+    @property
+    def can_have_connection(self):
+        return len(self.primary_type.get('connectedIds', [])) > 0
+
+    @property
+    def can_have_location(self):
         return self.primary_type.get('locatable', False)
 
     @property
@@ -122,13 +130,13 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
 
     @property
     def is_in_station(self):
-        return self.is_in_type('S')
+        return self.has_parent_type_id('S')
 
     @property
     def is_in_substation(self):
-        return self.is_in_type('s')
+        return self.has_parent_type_id('s')
 
-    def is_in_type(self, primary_type_id):
+    def has_parent_type_id(self, primary_type_id):
         new_assets = [self]
         while new_assets:
             new_asset = new_assets.pop()

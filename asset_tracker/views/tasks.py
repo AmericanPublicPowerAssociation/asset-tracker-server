@@ -20,6 +20,14 @@ def see_tasks_json(request):
 
 
 @view_config(
+    route_name='tasks_metrics.json',
+    renderer='json',
+    request_method='GET')
+def see_tasks_metrics_json(request):
+    return {}
+
+
+@view_config(
     route_name='tasks.json',
     renderer='json',
     request_method='POST')

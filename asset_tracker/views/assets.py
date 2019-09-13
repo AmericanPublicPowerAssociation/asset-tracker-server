@@ -8,9 +8,8 @@ from pyramid.httpexceptions import (
     HTTPNotFound)
 from pyramid.response import Response
 from pyramid.view import view_config
+from sqlalchemy import desc
 from sqlalchemy.orm import selectinload
-from sqlalchemy import desc, asc
-
 
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
@@ -40,7 +39,7 @@ def see_assets_kit_json(request):
         key = request.GET['column']
         column = valid_columns[key]
         query = (
-            desc(column) if request.GET['desc'].lower() == 'true' 
+            desc(column) if request.GET['desc'].lower() == 'true'
             else column)
         assets = db.query(Asset).options(
             selectinload(Asset.parents),
@@ -52,12 +51,60 @@ def see_assets_kit_json(request):
             selectinload(Asset.parents),
             selectinload(Asset.children),
             selectinload(Asset.connections),
-            ).all()
+        ).all()
     # !!! Filter assets by utility ids to which user has read access
     return {
         'assetTypes': ASSET_TYPES,
         'assets': [_.get_json_d() for _ in assets],
         'boundingBox': get_bounding_box(assets),
+    }
+
+
+@view_config(
+    route_name='assets_metrics.json',
+    renderer='json',
+    request_method='GET')
+def see_assets_metrics_json(request):
+    db = request.db
+
+    asset_ids = Asset.get_readable_ids(request)
+    asset_count = len(asset_ids)
+    assets = db.query(Asset).filter(Asset.id.in_(asset_ids)).all()
+
+    meter_count = len([
+        _ for _ in assets if
+        _.primary_type_id == 'm'])
+
+    missing_location_count = len([
+        _ for _ in assets if
+        _.can_have_location and not _.location])
+
+    missing_connection_count = len([
+        _ for _ in assets if
+        _.can_have_connection and not _.connections])
+
+    # !!! Separate into asset-report-risks
+    missing_vendor_name_count = len([
+        _ for _ in assets if
+        not _.attributes.get('vendorName')])
+
+    # !!! Separate into asset-report-risks
+    missing_product_name_count = len([
+        _ for _ in assets if
+        _.can_be_mass_produced and not _.attributes.get('productName')])
+
+    missing_line_count = len([
+        _ for _ in assets if _.primary_type_id == 'p'
+        and not _.has_parent_type_id('l')])
+
+    return {
+        'assetCount': asset_count,
+        'meterCount': meter_count,
+        'missingLocationCount': missing_location_count,
+        'missingConnectionCount': missing_connection_count,
+        'missingVendorNameCount': missing_vendor_name_count,
+        'missingProductNameCount': missing_product_name_count,
+        'missingLineCount': missing_line_count,
     }
 
 
@@ -167,7 +214,7 @@ def change_asset_json(request):
     except KeyError:
         pass
     else:
-        if not asset.is_locatable:
+        if not asset.can_have_location:
             raise HTTPBadRequest({
                 'location': 'is not accepted for this asset type'})
         asset.location = location
