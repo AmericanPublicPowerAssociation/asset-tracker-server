@@ -14,7 +14,8 @@ from sqlalchemy.orm import selectinload
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
-from ..models import Asset
+from ..models import Asset, LogEvent, Task
+from ..models.log import log_event
 from ..routines.geometry import get_bounding_box
 from ..routines.table import (
     prepare_column)
@@ -77,21 +78,24 @@ def see_assets_metrics_json(request):
 
     missing_location_count = len([
         _ for _ in assets if
-        _.can_have_location and not _.location])
+        _.can_have_location and
+        not _.location])
 
     missing_connection_count = len([
         _ for _ in assets if
-        _.can_have_connection and not _.connections])
+        _.can_have_connection and
+        not _.connections])
 
     # !!! Separate into asset-report-risks
     missing_vendor_name_count = len([
         _ for _ in assets if
-        not _.attributes.get('vendorName')])
+        not (_.attributes or {}).get('vendorName')])
 
     # !!! Separate into asset-report-risks
     missing_product_name_count = len([
         _ for _ in assets if
-        _.can_be_mass_produced and not _.attributes.get('productName')])
+        _.can_be_mass_produced and
+        not (_.attributes or {}).get('productName')])
 
     missing_line_count = len([
         _ for _ in assets if _.primary_type_id == 'p'
@@ -136,6 +140,7 @@ def see_assets_csv(request):
         transform_array_to_csv(data, 'connectedIds', sep=' ')
         csv = data[order_columns].to_csv(index=False)
 
+    log_event(request, LogEvent.export_assets_csv, {})
     return Response(
         body=csv,
         status=200,
@@ -175,6 +180,8 @@ def add_asset_json(request):
     asset.utility_id = utility_id
     asset.type_id = type_id
     asset.name = name
+
+    log_event(request, LogEvent.add_asset, {'assetId': asset.id})
     return asset.get_json_d()
 
 
@@ -235,15 +242,10 @@ def change_asset_json(request):
         attributes[k] = v
     asset.attributes = attributes
 
+    log_event(request, LogEvent.change_asset, dict({
+        'assetId': asset.id,
+    }, **dict(request.json_body)))
     return [_.get_json_d() for _ in changed_assets]
-
-
-@view_config(
-    route_name='asset.json',
-    renderer='json',
-    request_method='DELETE')
-def drop_asset_json(request):
-    return {}
 
 
 @view_config(
@@ -295,7 +297,21 @@ def change_asset_relation_json(request):
         raise HTTPBadRequest({'key': 'is not recognized'})
 
     changed_assets = [asset] + asset.parents + asset.children
+    log_event(request, LogEvent.change_asset_relation, {
+        'assetId': matchdict['id'],
+        'otherAssetId': matchdict['otherId'],
+        'key': matchdict['key'],
+    })
     return [_.get_json_d() for _ in changed_assets]
+
+
+@view_config(
+    route_name='asset.json',
+    renderer='json',
+    request_method='DELETE')
+def drop_asset_json(request):
+    # log(request, LogEvent.drop_asset, {'id': asset.id})
+    return {}
 
 
 @view_config(
@@ -381,9 +397,25 @@ def receive_assets_file(request):
     except Exception:
         db.rollback()
 
+    log_event(request, LogEvent.import_assets_csv, {})
     return {
         'error': False
     }
+
+
+@view_config(
+    route_name='asset_tasks.json',
+    renderer='json',
+    request_method='GET')
+def see_asset_tasks_json(request):
+    matchdict = request.matchdict
+    # params = request.params
+    id = matchdict['id']
+    db = request.db
+    # !!! Check if user can view asset
+    # !!! Restrict view to tasks that user can view
+    tasks = db.query(Task).filter(Task.asset_id == id).all()
+    return [_.get_json_d() for _ in tasks]
 
 
 def validate_name(db, name, utility_id, id=None):

@@ -3,7 +3,7 @@ from sqlalchemy.orm import configure_mappers, sessionmaker
 from zope.sqlalchemy import register as register_transaction_listener
 
 from .asset import Asset, AssetStatus         # noqa
-from .log import Log                          # noqa
+from .log import Log, LogEvent                # noqa
 from .task import Task, TaskNote, TaskStatus  # noqa
 
 

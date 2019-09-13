@@ -3,10 +3,11 @@ from pyramid.httpexceptions import (
     HTTPInsufficientStorage,
     HTTPNotFound)
 from pyramid.view import view_config
+from sqlalchemy import desc
 
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
-from ..models import Task
+from ..models import Asset, Task
 
 
 @view_config(
@@ -24,7 +25,12 @@ def see_tasks_json(request):
     renderer='json',
     request_method='GET')
 def see_tasks_metrics_json(request):
-    return {}
+    db = request.db
+    recent_tasks = db.query(Task).order_by(
+        desc(Task.creation_datetime)).limit(10).all()
+    return {
+        'recentTasks': [_.get_json_d() for _ in recent_tasks],
+    }
 
 
 @view_config(
@@ -33,6 +39,7 @@ def see_tasks_metrics_json(request):
     request_method='POST')
 def add_task_json(request):
     params = request.json_body
+    db = request.db
 
     try:
         name = params['name']
@@ -41,6 +48,14 @@ def add_task_json(request):
     else:
         name = validate_name(name)
 
+    try:
+        assetId = params['assetId']
+    except KeyError:
+        raise HTTPBadRequest({'assetId': 'is required'})
+    asset_id = db.query(Asset.id).get(assetId)
+    if not asset_id:
+        raise HTTPBadRequest({'assetId': 'does not exist'})
+
     db = request.db
     try:
         task = Task.make_unique_record(db)
@@ -48,8 +63,11 @@ def add_task_json(request):
         raise HTTPInsufficientStorage({'task': 'could not make unique id'})
 
     user_id = request.authenticated_userid
+    task.asset_id = asset_id
+    task.reference_uri = params.get('referenceUri')
     task.name = name
     task.creation_user_id = user_id
+    task.assignment_user_id = user_id
 
     return task.get_json_d()
 

@@ -1,5 +1,6 @@
 import enum
 from sqlalchemy import Column, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.types import (
     Enum,
     String,
@@ -19,6 +20,7 @@ class TaskStatus(enum.Enum):
 class Task(ModificationMixin, CreationMixin, RecordMixin, Base):
     __tablename__ = 'task'
     asset_id = Column(String, ForeignKey('asset.id'))
+    asset = relationship('Asset', backref='tasks')
     reference_uri = Column(String)
     name = Column(Unicode)
     status = Column(Enum(TaskStatus), default=TaskStatus.new)
@@ -29,9 +31,10 @@ class Task(ModificationMixin, CreationMixin, RecordMixin, Base):
         return {
             'id': self.id,
             'assetId': self.asset_id,
+            'assetName': self.asset.name,
             'referenceUri': self.reference_uri,
             'name': self.name,
-            'status': self.status,
+            'status': self.status.name,
             'creationUserId': self.creation_user_id,
             'assignmentUserId': self.assignment_user_id,
         }
