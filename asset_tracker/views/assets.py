@@ -131,7 +131,7 @@ def see_assets_csv(request):
     ]
     csv = ','.join(order_columns)
 
-    if assets.count() > 0:
+    if len(assets) > 0:
         assets = [build_flat_dict_structure(_) for _ in assets]
         data = pd.DataFrame(assets)
         transform_array_to_csv(data, 'location')

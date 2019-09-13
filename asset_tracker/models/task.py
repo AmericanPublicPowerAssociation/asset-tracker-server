@@ -11,10 +11,10 @@ from .meta import Base, CreationMixin, ModificationMixin, RecordMixin
 
 
 class TaskStatus(enum.Enum):
-    cancelled = -100
-    new = 0
-    pending = 50
-    done = 100
+    Cancelled = -100
+    New = 0
+    Pending = 50
+    Done = 100
 
 
 class Task(ModificationMixin, CreationMixin, RecordMixin, Base):
@@ -23,7 +23,7 @@ class Task(ModificationMixin, CreationMixin, RecordMixin, Base):
     asset = relationship('Asset', backref='tasks')
     reference_uri = Column(String)
     name = Column(Unicode)
-    status = Column(Enum(TaskStatus), default=TaskStatus.new)
+    status = Column(Enum(TaskStatus), default=TaskStatus.New)
     creation_user_id = Column(String)
     assignment_user_id = Column(String)
 

@@ -26,11 +26,11 @@ asset_connection = Table(
 
 
 class AssetStatus(enum.Enum):
-    broken = -100
-    planned = 0
-    installing = 25
-    repairing = 50
-    operating = 100
+    Broken = -100
+    Planned = 0
+    Installing = 25
+    Repairing = 50
+    Operational = 100
 
 
 class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
@@ -41,7 +41,7 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
     )
     utility_id = Column(String)
     name = Column(Unicode)
-    status = Column(Enum(AssetStatus), default=AssetStatus.operating)
+    status = Column(Enum(AssetStatus), default=AssetStatus.Operational)
     type_id = Column(String)
     children = relationship(
         'Asset', secondary=asset_child,

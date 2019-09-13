@@ -49,11 +49,12 @@ def add_task_json(request):
         name = validate_name(name)
 
     try:
-        assetId = params['assetId']
+        asset_id = params['assetId']
     except KeyError:
         raise HTTPBadRequest({'assetId': 'is required'})
-    asset_id = db.query(Asset.id).get(assetId)
-    if not asset_id:
+    # asset_id = db.query(Asset.id).filter(Asset.id == asset_id).first()
+    asset = db.query(Asset).get(asset_id)
+    if not asset:
         raise HTTPBadRequest({'assetId': 'does not exist'})
 
     db = request.db

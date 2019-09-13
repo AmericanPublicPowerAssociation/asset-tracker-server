@@ -52,11 +52,9 @@ def build_flat_dict_structure(asset):
         'productVersion': '',
         'KV': '',
         'KW': '',
-        'KWH': ''
+        'KWH': '',
+        'wkt': asset.geometry.wkt if asset.geometry else '',
     }
-
-    if asset.geometry:
-        flat_asset['wkt'] = asset.geometry.wkt
 
     if asset.attributes:
         flat_asset.update(asset.attributes)
