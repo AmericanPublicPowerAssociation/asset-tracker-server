@@ -31,44 +31,34 @@ from ..validations.assets import validate_assets_df
     renderer='json',
     request_method='GET')
 def see_assets_kit_json(request):
-    db = request.db
-    assets = db.query(Asset).options(
-        selectinload(Asset.parents),
-        selectinload(Asset.children),
-        selectinload(Asset.connections),
-    ).all()
-    # !!! Filter assets by utility ids to which user has read access
-    return {
-        'assetTypes': ASSET_TYPES,
-        'assets': [_.get_json_d() for _ in assets],
-        'boundingBox': get_bounding_box(assets),
-    }
-
-
-@view_config(
-    route_name='sort_assets.json',
-    renderer='json',
-    request_method='GET')
-def sort_assets_json(request):
     valid_columns = {
-        'typeId': Asset.type_id,
+        'typeid': Asset.type_id,
         'name': Asset.name
     }
+    db = request.db
     try:
         key = request.GET['column']
         column = valid_columns[key]
         query = (
             desc(column) if request.GET['desc'].lower() == 'true' 
             else column)
+        assets = db.query(Asset).options(
+            selectinload(Asset.parents),
+            selectinload(Asset.children),
+            selectinload(Asset.connections)
+        ).order_by(query).all()
     except KeyError:
-        raise HTTPBadRequest('column to sort by is required as url parameter')
-    db = request.db
-    assets = db.query(Asset).options(
-        selectinload(Asset.parents),
-        selectinload(Asset.children),
-        selectinload(Asset.connections)
-    ).order_by(query).all()
-    return [_.get_json_d() for _ in assets]
+        assets = db.query(Asset).options(
+            selectinload(Asset.parents),
+            selectinload(Asset.children),
+            selectinload(Asset.connections),
+            ).all()
+    # !!! Filter assets by utility ids to which user has read access
+    return {
+        'assetTypes': ASSET_TYPES,
+        'assets': [_.get_json_d() for _ in assets],
+        'boundingBox': get_bounding_box(assets),
+    }
 
 
 @view_config(

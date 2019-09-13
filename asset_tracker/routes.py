@@ -3,9 +3,6 @@ def includeme(config):
         'assets_kit.json',
         '/assetsKit.json')
     config.add_route(
-        'sort_assets.json',
-        '/sortAssets.json')
-    config.add_route(
         'assets.json',
         '/assets.json')
     config.add_route(
