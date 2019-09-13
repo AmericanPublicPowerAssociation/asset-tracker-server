@@ -1,4 +1,4 @@
-def prepare_column(t, column_name, cast, separator=','):
+def prepare_column(t, column_name, cast=None, separator=','):
     t[column_name] = t[column_name].apply(
         split, cast=cast, separator=separator)
 

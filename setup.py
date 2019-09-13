@@ -34,6 +34,9 @@ APP_REQUIREMENTS = [
     # geotable
     'geoalchemy2>=0.6.3',
     'shapely',
+    # computation
+    'networkx',
+    'numpy',
 ]
 TEST_REQUIREMENTS = [
     'pytest>=3.7.4',

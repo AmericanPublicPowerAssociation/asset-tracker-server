@@ -116,6 +116,28 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
             geometry = from_shape(geometry)
         self._geometry = geometry
 
+    @property
+    def is_power_source(self):
+        return self.is_in_substation or self.is_in_station
+
+    @property
+    def is_in_station(self):
+        return self.is_in_type('S')
+
+    @property
+    def is_in_substation(self):
+        return self.is_in_type('s')
+
+    def is_in_type(self, primary_type_id):
+        new_assets = [self]
+        while new_assets:
+            new_asset = new_assets.pop()
+            for parent_asset in new_asset.parents:
+                if parent_asset.primary_type_id == primary_type_id:
+                    return True
+                new_assets.append(parent_asset)
+        return False
+
     def add_child(self, asset):
         if self == asset:
             return
