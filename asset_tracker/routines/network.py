@@ -14,16 +14,20 @@ def get_downstream_meters(asset):
         data=True) if node_d['primary_type_id'] == 'm']
     # Compute path from the nearest power source to the asset
     source_asset_path = get_path(g, source_asset_ids, asset_id)
+    if not source_asset_path:
+        return []
     # Get downstream meter ids
     for meter_asset_id in meter_asset_ids:
         asset_meter_path = get_path(g, [asset_id], meter_asset_id)
+        if not asset_meter_path:
+            continue
         overlapping_node_ids = set(source_asset_path).intersection(
             asset_meter_path)
         if overlapping_node_ids:
             continue
         downstream_meter_asset_ids.append(meter_asset_id)
     # Get downstream meters
-    return [g[_]['asset'] for _ in downstream_meter_asset_ids]
+    return [g.nodes[_]['asset'] for _ in downstream_meter_asset_ids]
 
 
 def get_graph(asset):
@@ -58,6 +62,8 @@ def get_path(g, source_asset_ids, target_asset_id):
     for source_asset_id in source_asset_ids:
         path = nx.shortest_path(g, source_asset_id, target_asset_id)
         paths.append(path)
+    if not paths:
+        return ()
     path_lengths = [len(_) for _ in paths]
     shortest_path_index = np.argmin(path_lengths)
     return paths[shortest_path_index][:-1]
