@@ -9,6 +9,8 @@ from pyramid.httpexceptions import (
 from pyramid.response import Response
 from pyramid.view import view_config
 from sqlalchemy.orm import selectinload
+from sqlalchemy import desc, asc
+
 
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
@@ -29,12 +31,28 @@ from ..validators.assets import validate_assets_df
     renderer='json',
     request_method='GET')
 def see_assets_kit_json(request):
+    valid_columns = {
+        'typeid': Asset.type_id,
+        'name': Asset.name
+    }
     db = request.db
-    assets = db.query(Asset).options(
-        selectinload(Asset.parents),
-        selectinload(Asset.children),
-        selectinload(Asset.connections),
-    ).all()
+    try:
+        key = request.GET['column']
+        column = valid_columns[key]
+        query = (
+            desc(column) if request.GET['desc'].lower() == 'true' 
+            else column)
+        assets = db.query(Asset).options(
+            selectinload(Asset.parents),
+            selectinload(Asset.children),
+            selectinload(Asset.connections)
+        ).order_by(query).all()
+    except KeyError:
+        assets = db.query(Asset).options(
+            selectinload(Asset.parents),
+            selectinload(Asset.children),
+            selectinload(Asset.connections),
+            ).all()
     # !!! Filter assets by utility ids to which user has read access
     return {
         'assetTypes': ASSET_TYPES,
