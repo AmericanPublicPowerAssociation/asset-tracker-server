@@ -3,7 +3,8 @@ from pyramid.paster import get_appsettings, setup_logging
 from pyramid.settings import aslist
 from sqlalchemy import engine_from_config
 
-from asset_tracker.models import Base, load_spatialite_sqlite_extension
+from asset_tracker.models import load_spatialite_sqlite_extension
+from asset_tracker.models.meta import Base
 
 
 config = context.config
