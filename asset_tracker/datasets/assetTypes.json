@@ -149,6 +149,10 @@
   "connectedIds": [],
   "parentIds": [],
   "childIds": ["p", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
+  "inputTypeByAttribute": {
+    "KV": "number",
+    "KW": "number"
+  },
   "locatable": true,
   "unique": true,
   "featureSizeAttribute": "KV",
