@@ -34,7 +34,7 @@ class Task(ModificationMixin, CreationMixin, RecordMixin, Base):
             'assetName': self.asset.name,
             'referenceUri': self.reference_uri,
             'name': self.name,
-            'status': self.status.name,
+            'status': self.status.value,
             'creationUserId': self.creation_user_id,
             'assignmentUserId': self.assignment_user_id,
         }

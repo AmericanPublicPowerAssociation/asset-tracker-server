@@ -7,7 +7,7 @@ from sqlalchemy import desc
 
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
-from ..models import Asset, Task
+from ..models import Asset, Task, TaskStatus
 
 
 @view_config(
@@ -95,6 +95,18 @@ def change_task_json(request):
         pass
     else:
         task.name = validate_name(name)
+
+    try:
+        status = params.pop('status')
+    except KeyError:
+        pass
+    else:
+        try:
+            status = TaskStatus(int(status))
+        except ValueError:
+            raise HTTPBadRequest({
+                'status': 'is not recognized'})
+        task.status = status
 
     return task.get_json_d()
 
