@@ -108,8 +108,8 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
             parent.geometry = point
 
         for child in self.children:
-            if child._geometry is not None:
-                continue
+            # if child._geometry is not None:
+                # continue
             child.geometry = point
 
     @property
