@@ -120,6 +120,10 @@
   "connectedIds": ["l", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
   "parentIds": ["p", "s", "S"],
   "childIds": [],
+  "inputTypeByAttribute": {
+    "KV": "number",
+    "KW": "number"
+  },
   "locatable": true,
   "featureSize": 9,
   "featureColor": "darkred"
@@ -135,8 +139,7 @@
     "X": "Other"
   },
   "inputTypeByAttribute": {
-    "KV": "number",
-    "KW": "number"
+    "KV": "number"
   },
   "locatable": true,
   "unique": true,
@@ -150,8 +153,7 @@
   "parentIds": [],
   "childIds": ["p", "m", "t", "x", "q", "c", "b", "o", "g", "X"],
   "inputTypeByAttribute": {
-    "KV": "number",
-    "KW": "number"
+    "KV": "number"
   },
   "locatable": true,
   "unique": true,
