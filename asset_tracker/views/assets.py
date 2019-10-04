@@ -1,3 +1,6 @@
+import io
+
+import networkx as nx
 import numpy as np
 import pandas as pd
 import shapely.wkt as wkt
@@ -11,6 +14,8 @@ from pyramid.view import view_config
 from sqlalchemy import desc
 from sqlalchemy.orm import selectinload
 
+from asset_tracker.routines.opendss import (BUS, GENERATOR, TRANSFORMER, LINE, LOAD, METER, node_existence,
+                                            create_node, create_connection, Circuit, comment)
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
@@ -416,6 +421,57 @@ def see_asset_tasks_json(request):
     # !!! Restrict view to tasks that user can view
     tasks = db.query(Task).filter(Task.asset_id == id).all()
     return [_.get_json_d() for _ in tasks]
+
+
+@view_config(
+    route_name='assets.dss',
+    request_method='GET')
+def export_assets_to_dss(request):
+    db = request.db
+    G = nx.Graph()
+
+    ELEMENTS = {
+        BUS:  {'title': 'Buses', 'assets': []},
+        GENERATOR:  {'title': 'Generators', 'assets': []},
+        TRANSFORMER:  {'title': 'Transformers', 'assets': []},
+        LINE: {'title': 'Lines', 'assets': []},
+        LOAD:  {'title': 'Loads', 'assets': []},
+        METER:  {'title': 'Meters', 'assets': []},
+    }
+
+    EXPORT_ASSETS = [METER, LINE, GENERATOR]
+
+    for asset in db.query(Asset).all():
+        if asset.type_id[0] in EXPORT_ASSETS:
+            current_node = node_existence(asset.id, graph=G)
+            if not current_node:
+                current_node = create_node(asset, index=ELEMENTS, graph=G)
+
+            for inner_asset in asset.connections:
+                if inner_asset.type_id in EXPORT_ASSETS:
+                    inner_node = node_existence(inner_asset.id, graph=G)
+                    if not inner_node:
+                        inner_node = create_node(inner_asset, index=ELEMENTS, graph=G)
+
+                    create_connection(current_node, inner_node, index=ELEMENTS, graph=G)
+
+
+    f = io.StringIO()
+    f.write('clear\n')
+    circuit = Circuit('SimpleCircuit')
+    f.write(f'{circuit}\n')
+    for element in ELEMENTS.values():
+        f.write(f'{comment(element["title"])}\n')
+        for asset in element["assets"]:
+            f.write(f'{asset}\n')
+
+    f.write('\nmakebuslist\nsolve\n')
+
+    return Response(
+        body=f.getvalue(),
+        status=200,
+        content_type='text/plain',
+        content_disposition='attachment')
 
 
 def validate_name(db, name, utility_id, id=None):
