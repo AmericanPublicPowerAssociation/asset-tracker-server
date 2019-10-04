@@ -14,8 +14,8 @@ from pyramid.view import view_config
 from sqlalchemy import desc
 from sqlalchemy.orm import selectinload
 
-from ..macros.opendss import STATION, SUBSTATION, BUS, GENERATOR, TRANSFORMER, LINE, LOAD, METER, node_existence, \
-    create_node, create_connection, Circuit, comment
+from asset_tracker.routines.opendss import (BUS, GENERATOR, TRANSFORMER, LINE, LOAD, METER, node_existence,
+                                            create_node, create_connection, Circuit, comment)
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
@@ -431,8 +431,6 @@ def export_assets_to_dss(request):
     G = nx.Graph()
 
     ELEMENTS = {
-        STATION: {'title': 'Station', 'assets': []},
-        SUBSTATION:  {'title': 'Substation', 'assets': []},
         BUS:  {'title': 'Buses', 'assets': []},
         GENERATOR:  {'title': 'Generators', 'assets': []},
         TRANSFORMER:  {'title': 'Transformers', 'assets': []},
@@ -441,7 +439,7 @@ def export_assets_to_dss(request):
         METER:  {'title': 'Meters', 'assets': []},
     }
 
-    EXPORT_ASSETS = [STATION, SUBSTATION, METER, LINE, GENERATOR]
+    EXPORT_ASSETS = [METER, LINE, GENERATOR]
 
     for asset in db.query(Asset).all():
         if asset.type_id[0] in EXPORT_ASSETS:
@@ -468,8 +466,6 @@ def export_assets_to_dss(request):
             f.write(f'{asset}\n')
 
     f.write('\nmakebuslist\nsolve\n')
-
-   #  f.close()
 
     return Response(
         body=f.getvalue(),

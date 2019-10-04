@@ -253,15 +253,15 @@ def create_node(asset, index, graph=None):
         current_node = Generator(asset)
         index[GENERATOR]['assets'].append(current_node)
 
-    if asset.type_id[0] == STATION:
-        current_node = Station(asset)
-        create_bus(current_node, index=index, graph=graph, invisible=True)
-        index[STATION]['assets'].append(current_node)
-
-    if asset.type_id[0] == SUBSTATION:
-        current_node = Substation(asset)
-        create_bus(current_node, index=index, graph=graph, invisible=True)
-        index[SUBSTATION]['assets'].append(current_node)
+    # if asset.type_id[0] == STATION:
+    #     current_node = Station(asset)
+    #     create_bus(current_node, index=index, graph=graph, invisible=True)
+    #     index[STATION]['assets'].append(current_node)
+    #
+    # if asset.type_id[0] == SUBSTATION:
+    #     current_node = Substation(asset)
+    #     create_bus(current_node, index=index, graph=graph, invisible=True)
+    #     index[SUBSTATION]['assets'].append(current_node)
 
     graph.add_node(asset.id, instance=asset, translate=current_node, type_id=types[asset.type_id[0]])
 
