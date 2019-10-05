@@ -324,6 +324,8 @@ def drop_asset_json(request):
     renderer='json',
     request_method='PATCH')
 def receive_assets_file(request):
+    override_records = request.params.get('overwrite') == 'true'
+
     try:
         f = request.params['file']
     except KeyError:
@@ -362,9 +364,11 @@ def receive_assets_file(request):
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
         if asset:
-            continue
+            if not override_records:
+                continue
+        else:
+            asset = Asset(id=row['id'])
 
-        asset = Asset(id=row['id'])
         asset.utility_id = row['utilityId']
         asset.type_id = row['typeId']
         asset.name = row['name']
@@ -403,6 +407,7 @@ def receive_assets_file(request):
         db.rollback()
 
     log_event(request, LogEvent.import_assets_csv, {})
+
     return {
         'error': False
     }
