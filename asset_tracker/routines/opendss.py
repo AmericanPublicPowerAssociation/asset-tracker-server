@@ -1,8 +1,13 @@
 from networkx import nx
+from os.path import dirname, join, abspath
 import json
+import asset_tracker
 
 
-f = open('asset_tracker/datasets/assetTypes.json')
+script_dir = dirname(abspath(__file__))
+rel_path = 'datasets/assetTypes.json'
+abs_path = join(dirname(script_dir), rel_path)
+f = open(abs_path)
 
 data_types = json.load(f)
 types = {entry['id']: entry for entry in data_types}
