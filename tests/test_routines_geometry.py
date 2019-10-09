@@ -19,8 +19,8 @@ class TestRoutinesGeometry(object):
         max_coord = bounding_box[1]
         assert min_coord != max_coord
         assert min_coord > max_coord
-        assert min_coord[0] > -180 or min_coord[0] < 180
-        assert min_coord[1] > -90 or min_coord[1] < 90
-        assert max_coord[0] > -180 or max_coord[0] < 180
-        assert max_coord[1] > -90 or max_coord[1] < 90
+        assert min_coord[0] > -180 and min_coord[0] < 180
+        assert min_coord[1] > -90 and min_coord[1] < 90
+        assert max_coord[0] > -180 and max_coord[0] < 180
+        assert max_coord[1] > -90 and max_coord[1] < 90
         
