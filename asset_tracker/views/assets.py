@@ -462,11 +462,17 @@ def export_assets_to_dss(request):
 
 
     f = io.StringIO()
+
+    if len(ELEMENTS[GENERATOR]['assets']) == 0:
+        warning_comment = comment('WARNING: No GENERATORS exists, add one from the asset tracker dashboard!')
+        f.write(f'{warning_comment}\n')
+
     f.write('clear\n')
     circuit = Circuit('SimpleCircuit')
     f.write(f'{circuit}\n')
-    for element in ELEMENTS.values():
+    for asset_type, element in ELEMENTS.items():
         f.write(f'{comment(element["title"])}\n')
+
         for asset in element["assets"]:
             f.write(f'{asset}\n')
 
