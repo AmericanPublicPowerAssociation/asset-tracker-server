@@ -464,7 +464,7 @@ def export_assets_to_dss(request):
     f = io.StringIO()
 
     if len(ELEMENTS[GENERATOR]['assets']) == 0:
-        warning_comment = comment('WARNING: No GENERATORS exists, add one from the asset tracker dashboard!')
+        warning_comment = comment('WARNING: No GENERATORS exist')
         f.write(f'{warning_comment}\n')
 
     f.write('clear\n')
