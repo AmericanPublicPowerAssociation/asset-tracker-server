@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import shapely.wkt as wkt
 from cgi import FieldStorage
+
+from networkx.drawing.nx_pydot import write_dot
 from pyramid.httpexceptions import (
     HTTPBadRequest,
     HTTPInsufficientStorage,
@@ -440,11 +442,10 @@ def export_assets_to_dss(request):
         GENERATOR:  {'title': 'Generators', 'assets': []},
         TRANSFORMER:  {'title': 'Transformers', 'assets': []},
         LINE: {'title': 'Lines', 'assets': []},
-        LOAD:  {'title': 'Loads', 'assets': []},
-        METER:  {'title': 'Meters', 'assets': []},
+        METER:  {'title': 'Loads', 'assets': []},
     }
 
-    EXPORT_ASSETS = [METER, LINE, GENERATOR]
+    EXPORT_ASSETS = [LINE, GENERATOR, METER]
 
     for asset in db.query(Asset).all():
         if asset.type_id[0] in EXPORT_ASSETS:
@@ -458,7 +459,8 @@ def export_assets_to_dss(request):
                     if not inner_node:
                         inner_node = create_node(inner_asset, index=ELEMENTS, graph=G)
 
-                    create_connection(current_node, inner_node, index=ELEMENTS, graph=G)
+                    if not inner_node in current_node.connected:
+                        create_connection(current_node, inner_node, index=ELEMENTS, graph=G)
 
 
     f = io.StringIO()
@@ -470,8 +472,8 @@ def export_assets_to_dss(request):
         for asset in element["assets"]:
             f.write(f'{asset}\n')
 
-    f.write('\nmakebuslist\nsolve\n')
-
+    f.write('\nmakebuslist\nCalcVoltageBases\nsolve\nShow Powers kva Elements\nShow Voltage LL\n')
+    write_dot(G, 'graph.dot')
     return Response(
         body=f.getvalue(),
         status=200,

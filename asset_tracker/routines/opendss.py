@@ -75,7 +75,7 @@ def comment(text):
 class AssetMixin:
     @property
     def id(self):
-        return self.asset.id
+        return self.asset.name
 
 
 class Line(AssetMixin):
@@ -83,16 +83,21 @@ class Line(AssetMixin):
 
     def __init__(self, asset):
         self.asset = asset
-        self.bus1 = None
-        self.bus2 = None
+        self.connected = set()
+        self.buses = set()
+        self.bus = None
 
     def __str__(self):
-        if not self.bus1:
-            line = f'New Line.{self.id} Bus1={DEFAULT_SOURCE_BUS}'
-        else:
-            line = f'New Line.{self.id} Bus1={self.bus1.id}'
-        if self.bus2:
-            line += f' Bus2={self.bus2.id}'
+        buses = list(self.buses)
+        bus1 = len(buses) >= 1
+        bus2 = len(buses) >= 2
+
+        line = f'New Line.{self.id} phases=1 x0=0.1 r0=0.1'
+        if bus2:
+            line += f' Bus1={buses[0].id} Bus2={buses[1].id}'
+
+        elif bus1:
+            line += f' Bus1=SourceBus Bus2={buses[0].id}'
 
         return line
 
@@ -102,30 +107,23 @@ class Meter(AssetMixin):
 
     def __init__(self, asset):
         self.asset = asset
-        self.bus1 = None
-        self.bus2 = None
+        self.connected = set()
+        self.buses = set()
 
     def __str__(self):
-        element = types[self.bus1.type]['name']
-        return f'New EnergyMeter.{self.asset.id} Element={element}.{self.bus1.id} Terminal=1  Action=Save localonly=no'
+        command = ''
+        if self.connected:
+            bus = list(self.connected)[0].bus
+            command = f'New Load.Load_{self.asset.name} Bus1={bus.id} phases=1 '
+            attributes = self.asset.attributes
+            if attributes:
+                KV = attributes.get('KV', False)
+                KW = attributes.get('KW', False)
+                if KV:
+                    command += f' kV={KV} '
 
-
-class Load(AssetMixin):
-    def __init__(self, asset):
-        self.asset = asset
-
-    def __str__(self):
-        bus = self.asset.bus1.bus1.id if self.asset.bus1.bus1 else DEFAULT_SOURCE_BUS
-        command = f'New Load.Load_{self.asset.bus1.id} Bus1={bus} '
-        attributes = self.asset.asset.attributes
-        if attributes:
-            KV = attributes.get('KV', False)
-            KW = attributes.get('KW', False)
-            if KV:
-                command += f' kV={KV} '
-
-            if KW:
-                command += f' kW={KW} '
+                if KW:
+                    command += f' kW={KW} '
 
         return command
 
@@ -135,17 +133,20 @@ class Transformer(AssetMixin):
 
     def __init__(self, asset):
         self.asset = asset
-        self.bus2 = None
-        self.bus1 = None
+        self.connected = set()
+        self.buses = set()
 
     def __str__(self):
-        if self.bus1:
-            if not self.bus2:
-                return f'New Transformer.{self.id} Buses=[{DEFAULT_SOURCE_BUS}]'
-            return f'New Transformer.{self.id} Buses=[{self.bus1.id}, {self.bus2.id}]'
-        if not self.bus2:
-            return f'New Transformer.{self.id} Buses=[{DEFAULT_SOURCE_BUS}]'
-        return f'New Transformer.{self.id} Buses=[{DEFAULT_SOURCE_BUS}, {self.bus2.id}]'
+        if not self.connected:
+            return ''
+
+        buses = list(self.buses)
+        bus2 = len(buses) >= 2
+
+        if bus2:
+            return f'New Transformer.{self.id} Buses=[{self.buses[0].id}, {self.buses[1].id}]'
+
+        return f'New Transformer.{self.id} Buses=[{self.buses[0].id}]'
 
 
 class Circuit(AssetMixin):
@@ -156,7 +157,7 @@ class Circuit(AssetMixin):
         self.asset = name
 
     def __str__(self):
-        return f'New Circuit.{self.asset} ! (Vsource.Source is active circuit element)'
+        return f'New Circuit.{self.asset} basekv=10 bus1=SourceBus phases=1 ! (Vsource.Source is active circuit element)'
 
 
 class Generator(AssetMixin):
@@ -164,20 +165,23 @@ class Generator(AssetMixin):
 
     def __init__(self, asset):
         self.asset = asset
-        self.bus1 = None
-        self.bus2 = None
+        self.connected = set()
+        self.buses = set()
 
     def __str__(self):
-        command = f'New Generator.{self.id} bus1={self.bus1.id}'
-        attributes = self.asset.attributes
-        if attributes:
-            KV = attributes.get('KV', False)
-            KW = attributes.get('KW', False)
-            if KV:
-                command += f' kV={KV} '
+        command = ''
+        connected = list(self.connected)
+        if self.connected:
+            command = f'New Generator.{self.id} phases=1 bus1={connected[0].bus.id}'
+            attributes = self.asset.attributes
+            if attributes:
+                KV = attributes.get('KV', False)
+                KW = attributes.get('KW', False)
+                if KV:
+                    command += f' kV={KV} '
 
-            if KW:
-                command += f' kW={KW} '
+                if KW:
+                    command += f' kW={KW} '
 
         return command
 
@@ -203,6 +207,7 @@ class Substation(AssetMixin):
     def __init__(self, asset):
         self.asset = asset
         self.bus1 = None
+        self.connected = set()
 
     def __str__(self):
         command = f'New Vsource.{self.asset.id} bus1={self.bus1.id}'
@@ -217,10 +222,11 @@ class Substation(AssetMixin):
 class Bus(AssetMixin):
     def __init__(self, node):
         self.node = node
+        self.connected = set()
 
     @property
     def id(self):
-        return f'bus_{self.node.asset.id}'
+        return f'bus_{self.node.asset.name}'
 
     def __str__(self):
         return  f'AddBusMarker Bus={self.id} code=36 color=Red size=2'
@@ -247,8 +253,6 @@ def create_node(asset, index, graph=None):
     if asset.type_id[0] == METER:
         current_node = Meter(asset)
         index[METER]['assets'].append(current_node)
-        load = Load(current_node)
-        index[LOAD]['assets'].append(load)
     if asset.type_id[0] == GENERATOR:
         current_node = Generator(asset)
         index[GENERATOR]['assets'].append(current_node)
@@ -283,30 +287,30 @@ def create_connection(asset1, asset2, index, graph, matrix=CONNECTION_MATRIX):
     type1 = asset1.type
     type2 = asset2.type
     connection = matrix.get(f'{type1}{type2}', matrix[DEFAULT])
-    bus = None
 
-    if connection['bus1'] == type2:
+    source = asset1
+    destination = asset2
+    if not hasattr(source, 'bus'):
         source = asset2
         destination = asset1
+
+    if source.bus:
+        bus = source.bus
     else:
-        source = asset1
-        destination = asset2
+        bus = create_bus(source, index, graph)
+        source.bus = bus
 
-    if connection['type'] == ELEM_2_ELEM:
-        source.bus1 = destination
-        if connection['direction'] == DIRECTION_MULTI:
-            destination.bus2 = source
+    if connection['direction'] == DIRECTION_MULTI:
+        graph.add_edge(source.id, bus.id)
+        graph.add_edge(bus.id, destination.id)
     else:
-        bus = source.bus1
-        if not bus:
-            bus = create_bus(source, index, graph)
+        graph.add_edge(source.id, destination.id)
 
-        source.bus2 = bus
-
-        if connection['direction'] == DIRECTION_MULTI:
-            destination.bus1 = bus
-
-    graph.add_edge(source.id, destination.id)
+    bus.connected.update([asset2,asset1])
+    asset1.connected.add(asset2)
+    asset1.buses.add(bus)
+    asset2.connected.add(asset1)
+    asset2.buses.add(bus)
 
     return source, destination, bus, connection
 
