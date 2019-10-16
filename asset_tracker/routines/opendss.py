@@ -16,56 +16,12 @@ SUBSTATION = 's'
 LOAD = 'load'
 BUS = 'bus'
 
-
 DEFAULT_SOURCE_BUS = 'SourceBus'
-
-
-ELEM_2_ELEM = 'ELEMENT to ELEMENT'
-BUS_2_BUS = 'BUS to BUS'
 
 DIRECTION_UNI = 'UNIDIRECTIONAL'
 DIRECTION_MULTI = 'BIDIRECTIONAL'
 
 DEFAULT = 'DEFAULT'
-
-CONNECTION_MATRIX = {
-    (TRANSFORMER + LINE): {
-        'type': BUS_2_BUS,
-        'direction': DIRECTION_MULTI,
-        'bus1': LINE,
-        'bus2': TRANSFORMER
-    },
-    (GENERATOR + LINE): {
-        'type': BUS_2_BUS,
-        'direction': DIRECTION_MULTI,
-        'bus1': GENERATOR,
-        'bus2': LINE
-    },
-    (LINE + GENERATOR): {
-        'type': BUS_2_BUS,
-        'direction': DIRECTION_MULTI,
-        'bus1': GENERATOR,
-        'bus2': LINE
-    },
-    (METER + LINE): {
-        'type': ELEM_2_ELEM,
-        'direction': DIRECTION_UNI,
-        'bus1': METER,
-        'bus2': LINE
-    },
-    (LINE+METER): {
-        'type': ELEM_2_ELEM,
-        'direction': DIRECTION_UNI,
-        'bus1': METER,
-        'bus2': LINE
-    },
-    DEFAULT: {
-        'type': BUS_2_BUS,
-        'direction': DIRECTION_MULTI,
-        'bus1': None,
-        'bus2': None
-    }
-}
 
 
 def comment(text):
@@ -77,53 +33,54 @@ class AssetMixin:
     def id(self):
         return self.asset.name
 
+    @property
+    def name(self):
+        return self.asset.name
+
 
 class Line(AssetMixin):
     type = LINE
+    direction = DIRECTION_MULTI
 
     def __init__(self, asset):
         self.asset = asset
-        self.connected = set()
-        self.buses = set()
-        self.bus = None
+        self.bus1 = None
+        self.bus2 = None
 
     def __str__(self):
-        buses = list(self.buses)
-        bus1 = len(buses) >= 1
-        bus2 = len(buses) >= 2
-
         line = f'New Line.{self.id} phases=1 x0=0.1 r0=0.1'
-        if bus2:
-            line += f' Bus1={buses[0].id} Bus2={buses[1].id}'
+        if self.bus1:
+            line += f' Bus1={self.bus1.id} '
 
-        elif bus1:
-            line += f' Bus1=SourceBus Bus2={buses[0].id}'
+        if self.bus2:
+            line += f' Bus2={self.bus2.id}'
 
         return line
 
 
 class Meter(AssetMixin):
     type = METER
+    direction = DIRECTION_UNI
 
     def __init__(self, asset):
         self.asset = asset
-        self.connected = set()
-        self.buses = set()
+        self.bus1 = None
 
     def __str__(self):
-        command = ''
-        if self.connected:
-            bus = list(self.connected)[0].bus
-            command = f'New Load.Load_{self.asset.name} Bus1={bus.id} phases=1 '
-            attributes = self.asset.attributes
-            if attributes:
-                KV = attributes.get('KV', False)
-                KW = attributes.get('KW', False)
-                if KV:
-                    command += f' kV={KV} '
+        command = f'New Load.Load_{self.asset.name} phases=1'
 
-                if KW:
-                    command += f' kW={KW} '
+        if self.bus1:
+            command += f' Bus1={self.bus1.id}'
+
+        attributes = self.asset.attributes
+        if attributes:
+            KV = attributes.get('KV', False)
+            KW = attributes.get('KW', False)
+            if KV:
+                command += f' kV={KV} '
+
+            if KW:
+                command += f' kW={KW} '
 
         return command
 
@@ -152,9 +109,19 @@ class Transformer(AssetMixin):
 class Circuit(AssetMixin):
     type = ''
     bus2 = 'SourceBus'
+    direction = DIRECTION_UNI
 
     def __init__(self, name):
         self.asset = name
+        self.bus1 = Bus(node=self, name=DEFAULT_SOURCE_BUS)
+
+    @property
+    def id(self):
+        return self.asset
+
+    @property
+    def name(self):
+        return self.id
 
     def __str__(self):
         return f'New Circuit.{self.asset} basekv=10 bus1=SourceBus phases=1 ! (Vsource.Source is active circuit element)'
@@ -162,26 +129,25 @@ class Circuit(AssetMixin):
 
 class Generator(AssetMixin):
     type = GENERATOR
+    direction = DIRECTION_UNI
 
     def __init__(self, asset):
         self.asset = asset
-        self.connected = set()
-        self.buses = set()
+        self.bus1 = None
 
     def __str__(self):
-        command = ''
-        connected = list(self.connected)
-        if self.connected:
-            command = f'New Generator.{self.id} phases=1 bus1={connected[0].bus.id}'
-            attributes = self.asset.attributes
-            if attributes:
-                KV = attributes.get('KV', False)
-                KW = attributes.get('KW', False)
-                if KV:
-                    command += f' kV={KV} '
+        command = f'New Generator.{self.id} phases=1'
+        if self.bus1:
+            command += f' bus1={self.bus1.id}'
+        attributes = self.asset.attributes
+        if attributes:
+            KV = attributes.get('KV', False)
+            KW = attributes.get('KW', False)
+            if KV:
+                command += f' kV={KV} '
 
-                if KW:
-                    command += f' kW={KW} '
+            if KW:
+                command += f' kW={KW} '
 
         return command
 
@@ -207,7 +173,6 @@ class Substation(AssetMixin):
     def __init__(self, asset):
         self.asset = asset
         self.bus1 = None
-        self.connected = set()
 
     def __str__(self):
         command = f'New Vsource.{self.asset.id} bus1={self.bus1.id}'
@@ -220,16 +185,18 @@ class Substation(AssetMixin):
 
 
 class Bus(AssetMixin):
-    def __init__(self, node):
+    def __init__(self, node, name):
         self.node = node
-        self.connected = set()
+        self._name = name
 
     @property
     def id(self):
-        return f'bus_{self.node.asset.name}'
+        if self._name:
+            return self._name
+        return f'bus_{self.node.name}'
 
     def __str__(self):
-        return  f'AddBusMarker Bus={self.id} code=36 color=Red size=2'
+        return f'AddBusMarker Bus={self.id} code=36 color=Red size=2'
 
 
 def node_existence(id, graph):
@@ -244,7 +211,6 @@ def create_node(asset, index, graph=None):
     if asset.type_id[0] == TRANSFORMER:
         current_node = Transformer(asset)
         index[TRANSFORMER]['assets'].append(current_node)
-
 
     if asset.type_id[0] == LINE:
         current_node = Line(asset)
@@ -267,50 +233,58 @@ def create_node(asset, index, graph=None):
     #     create_bus(current_node, index=index, graph=graph, invisible=True)
     #     index[SUBSTATION]['assets'].append(current_node)
 
-    graph.add_node(asset.id, instance=asset, translate=current_node, type_id=types[asset.type_id[0]])
+    graph.add_node(asset.name, instance=asset, translate=current_node, type_id=types[asset.type_id[0]])
 
     return current_node
 
 
-def create_bus(node, index, graph, invisible=False):
-    bus = Bus(node)
-    node.bus1 = bus
-    if not invisible:
-        graph.add_node(bus.id, instance=None, translate=bus)
-        graph.add_edge(bus.id, node.id)
-        index[BUS]['assets'].append(bus)
-
-    return bus
+def create_bus(node, name=None):
+    return Bus(node, name)
 
 
-def create_connection(asset1, asset2, index, graph, matrix=CONNECTION_MATRIX):
-    type1 = asset1.type
-    type2 = asset2.type
-    connection = matrix.get(f'{type1}{type2}', matrix[DEFAULT])
+def create_connection(asset1, asset2, graph):
+    graph.add_edge(asset1.id, asset2.id)
 
-    source = asset1
-    destination = asset2
-    if not hasattr(source, 'bus'):
-        source = asset2
-        destination = asset1
 
-    if source.bus:
-        bus = source.bus
-    else:
-        bus = create_bus(source, index, graph)
-        source.bus = bus
+def get_node(asset, graph, index):
+    current_node = node_existence(asset.name, graph=graph)
 
-    if connection['direction'] == DIRECTION_MULTI:
-        graph.add_edge(source.id, bus.id)
-        graph.add_edge(bus.id, destination.id)
-    else:
-        graph.add_edge(source.id, destination.id)
+    if not current_node:
+        current_node = create_node(asset, index=index, graph=graph)
 
-    bus.connected.update([asset2,asset1])
-    asset1.connected.add(asset2)
-    asset1.buses.add(bus)
-    asset2.connected.add(asset1)
-    asset2.buses.add(bus)
+    return current_node
 
-    return source, destination, bus, connection
 
+def have_free_bus1(element):
+    return element.bus1 is None
+
+
+def have_free_bus2(element):
+    return element.bus2 is None
+
+
+def connect(E1, E2, index):
+    if E1.direction is DIRECTION_UNI and E2.direction is DIRECTION_UNI and have_free_bus1(E2):
+        E2.bus1 = E1.bus1
+        return True
+
+    if (E1.direction is DIRECTION_UNI) and (E2.direction is DIRECTION_MULTI) and have_free_bus1(E2):
+        E2.bus1 = E1.bus1
+        return True
+
+    if E1.direction is DIRECTION_MULTI and E2.direction is DIRECTION_UNI and have_free_bus1(E2):
+        E2.bus1 = E1.bus1
+        return True
+
+    if E1.direction is DIRECTION_MULTI and E2.direction is DIRECTION_MULTI:
+        if have_free_bus2(E1) and have_free_bus1(E2):
+            bus = create_bus(E1)
+            E2.bus1 = bus
+            E1.bus2 = bus
+            return True
+
+        if have_free_bus2(E1) and not have_free_bus1(E2):
+            E1.bus2 = E2.bus1
+            return True
+
+    return False
