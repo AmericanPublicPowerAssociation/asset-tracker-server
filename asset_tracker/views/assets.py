@@ -483,11 +483,17 @@ def export_assets_to_dss(request):
                     connections.append(identificator)
 
     f = io.StringIO()
+
+    if len(ELEMENTS[GENERATOR]['assets']) == 0:
+        warning_comment = comment('WARNING: No GENERATORS exist')
+        f.write(f'{warning_comment}\n')
+
     f.write('clear\n')
 
     f.write(f'{circuit}\n')
-    for element in ELEMENTS.values():
+    for asset_type, element in ELEMENTS.items():
         f.write(f'{comment(element["title"])}\n')
+
         for asset in element["assets"]:
             f.write(f'{asset}\n')
 
