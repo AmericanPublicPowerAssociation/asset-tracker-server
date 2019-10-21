@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import shapely.wkt as wkt
 from cgi import FieldStorage
+
+from networkx.drawing.nx_pydot import write_dot
 from pyramid.httpexceptions import (
     HTTPBadRequest,
     HTTPInsufficientStorage,
@@ -14,8 +16,10 @@ from pyramid.view import view_config
 from sqlalchemy import desc
 from sqlalchemy.orm import selectinload
 
+from asset_tracker.models.asset import asset_connection
 from asset_tracker.routines.opendss import (BUS, GENERATOR, TRANSFORMER, LINE, LOAD, METER, node_existence,
-                                            create_node, create_connection, Circuit, comment)
+                                            create_node, create_connection, Circuit, comment, create_bus, connect,
+                                            get_node, DEFAULT_SOURCE_BUS)
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
@@ -436,41 +440,58 @@ def export_assets_to_dss(request):
     G = nx.Graph()
 
     ELEMENTS = {
-        BUS:  {'title': 'Buses', 'assets': []},
+        # BUS:  {'title': 'Buses', 'assets': []},
         GENERATOR:  {'title': 'Generators', 'assets': []},
-        TRANSFORMER:  {'title': 'Transformers', 'assets': []},
+        # TRANSFORMER:  {'title': 'Transformers', 'assets': []},
         LINE: {'title': 'Lines', 'assets': []},
-        LOAD:  {'title': 'Loads', 'assets': []},
-        METER:  {'title': 'Meters', 'assets': []},
+        METER:  {'title': 'Loads', 'assets': []},
     }
 
-    EXPORT_ASSETS = [METER, LINE, GENERATOR]
+    EXPORT_ASSETS = [LINE, METER, GENERATOR]
 
+    circuit = Circuit('SimpleCircuit')
+    G.add_node(circuit.name, instance=circuit, translate=circuit)
+    circuit.bus = create_bus(circuit, name=DEFAULT_SOURCE_BUS)
+
+    # Build Graph
     for asset in db.query(Asset).all():
-        if asset.type_id[0] in EXPORT_ASSETS:
-            current_node = node_existence(asset.id, graph=G)
-            if not current_node:
-                current_node = create_node(asset, index=ELEMENTS, graph=G)
+        # Connect Circuit to Generators
+        if asset.type_id[0] is GENERATOR:
+            current_node = get_node(asset, G, ELEMENTS)
+            create_connection(circuit, current_node, graph=G)
 
+        # Generate all allowed assets
+        if asset.type_id[0] in EXPORT_ASSETS:
+            current_node = get_node(asset, G, ELEMENTS)
             for inner_asset in asset.connections:
                 if inner_asset.type_id in EXPORT_ASSETS:
-                    inner_node = node_existence(inner_asset.id, graph=G)
-                    if not inner_node:
-                        inner_node = create_node(inner_asset, index=ELEMENTS, graph=G)
+                    inner_node = get_node(inner_asset, G, ELEMENTS)
+                    create_connection(current_node, inner_node, graph=G)
 
-                    create_connection(current_node, inner_node, index=ELEMENTS, graph=G)
+    # Make connections
+    connections = []
+    for node in nx.dfs_preorder_nodes(G, source=circuit.name):
+        for id1, id2 in G.edges(node):
+            identificator = ' '.join(map(str, sorted([id1, id2])))
 
+            E1 = node_existence(id1, G)
+            E2 = node_existence(id2, G)
+            if identificator not in connections:
+                connected = connect(E1, E2, ELEMENTS)
+                print(f'{id1} => {id2} ({connected})')
+                if connected:
+                    connections.append(identificator)
 
     f = io.StringIO()
     f.write('clear\n')
-    circuit = Circuit('SimpleCircuit')
+
     f.write(f'{circuit}\n')
     for element in ELEMENTS.values():
         f.write(f'{comment(element["title"])}\n')
         for asset in element["assets"]:
             f.write(f'{asset}\n')
 
-    f.write('\nmakebuslist\nsolve\n')
+    f.write('\nmakebuslist\nCalcVoltageBases\nsolve\nShow Powers kva Elements\nShow Voltage LL\n')
 
     return Response(
         body=f.getvalue(),
