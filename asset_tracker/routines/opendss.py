@@ -10,6 +10,7 @@ types = {entry['id']: entry for entry in data_types}
 TRANSFORMER = 't'
 METER = 'm'
 LINE = 'l'
+LINECODE = 'linecode'
 GENERATOR = 'g'
 STATION = 'S'
 SUBSTATION = 's'
@@ -38,6 +39,14 @@ class AssetMixin:
         return self.asset.name
 
 
+class LineCode(AssetMixin):
+    type = LINECODE
+
+    def __str__(self):
+        return ('New Linecode.lc nphases=2 basefreq=60 units=km normamps=419.0 ' 
+                'rmatrix=(0.25|0.06 0.25) xmatrix=(0.80 | 0.60 0.8011)')
+
+
 class Line(AssetMixin):
     type = LINE
     direction = DIRECTION_MULTI
@@ -48,7 +57,7 @@ class Line(AssetMixin):
         self.bus2 = None
 
     def __str__(self):
-        line = f'New Line.{self.id} phases=1 x0=0.1 r0=0.1'
+        line = f'New Line.{self.id} length=.300 phases=2 x1=0.1 r1=0.01 linecode=lc'
         if self.bus1:
             line += f' Bus1={self.bus1.id} '
 
@@ -67,7 +76,7 @@ class Meter(AssetMixin):
         self.bus1 = None
 
     def __str__(self):
-        command = f'New Load.Load_{self.asset.name} phases=1'
+        command = f'New Load.Load_{self.asset.name} phases=2 conn=wye model=5 '
 
         if self.bus1:
             command += f' Bus1={self.bus1.id}'
@@ -81,6 +90,8 @@ class Meter(AssetMixin):
 
             if KW:
                 command += f' kW={KW} '
+
+        command += ' kvar=100'
 
         return command
 
@@ -124,7 +135,7 @@ class Circuit(AssetMixin):
         return self.id
 
     def __str__(self):
-        return f'New Circuit.{self.asset} basekv=10 bus1=SourceBus phases=1 ! (Vsource.Source is active circuit element)'
+        return f'New Circuit.{self.asset} basekv=13.8 pu=1.000 bus1=SourceBus'
 
 
 class Generator(AssetMixin):
@@ -136,7 +147,7 @@ class Generator(AssetMixin):
         self.bus1 = None
 
     def __str__(self):
-        command = f'New Generator.{self.id} phases=1'
+        command = f'New Generator.{self.id} model=3'
         if self.bus1:
             command += f' bus1={self.bus1.id}'
         attributes = self.asset.attributes
@@ -147,7 +158,7 @@ class Generator(AssetMixin):
                 command += f' kV={KV} '
 
             if KW:
-                command += f' kW={KW} '
+                command += f' kW={KW} maxkvar={KW * 2} minkvar={KW / 10}'
 
         return command
 
