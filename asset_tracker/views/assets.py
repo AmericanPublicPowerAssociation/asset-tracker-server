@@ -19,7 +19,7 @@ from sqlalchemy.orm import selectinload
 from asset_tracker.models.asset import asset_connection
 from asset_tracker.routines.opendss import (BUS, GENERATOR, TRANSFORMER, LINE, LOAD, METER, node_existence,
                                             create_node, create_connection, Circuit, comment, create_bus, connect,
-                                            get_node, DEFAULT_SOURCE_BUS)
+                                            get_node, DEFAULT_SOURCE_BUS, LineCode, LINECODE)
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
@@ -443,6 +443,7 @@ def export_assets_to_dss(request):
         # BUS:  {'title': 'Buses', 'assets': []},
         GENERATOR:  {'title': 'Generators', 'assets': []},
         # TRANSFORMER:  {'title': 'Transformers', 'assets': []},
+        LINECODE: {'title': 'Line Codes', 'assets': [LineCode()]},
         LINE: {'title': 'Lines', 'assets': []},
         METER:  {'title': 'Loads', 'assets': []},
     }
@@ -492,12 +493,16 @@ def export_assets_to_dss(request):
 
     f.write(f'{circuit}\n')
     for asset_type, element in ELEMENTS.items():
-        f.write(f'{comment(element["title"])}\n')
+        f.write(f'\n{comment(element["title"])}\n')
 
         for asset in element["assets"]:
             f.write(f'{asset}\n')
 
-    f.write('\nmakebuslist\nCalcVoltageBases\nsolve\nShow Powers kva Elements\nShow Voltage LL\n')
+    f.write('Set voltagebases=[20]\n'
+            'CalcVoltageBases\n\n'
+            'solve\n'
+            'Show Powers kva Elements\n'
+            'Show Voltage LL\n')
 
     return Response(
         body=f.getvalue(),
