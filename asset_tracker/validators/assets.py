@@ -29,20 +29,14 @@ def validate_assets_df(assets_data_frame):
 
     errors = validate_row_existence_df(df, [
         'id',
-        'utilityId',
         'typeId',
-        'name',
-        'parentIds',
-        'childIds',
-        'connectedIds',
-        'location',
-        'wkt',
+        'name'
     ])
     all_errors = map_errors(errors, lambda _: 'Missing column', {})
     if errors:
         return pd.DataFrame(), all_errors
 
-    cols = ['utilityId', 'typeId', 'name']
+    cols = ['utilityId', 'id', 'name']
     valid, errors = validate_field_existence_df(df, cols)
     for col in cols:
         entry = errors.get(col, None)
@@ -52,7 +46,7 @@ def validate_assets_df(assets_data_frame):
                 lambda _: f'{col} requires not empty value',
                 all_errors)
 
-    # !!! check valid utility id
+    # !!! check valid id
     # !!! check whether user can add assets to utility id
     # !!! check valid type id
 

@@ -34,6 +34,8 @@ APP_REQUIREMENTS = [
     # geotable
     'geoalchemy2>=0.6.3',
     'shapely',
+    'geotable',
+    'utm',
     # computation
     'networkx',
     'numpy',
