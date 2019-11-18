@@ -142,10 +142,10 @@ def see_assets_csv(request):
     ]
 
     instructions = '\n'.join([
-        '# only keep columns that are required and ',
-        '# keep columns that are being overridden and ',
-        '# keep columns that are being overridden',
-        '# omit columns that should not be touched',
+        '# Only keep the required columns: Id, Name and typeId to create new elements.',
+        '# If you want to override the information of an element please reference the element through the required columns.',
+        '# Then and add any other column to be changed, such as: "utilityId", "vendorName", "productName", "productVersion", "KV", "KW", "KWH", "location", "wkt", "childIds", "connectedIds".',
+        '# And activate the override checkbox in the uploader.',
     ])
 
     columns = ','.join(order_columns)
