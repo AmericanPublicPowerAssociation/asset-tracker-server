@@ -443,11 +443,18 @@ def receive_assets_file(request):
     ])
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
+
         if asset:
             if not override_records:
                 continue
         else:
+            compound_key = db.query(Asset).filter(Asset.name == row.get('name',''),
+                                                  Asset.utility_id == row.get('utilityId', ''))
+            if compound_key.count() > 0:
+                continue
+
             asset = Asset(id=row['id'])
+
         asset.type_id = row['typeId']
         asset.name = row['name']
 
@@ -474,6 +481,9 @@ def receive_assets_file(request):
 
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
+        if not asset:
+            continue
+            
         if has_child_ids:
             for child_id in row['childIds']:
                 child = db.query(Asset).get(child_id)
