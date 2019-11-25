@@ -19,7 +19,8 @@ from sqlalchemy.orm import selectinload
 from asset_tracker.models.asset import asset_connection
 from asset_tracker.routines.opendss import (BUS, GENERATOR, TRANSFORMER, LINE, LOAD, METER, node_existence,
                                             create_node, create_connection, Circuit, comment, create_bus, connect,
-                                            get_node, DEFAULT_SOURCE_BUS, LineCode, LINECODE)
+                                            get_node, DEFAULT_SOURCE_BUS, LineCode, LINECODE, SWITCH, STORAGE,
+                                            POWERQUALITY)
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
@@ -131,6 +132,7 @@ def see_assets_csv(request):
         selectinload(Asset.children),
         selectinload(Asset.connections),
     ).all()
+
     order_columns = [
         'id', 'utilityId', 'typeId', 'name',
         'vendorName', 'productName', 'productVersion',
@@ -138,7 +140,16 @@ def see_assets_csv(request):
         'location', 'wkt',
         'parentIds', 'childIds', 'connectedIds',
     ]
-    csv = ','.join(order_columns)
+
+    instructions = '\n'.join([
+        '# Only keep the required columns: Id, Name and typeId to create new elements.',
+        '# If you want to override the information of an element please reference the element through the required columns.',
+        '# Then and add any other column to be changed, such as: "utilityId", "vendorName", "productName", "productVersion", "KV", "KW", "KWH", "location", "wkt", "childIds", "connectedIds".',
+        '# And activate the override checkbox in the uploader.',
+    ])
+
+    columns = ','.join(order_columns)
+    csv = f'{instructions}\n{columns}'
 
     if len(assets) > 0:
         assets = [build_flat_dict_structure(_) for _ in assets]
@@ -147,7 +158,8 @@ def see_assets_csv(request):
         transform_array_to_csv(data, 'childIds', sep=' ')
         transform_array_to_csv(data, 'parentIds', sep=' ')
         transform_array_to_csv(data, 'connectedIds', sep=' ')
-        csv = data[order_columns].to_csv(index=False)
+        csv_data = data[order_columns].to_csv(index=False)
+        csv = f'{instructions}\n{csv_data}'
 
     log_event(request, LogEvent.export_assets_csv, {})
     return Response(
@@ -340,24 +352,35 @@ def receive_assets_file(request):
     # except FileUploadError as e:
 
     # !!! raise exception here
-    validated_assets, errors = validate_assets_df(pd.read_csv(f.file))
+    validated_assets, errors = validate_assets_df(pd.read_csv(f.file, comment='#'))
 
     if errors:
         raise HTTPBadRequest(errors)
 
-    prepare_column(validated_assets, 'location', cast=float)
-    prepare_column(validated_assets, 'childIds', separator=' ')
-    prepare_column(validated_assets, 'parentIds', separator=' ')
-    prepare_column(validated_assets, 'connectedIds', separator=' ')
+    has_utility_id = 'utilityId' in validated_assets.columns
+    has_parent_ids = 'parentIds' in validated_assets.columns
+    has_child_ids = 'childIds' in validated_assets.columns
+    has_connected_ids = 'connectedIds' in validated_assets.columns
+    has_wkt = 'wkt' in validated_assets.columns
+    has_location = 'location' in validated_assets.columns
+
+    if has_parent_ids:
+        prepare_column(validated_assets, 'parentIds', separator=' ')
+    if has_location:
+        prepare_column(validated_assets, 'location', cast=float)
+    if has_child_ids:
+        prepare_column(validated_assets, 'childIds', separator=' ')
+    if has_connected_ids:
+        prepare_column(validated_assets, 'connectedIds', separator=' ')
 
     db = request.db
 
     # TODO: move this logic to model or helper function
     extra_columns = get_extra_columns_df(validated_assets, [
         'id',
-        'utilityId',
         'typeId',
         'name',
+        'utilityId',
         'parentIds',
         'childIds',
         'connectedIds',
@@ -372,38 +395,43 @@ def receive_assets_file(request):
                 continue
         else:
             asset = Asset(id=row['id'])
-
-        asset.utility_id = row['utilityId']
         asset.type_id = row['typeId']
         asset.name = row['name']
-        if len(row['location']) == 2:
+
+        if has_utility_id:
+            asset.utility_id = row.get('utilityId', '')
+
+        if has_location and len(row['location']) == 2:
             asset.location = row['location']
+
         extra = {}
         for column in extra_columns:
             value = row[column]
             if isinstance(value, float) and np.isnan(value):
                 continue
             extra[column] = value
-
         asset.attributes = extra
-        geometry = row['wkt']
-        if not (isinstance(geometry, float) and np.isnan(geometry)):
-            asset.geometry = wkt.loads(geometry)
+
+        if has_wkt:
+            geometry = row['wkt']
+            if not (isinstance(geometry, float) and np.isnan(geometry)):
+                asset.geometry = wkt.loads(geometry)
 
         db.add(asset)
 
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
+        if has_child_ids:
+            for child_id in row['childIds']:
+                child = db.query(Asset).get(child_id)
+                if child:
+                    asset.add_child(child)
 
-        for child_id in row['childIds']:
-            child = db.query(Asset).get(child_id)
-            if child:
-                asset.add_child(child)
-
-        for connected_id in row['connectedIds']:
-            connected = db.query(Asset).get(connected_id)
-            if connected:
-                asset.add_connection(connected)
+        if has_connected_ids:
+            for connected_id in row['connectedIds']:
+                connected = db.query(Asset).get(connected_id)
+                if connected:
+                    asset.add_connection(connected)
 
     try:
         db.flush()
@@ -442,13 +470,16 @@ def export_assets_to_dss(request):
     ELEMENTS = {
         # BUS:  {'title': 'Buses', 'assets': []},
         GENERATOR:  {'title': 'Generators', 'assets': []},
-        # TRANSFORMER:  {'title': 'Transformers', 'assets': []},
+        TRANSFORMER:  {'title': 'Transformers', 'assets': []},
         LINECODE: {'title': 'Line Codes', 'assets': [LineCode()]},
         LINE: {'title': 'Lines', 'assets': []},
         METER:  {'title': 'Loads', 'assets': []},
+        SWITCH: {'title': 'Switch', 'assets': []},
+        STORAGE: {'title': 'Storage', 'assets': []},
+        POWERQUALITY: {'title': 'Power Quality', 'assets': []},
     }
 
-    EXPORT_ASSETS = [LINE, METER, GENERATOR]
+    EXPORT_ASSETS = [LINE, METER, GENERATOR, SWITCH, STORAGE, TRANSFORMER, POWERQUALITY]
 
     circuit = Circuit('SimpleCircuit')
     G.add_node(circuit.name, instance=circuit, translate=circuit)
@@ -467,6 +498,8 @@ def export_assets_to_dss(request):
             for inner_asset in asset.connections:
                 if inner_asset.type_id in EXPORT_ASSETS:
                     inner_node = get_node(inner_asset, G, ELEMENTS)
+                    print(current_node)
+                    print(inner_node)
                     create_connection(current_node, inner_node, graph=G)
 
     # Make connections

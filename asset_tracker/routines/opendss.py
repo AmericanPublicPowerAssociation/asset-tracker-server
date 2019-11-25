@@ -1,6 +1,7 @@
 from networkx import nx
 import json
 
+from asset_tracker.routines.geometry import get_length
 
 f = open('asset_tracker/datasets/assetTypes.json')
 
@@ -16,6 +17,11 @@ STATION = 'S'
 SUBSTATION = 's'
 LOAD = 'load'
 BUS = 'bus'
+STORAGE = 'o'
+SWITCH = 'x'
+POWERQUALITY = 'q'
+POWERQUALITY_CAPACITOR = f'${POWERQUALITY}c'
+POWERQUALITY_REGULATOR = f'${POWERQUALITY}r'
 
 DEFAULT_SOURCE_BUS = 'SourceBus'
 
@@ -43,7 +49,7 @@ class LineCode(AssetMixin):
     type = LINECODE
 
     def __str__(self):
-        return ('New Linecode.lc nphases=2 basefreq=60 units=km normamps=419.0 ' 
+        return ('New Linecode.lc nphases=2 basefreq=60 normamps=419.0 ' 
                 'rmatrix=(0.25|0.06 0.25) xmatrix=(0.80 | 0.60 0.8011)')
 
 
@@ -57,14 +63,37 @@ class Line(AssetMixin):
         self.bus2 = None
 
     def __str__(self):
-        line = f'New Line.{self.id} length=.300 phases=2 x1=0.1 r1=0.01 linecode=lc'
+        line = f'New Line.{self.id} phases=2 x1=0.1 r1=0.01 linecode=lc'
         if self.bus1:
             line += f' Bus1={self.bus1.id} '
 
         if self.bus2:
             line += f' Bus2={self.bus2.id}'
 
+        meters = (get_length(self.asset) if self.asset.geometry else 300)
+        line += f' length={meters/1000}'
+
         return line
+
+
+class Switch(AssetMixin):
+    type = SWITCH
+    direction = DIRECTION_MULTI
+
+    def __init__(self, asset):
+        self.asset = asset
+        self.bus1 = None
+        self.bus2 = None
+
+    def __str__(self):
+        command = f'New Line.{self.id} phases=3 Switch=y'
+        if self.bus1:
+            command += f' Bus1={self.bus1.id} '
+
+        if self.bus2:
+            command += f' Bus2={self.bus2.id}'
+
+        return command
 
 
 class Meter(AssetMixin):
@@ -96,25 +125,73 @@ class Meter(AssetMixin):
         return command
 
 
-class Transformer(AssetMixin):
-    type = TRANSFORMER
+class PowerQuality(AssetMixin):
+    type = POWERQUALITY
+    direction = DIRECTION_UNI
 
     def __init__(self, asset):
         self.asset = asset
-        self.connected = set()
-        self.buses = set()
+        self.bus1 = None
 
     def __str__(self):
-        if not self.connected:
-            return ''
+        command = ''
+        attributes = self.asset.attributes
 
-        buses = list(self.buses)
-        bus2 = len(buses) >= 2
+        if self.asset.type_id == POWERQUALITY_REGULATOR:
+            command = (f'New regcontrol.{self.id} transformer={self.bus1.id}\n'
+                       '~ winding=2  vreg=122  band=2  ptratio=20 ctprim=700  R=3 X=9')
 
-        if bus2:
-            return f'New Transformer.{self.id} Buses=[{self.buses[0].id}, {self.buses[1].id}]'
+        if self.asset.type_id == POWERQUALITY_CAPACITOR:
+            command = f'New Capacitor.{self.id} Bus1={self.bus1.id} phases=3 kvar=600 '
+            if attributes:
+                KV = attributes.get('KV', False)
+                if KV:
+                    command += f' kV={KV} '
 
-        return f'New Transformer.{self.id} Buses=[{self.buses[0].id}]'
+        return command
+
+
+class Storage(AssetMixin):
+    type = STORAGE
+    direction = DIRECTION_UNI
+
+    def __init__(self, asset):
+        self.asset = asset
+        self.bus1 = None
+
+    def __str__(self):
+        command = (f'New Loadshape.{self.id}Shape  npts=24  interval=1 '
+                   'mult=[0 0 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 0.8 0.9 0.94 1 0.94 0 0 0]\n'
+                   f'New Storage.{self.id} phases=3 kWrated=350 kWhrated=2000 dispmode=follow daily={self.id}Shape')
+        if self.bus1:
+            command += f' bus1={self.bus1.id}'
+        attributes = self.asset.attributes
+        if attributes:
+            KV = attributes.get('KV', False)
+            if KV:
+                command += f' kV={KV} '
+
+        return command
+
+
+class Transformer(AssetMixin):
+    type = TRANSFORMER
+    direction = DIRECTION_MULTI
+
+    def __init__(self, asset):
+        self.asset = asset
+        self.bus1 = None
+        self.bus2 = None
+
+    def __str__(self):
+        winding = (self.bus1 and 1 or 0) + (self.bus2 and 1 or 0)
+        command = f'New Transformer.XFM1  phases=3   windings={winding}  xhl=2 \n'
+        if self.bus1:
+            command += f'~ wdg=1 bus={self.bus1.id} conn=wye kV=4.16    kva=500    %r=.55\n'
+        if self.bus2:
+            command += f'~ wdg=1 bus={self.bus2.id} conn=wye kV=4.16    kva=500    %r=.55'
+
+        return command
 
 
 class Circuit(AssetMixin):
@@ -230,9 +307,22 @@ def create_node(asset, index, graph=None):
     if asset.type_id[0] == METER:
         current_node = Meter(asset)
         index[METER]['assets'].append(current_node)
+
     if asset.type_id[0] == GENERATOR:
         current_node = Generator(asset)
         index[GENERATOR]['assets'].append(current_node)
+
+    if asset.type_id[0] == SWITCH:
+        current_node = Switch(asset)
+        index[SWITCH]['assets'].append(current_node)
+
+    if asset.type_id[0] == STORAGE:
+        current_node = Storage(asset)
+        index[STORAGE]['assets'].append(current_node)
+
+    if asset.type_id[0] == POWERQUALITY:
+        current_node = PowerQuality(asset)
+        index[POWERQUALITY]['assets'].append(current_node)
 
     # if asset.type_id[0] == STATION:
     #     current_node = Station(asset)
