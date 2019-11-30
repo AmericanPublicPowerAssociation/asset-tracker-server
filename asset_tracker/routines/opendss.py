@@ -184,12 +184,24 @@ class Transformer(AssetMixin):
         self.bus2 = None
 
     def __str__(self):
-        winding = (self.bus1 and 1 or 0) + (self.bus2 and 1 or 0)
-        command = f'New Transformer.XFM1  phases=3   windings={winding}  xhl=2 \n'
+        command = f'New Transformer.{self.asset.id} Phases=3 Windings=2 xhl=(8 1000 /)'
+
+        kv = self.asset.attributes.get('KV', False)
+        kv_high = self.asset.attributes.get('HIGHVOLT', kv)
+        kv_med = self.asset.attributes.get('MEDVOLT', kv)
+
+        kva = self.asset.attributes.get('KVA', False)
+        kva_high = self.asset.attributes.get('KVAHIGH', kva)
+        kva_med = self.asset.attributes.get('KVAMED', kva)
+
         if self.bus1:
-            command += f'~ wdg=1 bus={self.bus1.id} conn=wye kV=4.16    kva=500    %r=.55\n'
+            local_kv = kv_high if kv_high else ''
+            local_kva = kva_high if kva_high else ''
+            command += f'~ wdg=1 bus={self.bus1.id} conn=delta kV={local_kv} kva={local_kva} %r=(.5 1000 /)\n'
         if self.bus2:
-            command += f'~ wdg=1 bus={self.bus2.id} conn=wye kV=4.16    kva=500    %r=.55'
+            local_kv = kv_med if kv_med else ''
+            local_kva = kva_med if kva_med else ''
+            command += f'~ wdg=2 bus={self.bus2.id} conn=wye kV={local_kv} kva={local_kva} %r=(.5 1000 /)'
 
         return command
 
@@ -255,35 +267,9 @@ class Station(AssetMixin):
             command += f' basekv={KV} '
 
 
-class Substation(AssetMixin):
+class Substation(Transformer):
     type = SUBSTATION
 
-    def __init__(self, asset):
-        self.asset = asset
-        self.bus1 = None
-        self.bus2 = None
-
-    def __str__(self):
-        command = f'New Transformer.{self.asset.id} Phases=3 Windings=2 xhl=(8 1000 /)'
-
-        kv = self.asset.attributes.get('KV', False)
-        kv_high = self.asset.attributes.get('HIGHVOLT', kv)
-        kv_med = self.asset.attributes.get('MEDVOLT', kv)
-
-        kva = self.asset.attributes.get('KVA', False)
-        kva_high = self.asset.attributes.get('KVAHIGH', kva)
-        kva_med = self.asset.attributes.get('KVAMED', kva)
-
-        if self.bus1:
-            local_kv = kv_high if kv_high else ''
-            local_kva = kva_high if kva_high else ''
-            command += f'~ wdg=1 bus={self.bus1.id} conn=delta kV={local_kv} kva={local_kva} %r=(.5 1000 /)\n'
-        if self.bus2:
-            local_kv = kv_med if kv_med else ''
-            local_kva = kva_med if kva_med else ''
-            command += f'~ wdg=2 bus={self.bus2.id} conn=wye kV={local_kv} kva={local_kva} %r=(.5 1000 /)'
-
-        return command
 
 
 class Bus(AssetMixin):
