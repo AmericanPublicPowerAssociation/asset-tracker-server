@@ -54,6 +54,7 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
         secondaryjoin='asset_connection.c.right_asset_id == Asset.id')
     attributes = Column(PickleType)
     _geometry = Column(Geometry(management=True))
+    shape = Column(PickleType, default={})
 
     def __init__(self, **kwargs):
         if 'geometry' in kwargs:
@@ -195,10 +196,12 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
             'parentIds': [_.id for _ in self.parents],
             'childIds': [_.id for _ in self.children],
             'connectedIds': [_.id for _ in self.connections],
+            'shape': self.shape != {},
         })
         if self._geometry is not None:
             d['location'] = self.location
             d['geometry'] = get_geometry_d(self.geometry)
+
         return d
 
     def is_readable(self, request):

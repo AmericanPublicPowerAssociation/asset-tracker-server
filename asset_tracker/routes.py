@@ -41,3 +41,6 @@ def includeme(config):
     config.add_route(
         'logs_metrics.json',
         '/logs/metrics.json')
+    config.add_route(
+        'shape.csv',
+        '/assets/{asset}/shape.csv')

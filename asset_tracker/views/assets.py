@@ -336,6 +336,59 @@ def drop_asset_json(request):
 
 
 @view_config(
+    route_name='shape.csv',
+    request_method='GET')
+def see_asset_shape(request):
+    asset_id = request.matchdict['asset']
+    print(asset_id)
+    db = request.db
+
+    asset = db.query(Asset).get(asset_id)
+
+    if not asset:
+        raise HTTPNotFound({'asset': 'does not exists'})
+
+    df = pd.DataFrame.from_dict(asset.shape)
+
+    return Response(
+        body=df.to_csv(),
+        status=200,
+        content_type='text/csv',
+        content_disposition='attachment')
+
+
+@view_config(
+    route_name='shape.csv',
+    renderer='json',
+    request_method='POST')
+def receive_asset_shape(request):
+    asset_id = request.matchdict['asset']
+    db = request.db
+
+    asset = db.query(Asset).get(asset_id)
+    if not asset:
+        raise HTTPNotFound({'asset': 'doensn\'t exists'})
+
+    try:
+        f = request.params['file']
+    except KeyError:
+        raise HTTPBadRequest({'file': 'is required'})
+    if not isinstance(f, FieldStorage):
+        raise HTTPBadRequest({'file': 'must be an upload'})
+
+    df = pd.read_csv(f.file, comment='#')
+    df = df.dropna(how='all')
+    if len(df.columns) > 0:
+        df = df.select_dtypes(include=["float", 'int'])
+        asset.shape = df.to_dict()
+
+        return {
+            'error': False
+        }
+
+    raise HTTPBadRequest({'file': ' has not content'})
+
+@view_config(
     route_name='assets.csv',
     renderer='json',
     request_method='PATCH')
@@ -390,11 +443,18 @@ def receive_assets_file(request):
     ])
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
+
         if asset:
             if not override_records:
                 continue
         else:
+            compound_key = db.query(Asset).filter(Asset.name == row.get('name',''),
+                                                  Asset.utility_id == row.get('utilityId', ''))
+            if compound_key.count() > 0:
+                continue
+
             asset = Asset(id=row['id'])
+
         asset.type_id = row['typeId']
         asset.name = row['name']
 
@@ -421,6 +481,9 @@ def receive_assets_file(request):
 
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
+        if not asset:
+            continue
+            
         if has_child_ids:
             for child_id in row['childIds']:
                 child = db.query(Asset).get(child_id)
