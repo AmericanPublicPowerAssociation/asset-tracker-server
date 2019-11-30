@@ -127,11 +127,12 @@ class Meter(AssetMixin):
 
 class PowerQuality(AssetMixin):
     type = POWERQUALITY
-    direction = DIRECTION_UNI
+    direction = DIRECTION_MULTI
 
     def __init__(self, asset):
         self.asset = asset
         self.bus1 = None
+        self.bus2 = None
 
     def __str__(self):
         command = ''
@@ -142,11 +143,19 @@ class PowerQuality(AssetMixin):
                        '~ winding=2  vreg=122  band=2  ptratio=20 ctprim=700  R=3 X=9')
 
         if self.asset.type_id == POWERQUALITY_CAPACITOR:
-            command = f'New Capacitor.{self.id} Bus1={self.bus1.id} phases=3 kvar=600 '
+            command = f'New Capacitor.{self.id} Bus1={self.bus1.id}'
+
+            if self.bus2:
+                command += f' bus2={self.bus2.id}'
+
             if attributes:
-                KV = attributes.get('KV', False)
-                if KV:
-                    command += f' kV={KV} '
+                kv = attributes.get('KV', False)
+                kvar = attributes.get('KVAR', False)
+                phases = attributes.get('phases', 2)
+                local_kv = kv if kv else ''
+                local_kvar = kvar if kvar else ''
+
+                command += f' phases={phases} kV={local_kv} kvar={local_kvar}'
 
         return command
 
@@ -269,7 +278,6 @@ class Station(AssetMixin):
 
 class Substation(Transformer):
     type = SUBSTATION
-
 
 
 class Bus(AssetMixin):
