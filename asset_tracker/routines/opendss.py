@@ -261,13 +261,27 @@ class Substation(AssetMixin):
     def __init__(self, asset):
         self.asset = asset
         self.bus1 = None
+        self.bus2 = None
 
     def __str__(self):
-        command = f'New Vsource.{self.asset.id} bus1={self.bus1.id}'
-        KV = self.asset.attributes.get('KV', False)
+        command = f'New Transformer.{self.asset.id} Phases=3 Windings=2 xhl=(8 1000 /)'
 
-        if KV:
-            command += f' basekv={KV} '
+        kv = self.asset.attributes.get('KV', False)
+        kv_high = self.asset.attributes.get('HIGHVOLT', kv)
+        kv_med = self.asset.attributes.get('MEDVOLT', kv)
+
+        kva = self.asset.attributes.get('KVA', False)
+        kva_high = self.asset.attributes.get('KVAHIGH', kva)
+        kva_med = self.asset.attributes.get('KVAMED', kva)
+
+        if self.bus1:
+            local_kv = kv_high if kv_high else ''
+            local_kva = kva_high if kva_high else ''
+            command += f'~ wdg=1 bus={self.bus1.id} conn=delta kV={local_kv} kva={local_kva} %r=(.5 1000 /)\n'
+        if self.bus2:
+            local_kv = kv_med if kv_med else ''
+            local_kva = kva_med if kva_med else ''
+            command += f'~ wdg=2 bus={self.bus2.id} conn=wye kV={local_kv} kva={local_kva} %r=(.5 1000 /)'
 
         return command
 
