@@ -35,6 +35,12 @@ def comment(text):
     return f'// {text}'
 
 
+def to_matrix(lists):
+    rows = [' '.join(map(str, entry)) for entry in lists]
+    matrix = ' | '.join(rows)
+    return f'[{matrix}]'
+
+
 class AssetMixin:
     @property
     def id(self):
@@ -48,9 +54,23 @@ class AssetMixin:
 class LineCode(AssetMixin):
     type = LINECODE
 
+    def __init__(self, name, phases, rmatrix, xmatrix, frequency=60, units='mi'):
+        self.name = name
+        self.phases = phases
+        self.rmatrix = rmatrix
+        self.xmatrix = xmatrix
+        self.frequency = frequency
+        self.units = units
+
     def __str__(self):
-        return ('New Linecode.lc nphases=2 basefreq=60 normamps=419.0 ' 
-                'rmatrix=(0.25|0.06 0.25) xmatrix=(0.80 | 0.60 0.8011)')
+        rmatrix = to_matrix(self.rmatrix)
+        xmatrix = to_matrix(self.xmatrix)
+
+        return (f'New Linecode.{self.name} nphases={self.phases} basefreq={self.frequency} normamps=419.0 ' 
+                f'rmatrix=({rmatrix}) xmatrix=({xmatrix})')
+
+
+BASIC_LC = LineCode('lc', phases=2, rmatrix=[[0.25], [0.06, 0.25]], xmatrix=[[0.80], [0.60, 0.8011]])
 
 
 class Line(AssetMixin):
@@ -127,11 +147,12 @@ class Meter(AssetMixin):
 
 class PowerQuality(AssetMixin):
     type = POWERQUALITY
-    direction = DIRECTION_UNI
+    direction = DIRECTION_MULTI
 
     def __init__(self, asset):
         self.asset = asset
         self.bus1 = None
+        self.bus2 = None
 
     def __str__(self):
         command = ''
@@ -142,11 +163,19 @@ class PowerQuality(AssetMixin):
                        '~ winding=2  vreg=122  band=2  ptratio=20 ctprim=700  R=3 X=9')
 
         if self.asset.type_id == POWERQUALITY_CAPACITOR:
-            command = f'New Capacitor.{self.id} Bus1={self.bus1.id} phases=3 kvar=600 '
+            command = f'New Capacitor.{self.id} Bus1={self.bus1.id}'
+
+            if self.bus2:
+                command += f' bus2={self.bus2.id}'
+
             if attributes:
-                KV = attributes.get('KV', False)
-                if KV:
-                    command += f' kV={KV} '
+                kv = attributes.get('KV', False)
+                kvar = attributes.get('KVAR', False)
+                phases = attributes.get('phases', 2)
+                local_kv = kv if kv else ''
+                local_kvar = kvar if kvar else ''
+
+                command += f' phases={phases} kV={local_kv} kvar={local_kvar}'
 
         return command
 
@@ -184,12 +213,24 @@ class Transformer(AssetMixin):
         self.bus2 = None
 
     def __str__(self):
-        winding = (self.bus1 and 1 or 0) + (self.bus2 and 1 or 0)
-        command = f'New Transformer.XFM1  phases=3   windings={winding}  xhl=2 \n'
+        command = f'New Transformer.{self.asset.id} Phases=3 Windings=2 xhl=(8 1000 /)'
+
+        kv = self.asset.attributes.get('KV', False)
+        kv_high = self.asset.attributes.get('HIGHVOLT', kv)
+        kv_med = self.asset.attributes.get('MEDVOLT', kv)
+
+        kva = self.asset.attributes.get('KVA', False)
+        kva_high = self.asset.attributes.get('KVAHIGH', kva)
+        kva_med = self.asset.attributes.get('KVAMED', kva)
+
         if self.bus1:
-            command += f'~ wdg=1 bus={self.bus1.id} conn=wye kV=4.16    kva=500    %r=.55\n'
+            local_kv = kv_high if kv_high else ''
+            local_kva = kva_high if kva_high else ''
+            command += f'~ wdg=1 bus={self.bus1.id} conn=delta kV={local_kv} kva={local_kva} %r=(.5 1000 /)\n'
         if self.bus2:
-            command += f'~ wdg=1 bus={self.bus2.id} conn=wye kV=4.16    kva=500    %r=.55'
+            local_kv = kv_med if kv_med else ''
+            local_kva = kva_med if kva_med else ''
+            command += f'~ wdg=2 bus={self.bus2.id} conn=wye kV={local_kv} kva={local_kva} %r=(.5 1000 /)'
 
         return command
 
@@ -255,21 +296,8 @@ class Station(AssetMixin):
             command += f' basekv={KV} '
 
 
-class Substation(AssetMixin):
+class Substation(Transformer):
     type = SUBSTATION
-
-    def __init__(self, asset):
-        self.asset = asset
-        self.bus1 = None
-
-    def __str__(self):
-        command = f'New Vsource.{self.asset.id} bus1={self.bus1.id}'
-        KV = self.asset.attributes.get('KV', False)
-
-        if KV:
-            command += f' basekv={KV} '
-
-        return command
 
 
 class Bus(AssetMixin):
