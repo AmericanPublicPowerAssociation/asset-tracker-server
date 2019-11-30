@@ -35,6 +35,12 @@ def comment(text):
     return f'// {text}'
 
 
+def to_matrix(lists):
+    rows = [' '.join(map(str, entry)) for entry in lists]
+    matrix = ' | '.join(rows)
+    return f'[{matrix}]'
+
+
 class AssetMixin:
     @property
     def id(self):
@@ -48,9 +54,23 @@ class AssetMixin:
 class LineCode(AssetMixin):
     type = LINECODE
 
+    def __init__(self, name, phases, rmatrix, xmatrix, frequency=60, units='mi'):
+        self.name = name
+        self.phases = phases
+        self.rmatrix = rmatrix
+        self.xmatrix = xmatrix
+        self.frequency = frequency
+        self.units = units
+
     def __str__(self):
-        return ('New Linecode.lc nphases=2 basefreq=60 normamps=419.0 ' 
-                'rmatrix=(0.25|0.06 0.25) xmatrix=(0.80 | 0.60 0.8011)')
+        rmatrix = to_matrix(self.rmatrix)
+        xmatrix = to_matrix(self.xmatrix)
+
+        return (f'New Linecode.{self.name} nphases={self.phases} basefreq={self.frequency} normamps=419.0 ' 
+                f'rmatrix=({rmatrix}) xmatrix=({xmatrix})')
+
+
+BASIC_LC = LineCode('lc', phases=2, rmatrix=[[0.25], [0.06, 0.25]], xmatrix=[[0.80], [0.60, 0.8011]])
 
 
 class Line(AssetMixin):

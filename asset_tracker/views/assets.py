@@ -20,7 +20,7 @@ from asset_tracker.models.asset import asset_connection
 from asset_tracker.routines.opendss import (BUS, GENERATOR, TRANSFORMER, LINE, LOAD, METER, node_existence,
                                             create_node, create_connection, Circuit, comment, create_bus, connect,
                                             get_node, DEFAULT_SOURCE_BUS, LineCode, LINECODE, SWITCH, STORAGE,
-                                            POWERQUALITY)
+                                            POWERQUALITY, BASIC_LC)
 from ..constants import ASSET_TYPES
 from ..exceptions import DatabaseRecordError
 from ..macros.text import normalize_text
@@ -534,7 +534,7 @@ def export_assets_to_dss(request):
         # BUS:  {'title': 'Buses', 'assets': []},
         GENERATOR:  {'title': 'Generators', 'assets': []},
         TRANSFORMER:  {'title': 'Transformers', 'assets': []},
-        LINECODE: {'title': 'Line Codes', 'assets': [LineCode()]},
+        LINECODE: {'title': 'Line Codes', 'assets': [BASIC_LC]},
         LINE: {'title': 'Lines', 'assets': []},
         METER:  {'title': 'Loads', 'assets': []},
         SWITCH: {'title': 'Switch', 'assets': []},
