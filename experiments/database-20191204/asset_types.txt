@@ -1,0 +1,6 @@
+transformer
+regulator
+line
+meter
+capacitor
+switch
