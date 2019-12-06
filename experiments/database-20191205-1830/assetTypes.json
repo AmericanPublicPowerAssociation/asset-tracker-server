@@ -3,7 +3,7 @@
     ["baseFrequency", "number"],
     ["baseVoltage", "number"]
     ["baseVoltageUnit", ["kV"]]
-    ["perUnit", "number"],
+    ["perUnitVoltage", "number"],
     ["phaseCount", [1, 2, 3]],
     ["phaseAngle", "number"],
     ["shortCircuit3PhasePower", "number"],
@@ -17,9 +17,11 @@
     ["winding1Winding2PercentReactance", "number"],
     ["electricalConnectionAttributes", [
       ["connectionType", ["delta", "wye"]],
-      ["voltageInKiloVolts", "number"],
-      ["powerInKiloVoltAmperes", "number"],
-      ["powerInKiloVoltAmperesPercentResistance", "number"]
+      ["baseVoltage", "number"],
+      ["baseVoltageUnit", ["kV"]],
+      ["power", "number"],
+      ["powerUnit", ["kVA"]],
+      ["powerPercentResistance", "number"]
     ]]
   ],
   "qr": [

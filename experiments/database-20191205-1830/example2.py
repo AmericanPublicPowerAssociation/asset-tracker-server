@@ -8,7 +8,7 @@ generator = Asset(
         'baseFrequency': 60,
         'baseVoltage': 115,
         'baseVoltageUnit': 'kV',
-        'perUnit': 1.0001,
+        'perUnitVoltage': 1.0001,
         'phaseCount': 3,
         'phaseAngle': 30,
         'shortCircuit3PhasePower': 20000,
