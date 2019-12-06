@@ -1,0 +1,37 @@
+{
+  "g": [
+    ["baseFrequency", "number"],
+    ["baseVoltage", "number"]
+    ["baseVoltageUnit", ["kV"]]
+    ["perUnit", "number"],
+    ["phaseCount", [1, 2, 3]],
+    ["phaseAngle", "number"],
+    ["shortCircuit3PhasePower", "number"],
+    ["shortCircuit3PhasePowerUnit", ["MVA"]]
+    ["shortCircuit1PhasePower", "number"],
+    ["shortCircuit1PhasePowerUnit", ["MVA"]]
+  ],
+  "t": [
+    ["phaseCount", [1, 2, 3]],
+    ["windingCount", "number"],
+    ["winding1Winding2PercentReactance", "number"],
+    ["electricalConnectionAttributes", [
+      ["connectionType", ["delta", "wye"]],
+      ["voltageInKiloVolts", "number"],
+      ["powerInKiloVoltAmperes", "number"],
+      ["powerInKiloVoltAmperesPercentResistance", "number"]
+    ]]
+  ],
+  "qr": [
+  ],
+  "b": [
+  ],
+  "m": [
+  ],
+  "qc": [
+  ],
+  "l": [
+  ],
+  "x": [
+  ]
+}

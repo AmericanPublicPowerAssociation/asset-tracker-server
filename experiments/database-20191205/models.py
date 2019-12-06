@@ -15,6 +15,11 @@ class Busbar(Base):
     id = Column(String, primary_key=True)
 
 
+class Generator(Base):
+    __tablename__ = 'generator'
+    id = Column(String, primary_key=True)
+
+
 class Transformer(Base):
     __tablename__ = 'transformer'
     id = Column(String, primary_key=True)
@@ -47,4 +52,19 @@ class Capacitor(Base):
 
 class Switch(Base):
     __tablename__ = 'switch'
+    id = Column(String, primary_key=True)
+
+
+class Substation(Base):
+    __tablename__ = 'substation'
+    id = Column(String, primary_key=True)
+
+
+class Pole(Base):
+    __tablename__ = 'pole'
+    id = Column(String, primary_key=True)
+
+
+class Task(Base):
+    __tablename__ = 'task'
     id = Column(String, primary_key=True)
