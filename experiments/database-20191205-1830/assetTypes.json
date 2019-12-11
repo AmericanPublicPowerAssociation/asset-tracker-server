@@ -33,6 +33,10 @@
   "qc": [
   ],
   "l": [
+    ["phaseCount", [1, 2, 3]],
+    ["lineType", "lineType"],
+    ["lineLength", "number"],
+    ["lengthUnit", ["ft", "mi", "m", "km"]]
   ],
   "x": [
   ]
