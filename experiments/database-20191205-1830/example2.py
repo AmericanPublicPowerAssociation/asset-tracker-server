@@ -11,9 +11,9 @@ generator = Asset(
         'perUnitVoltage': 1.0001,
         'phaseCount': 3,
         'phaseAngle': 30,
-        'shortCircuit3PhasePower': 20000,
+        'shortCircuit3PhasePower': 10000.0,
         'shortCircuit3PhasePowerUnit': 'MVA',
-        'shortCircuit1PhasePower': 21000,
+        'shortCircuit1PhasePower': 10500.0,
         'shortCircuit1PhasePowerUnit': 'MVA',
     })
 db.add(generator)
@@ -532,7 +532,7 @@ electrical_connection = ElectricalConnection(
     asset_id=load_634_1.id,
     bus_id=ieee_634_bus.id,
     attributes={
-        'connectionType': 'delta',
+        'connectionType': 'wye',
         'busNodes': [1],
         'baseVoltage': 0.277,
         'baseVoltageUnit': 'kV',
@@ -849,8 +849,7 @@ load_670_3 = Asset(
         'phaseCount': 1,
         'loadModel': 1,
     })
-db.add(load_670_1)
-
+db.add(load_670_3)
 electrical_connection = ElectricalConnection(
     asset_id=load_670_3.id,
     bus_id=ieee_670_bus.id,
