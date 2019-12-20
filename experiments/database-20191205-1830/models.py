@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.types import PickleType, String
 
 
-engine = create_engine('sqlite:///local.sqlite', echo=True)
+engine = create_engine('sqlite:///local.sqlite', echo=False)
 Base = declarative_base()
 
 

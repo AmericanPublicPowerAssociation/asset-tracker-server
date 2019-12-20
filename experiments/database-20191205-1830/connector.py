@@ -1,11 +1,11 @@
 from collections import namedtuple
 
 try:
-    from .models import Asset, ElectricalConnection, db
-    from .opendss import Line, Switch, Meter, Regulator, Capacitor, Transformer, Generator, Circuit
+    from .models import Asset, ElectricalConnection, db, LineType
+    from .opendss import Line, Switch, Meter, Regulator, Capacitor, Transformer, Generator, Circuit, LineCode
 except ModuleNotFoundError:
-    from models import Asset, ElectricalConnection, db
-    from opendss import Line, Switch, Meter, Regulator, Capacitor, Transformer, Generator, Circuit
+    from models import Asset, ElectricalConnection, db, LineType
+    from opendss import Line, Switch, Meter, Regulator, Capacitor, Transformer, Generator, Circuit, LineCode
 
 
 
@@ -31,14 +31,14 @@ for conn in db.query(ElectricalConnection):
             # print(element.type_code == AssetClass.type)
             if element.type_code == AssetClass.type:
                 asset = AssetClass
-                print(AssetClass.type)
+                # print(AssetClass.type)
 
     # print(f'Bus {asset.type}')
 
     current.append(Conn(bus, element, asset, conn))
     buses[conn.asset_id] = current
 
-print('== Wiring assets')
+print('// == Wiring assets')
 
 stations = []
 substation = []
@@ -49,18 +49,35 @@ transformers = []
 capacitors = []
 loads = []
 generators = []
+lcs = []
+
 ELEMENTS = (
         {'title': 'Station', 'assets': stations},
-
         {'title': 'Generators', 'assets': generators},
         {'title': 'Transformers', 'assets': transformers},
-        # {'title': 'Line Codes', 'assets': [BASIC_LC]},
+        {'title': 'Line Codes', 'assets': lcs},
         {'title': 'Lines', 'assets': lines},
         {'title': 'Loads', 'assets': loads},
         # {'title': 'Storage', 'assets': storage},
         {'title': 'Capacitor', 'assets': capacitors},
         {'title': 'Regulator', 'assets': regulators},
 )
+
+
+circuit_head = 'clear\n'
+circuit_head += 'New Circuit.IEEE13buses\n'
+
+circuit_tail = 'Set Voltagebases=[115, 4.16, .48]\n'
+circuit_tail += 'calcv\n'
+circuit_tail += 'solve\n'
+circuit_tail += 'Show Voltages LN Nodes\n'
+circuit_tail += 'Show Currents Elem\n'
+circuit_tail += 'Show Powers kVA Elem\n'
+circuit_tail += 'Show Losses\n'
+circuit_tail += 'Show Taps\n'
+
+for conn in db.query(LineType):
+    lcs.append(LineCode(conn))
 
 for bus_id, connections in buses.items():
     # print(f'{bus_id}: {connections}')
@@ -87,9 +104,11 @@ for bus_id, connections in buses.items():
     if conn.asset == Generator:
         generators.append(asset)
 
-for group in ELEMENTS:
-    if group["title"] == 'Station':
-        print(f'==== {group["title"]}')
 
-        for asset in group['assets']:
-            print(asset)
+print(circuit_head)
+for group in ELEMENTS:
+    print(f'// ==== {group["title"]}')
+
+    for asset in group['assets']:
+        print(asset)
+print(circuit_tail)

@@ -17,6 +17,10 @@ to_dss_array = lambda l:  f'[ {" ".join(l)} ]'
 
 build_bus = lambda bus, nodes:  f'{bus}.{".".join(nodes)}'
 to_str = lambda l: [str(e) for e in l]
+def to_matrix(lists):
+    rows = [' '.join(map(str, entry)) for entry in lists]
+    matrix = ' | '.join(rows)
+    return f'[{matrix}]'
 
 class AssetMixin:
     @property
@@ -164,7 +168,6 @@ class Regulator(AssetMixin):
         kVs = [attr.get('baseVoltage')]
         kVAs = [attr.get('power')]
         buses = [build_bus(self.bus.id, to_str(attr.get('busNodes')))]
-        xhl = self.asset.attributes.get('winding1Winding2PercentReactance', None)
 
         for conn in self.conn:
             attr = conn.wired.attributes
@@ -282,6 +285,24 @@ class Circuit(AssetMixin):
 
         command = f'set defaultbasefrequency={frequency}\n'
         command += f'Edit Vsource.Source bus1={self.bus.id} BasekV={kV} pu={pu} angle={angle}'
-        command += f'frequency={frequency} phases={phases} Isc3={Isc3} Isc1={Isc1}'
+        command += f' frequency={frequency} phases={phases} Isc3={Isc3} Isc1={Isc1}'
 
         return command
+
+
+class LineCode(AssetMixin):
+    type = LINECODE
+
+    def __init__(self, linetype):
+        self.linetype = linetype
+
+    def __str__(self):
+        rmatrix = to_matrix(self.linetype.attributes.get('resistanceMatrix'))
+        xmatrix = to_matrix(self.linetype.attributes.get('reactanceMatrix'))
+        frequency = self.linetype.attributes.get('baseFrequency')
+        phases = self.linetype.attributes.get('phaseCount')
+        unit = self.linetype.attributes.get('resistanceMatrixUnit').split('/')[1]
+        return (f'New Linecode.{self.linetype.id} nphases={phases} BaseFreq={frequency} units={unit}\n' 
+                f'~ rmatrix={rmatrix} \n'
+                f'~ xmatrix={xmatrix}')
+

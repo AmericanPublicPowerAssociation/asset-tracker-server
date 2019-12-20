@@ -362,7 +362,7 @@ line_type_mtx601 = LineType(
         'resistanceMatrixUnit': 'ohms/mi',
         'reactanceMatrix': [
             [1.0179],
-            [0.5017, 1.0478],
+            [0.5017, 1.04],
             [0.4236, 0.3849, 1.0348],
         ],
         'reactanceMatrixUnit': 'ohms/mi',
