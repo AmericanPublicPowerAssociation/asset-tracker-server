@@ -173,7 +173,7 @@ class Regulator(AssetMixin):
             attr = conn.wired.attributes
             kVs.append(attr.get('baseVoltage'))
             kVAs.append(attr.get('power'))
-            buses.append(build_bus(self.bus.id, to_str(attr.get('busNodes'))))
+            buses.append(build_bus(conn.bus.id, to_str(attr.get('busNodes'))))
 
         command = f'New Transformer.{self.asset.id} phases={phases} bank={self.asset.id}'
         command += f' buses={to_dss_array(to_str(buses))} kVs={to_dss_array(to_str(kVs))}'
@@ -225,10 +225,16 @@ class Transformer(AssetMixin):
         phases = self.asset.attributes.get('phaseCount')
         winding = self.asset.attributes.get('windingCount')
         xhl = self.asset.attributes.get('winding1Winding2PercentReactance', None)
+        xht = self.asset.attributes.get('winding1Winding3PercentReactance', None)
+        xlt = self.asset.attributes.get('winding2Winding3PercentReactance', None)
         command = f'New Transformer.{self.asset.id} Phases={phases} Windings={winding}'
 
         if xhl:
             command += f' xhl={xhl}'
+        if xht:
+            command += f' xht={xht}'
+        if xlt:
+            command += f' xlt={xlt}'
 
         attr = self.wired.attributes
         conns = [attr.get('connectionType')]
