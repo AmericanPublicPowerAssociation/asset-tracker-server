@@ -37,7 +37,7 @@ regulator1 = Asset(
         'phaseCount': 1,
         'windingCount': 2,
         'percentLoadLoss': 0.01,
-        'regulatedVoltage': 120,
+        'regulatedVoltage': 122,
         'regulatedVoltageUnit': 'V',
         'bandwidthVoltage': 2,
         'bandwidthVoltageUnit': 'V',
@@ -60,7 +60,7 @@ regulator2 = Asset(
         'windingCount': 2,
         'winding1Winding2PercentReactance': 0.01,
         'percentLoadLoss': 0.01,
-        'regulatedVoltage': 120,
+        'regulatedVoltage': 122,
         'regulatedVoltageUnit': 'V',
         'bandwidthVoltage': 2,
         'bandwidthVoltageUnit': 'V',
@@ -83,7 +83,7 @@ regulator3 = Asset(
         'windingCount': 2,
         'winding1Winding2PercentReactance': 0.01,
         'percentLoadLoss': 0.01,
-        'regulatedVoltage': 120,
+        'regulatedVoltage': 122,
         'regulatedVoltageUnit': 'V',
         'bandwidthVoltage': 2,
         'bandwidthVoltageUnit': 'V',
@@ -104,7 +104,7 @@ poleTransformer = Asset(
     attributes={
         'phaseCount': 3,
         'windingCount': 2,
-        'winding1Winding2PercentReactance': 1.0,
+        'winding1Winding3PercentReactance': 1.0,
         'winding2Winding3PercentReactance': 1.0
     })
 db.add(poleTransformer)
@@ -485,6 +485,30 @@ line_type_mtx607 = LineType(
 db.add(line_type_mtx607)
 
 # Loads
+load_671 = Asset(
+    id='load_671',
+    type_code='m',
+    attributes={
+        'phaseCount': 3,
+        'loadModel': 1,
+    })
+db.add(load_671)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_671.id,
+    bus_id=ieee_671_bus.id,
+    attributes={
+        'connectionType': 'delta',
+        'busNodes': [1, 2, 3],
+        'baseVoltage': 4.16,
+        'baseVoltageUnit': 'kV',
+        'activePower': 1155,
+        'activePowerUnit': 'kW',
+        'reactivePower': 660,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
 
 load_634_1 = Asset(
     id='634_1',

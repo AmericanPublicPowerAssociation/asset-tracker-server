@@ -175,7 +175,7 @@ class Regulator(AssetMixin):
             kVAs.append(attr.get('power'))
             buses.append(build_bus(conn.bus.id, to_str(attr.get('busNodes'))))
 
-        command = f'New Transformer.{self.asset.id} phases={phases} bank={self.asset.id}'
+        command = f'New Transformer.{self.asset.id} phases={phases} bank=reg1'
         command += f' buses={to_dss_array(to_str(buses))} kVs={to_dss_array(to_str(kVs))}'
         command += f' kVAs={to_dss_array(to_str(kVAs))} xhl={xhl} %LoadLoss={xhl}\n'
 
@@ -267,7 +267,7 @@ class Generator(AssetMixin):
         self.wired = wired
 
     def __str__(self):
-        command = f'New Generator.{self.asset,id}'
+        command = f'New Generator.{self.asset.id}'
         return command
 
 
