@@ -1,6 +1,6 @@
-from models import Asset, ElectricalConnection, LineType, db
+from dss_server.models import Asset, ElectricalConnection, LineType, db
 
-
+# Root Source
 generator = Asset(
     id='voltageSource',
     type_code='g',
@@ -8,17 +8,17 @@ generator = Asset(
         'baseFrequency': 60,
         'baseVoltage': 115,
         'baseVoltageUnit': 'kV',
-        'perUnitVoltage': 1.0001,
+        'perUnitVoltage': 1.00,
         'phaseCount': 3,
         'phaseAngle': 30,
-        'shortCircuit3PhasePower': 20000,
+        'shortCircuit3PhasePower': 10000.0,
         'shortCircuit3PhasePowerUnit': 'MVA',
-        'shortCircuit1PhasePower': 21000,
+        'shortCircuit1PhasePower': 10500.0,
         'shortCircuit1PhasePowerUnit': 'MVA',
     })
 db.add(generator)
 
-
+# Substations
 substationTransformer = Asset(
     id='substationTransformer',
     type_code='t',
@@ -29,16 +29,15 @@ substationTransformer = Asset(
     })
 db.add(substationTransformer)
 
-
+# Regulators
 regulator1 = Asset(
     id='voltageRegulator1',
     type_code='qr',
     attributes={
         'phaseCount': 1,
         'windingCount': 2,
-        'winding1Winding2PercentReactance': 0.01,
         'percentLoadLoss': 0.01,
-        'regulatedVoltage': 120,
+        'regulatedVoltage': 122,
         'regulatedVoltageUnit': 'V',
         'bandwidthVoltage': 2,
         'bandwidthVoltageUnit': 'V',
@@ -61,7 +60,7 @@ regulator2 = Asset(
         'windingCount': 2,
         'winding1Winding2PercentReactance': 0.01,
         'percentLoadLoss': 0.01,
-        'regulatedVoltage': 120,
+        'regulatedVoltage': 122,
         'regulatedVoltageUnit': 'V',
         'bandwidthVoltage': 2,
         'bandwidthVoltageUnit': 'V',
@@ -84,7 +83,7 @@ regulator3 = Asset(
         'windingCount': 2,
         'winding1Winding2PercentReactance': 0.01,
         'percentLoadLoss': 0.01,
-        'regulatedVoltage': 120,
+        'regulatedVoltage': 122,
         'regulatedVoltageUnit': 'V',
         'bandwidthVoltage': 2,
         'bandwidthVoltageUnit': 'V',
@@ -98,14 +97,15 @@ regulator3 = Asset(
     })
 db.add(regulator3)
 
-
+# Transformer
 poleTransformer = Asset(
     id='XFM1',
     type_code='t',
     attributes={
         'phaseCount': 3,
         'windingCount': 2,
-        'winding1Winding2PercentReactance': 2,
+        'winding1Winding3PercentReactance': 1.0,
+        'winding2Winding3PercentReactance': 1.0
     })
 db.add(poleTransformer)
 
@@ -144,6 +144,29 @@ ieee_634_bus = Asset(
     attributes={})
 db.add(ieee_634_bus)
 
+ieee_645_bus = Asset(
+    id='645',
+    type_code='b',
+    attributes={})
+db.add(ieee_645_bus)
+
+ieee_646_bus = Asset(
+    id='646',
+    type_code='b',
+    attributes={})
+db.add(ieee_646_bus)
+
+ieee_652_bus = Asset(
+    id='652',
+    type_code='b',
+    attributes={})
+db.add(ieee_652_bus)
+
+ieee_670_bus = Asset(
+    id='670',
+    type_code='b',
+    attributes={})
+db.add(ieee_670_bus)
 
 ieee_671_bus = Asset(
     id='671',
@@ -151,7 +174,43 @@ ieee_671_bus = Asset(
     attributes={})
 db.add(ieee_671_bus)
 
+ieee_675_bus = Asset(
+    id='675',
+    type_code='b',
+    attributes={})
+db.add(ieee_675_bus)
 
+ieee_611_bus = Asset(
+    id='611',
+    type_code='b',
+    attributes={})
+db.add(ieee_611_bus)
+
+ieee_680_bus = Asset(
+    id='680',
+    type_code='b',
+    attributes={})
+db.add(ieee_680_bus)
+
+ieee_684_bus = Asset(
+    id='684',
+    type_code='b',
+    attributes={})
+db.add(ieee_684_bus)
+
+ieee_692_bus = Asset(
+    id='692',
+    type_code='b',
+    attributes={})
+db.add(ieee_692_bus)
+
+ieee_632_bus = Asset(
+    id='632',
+    type_code='b',
+    attributes={})
+db.add(ieee_632_bus)
+
+# Connections
 electrical_connection = ElectricalConnection(
     asset_id=generator.id,
     bus_id=source_bus.id,
@@ -199,6 +258,30 @@ electrical_connection = ElectricalConnection(
     })
 db.add(electrical_connection)
 
+electrical_connection = ElectricalConnection(
+    asset_id=regulator1.id,
+    bus_id=ieee_rg60_bus.id,
+    attributes={
+        'busNodes': [1],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'power': 1666,
+        'powerUnit': 'kVA',
+    })
+db.add(electrical_connection)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=regulator2.id,
+    bus_id=ieee_650_bus.id,
+    attributes={
+        'busNodes': [2],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'power': 1666,
+        'powerUnit': 'kVA',
+    })
+db.add(electrical_connection)
 
 electrical_connection = ElectricalConnection(
     asset_id=regulator2.id,
@@ -212,6 +295,17 @@ electrical_connection = ElectricalConnection(
     })
 db.add(electrical_connection)
 
+electrical_connection = ElectricalConnection(
+    asset_id=regulator3.id,
+    bus_id=ieee_650_bus.id,
+    attributes={
+        'busNodes': [3],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'power': 1666,
+        'powerUnit': 'kVA',
+    })
+db.add(electrical_connection)
 
 electrical_connection = ElectricalConnection(
     asset_id=regulator3.id,
@@ -228,7 +322,7 @@ db.add(electrical_connection)
 
 electrical_connection = ElectricalConnection(
     asset_id=poleTransformer.id,
-    bus_id=ieee_633_bus,
+    bus_id=ieee_633_bus.id,
     attributes={
         'connectionType': 'wye',
         'baseVoltage': 4.16,
@@ -243,7 +337,7 @@ db.add(electrical_connection)
 
 electrical_connection = ElectricalConnection(
     asset_id=poleTransformer.id,
-    bus_id=ieee_634_bus,
+    bus_id=ieee_634_bus.id,
     attributes={
         'connectionType': 'wye',
         'baseVoltage': 0.48,
@@ -251,25 +345,25 @@ electrical_connection = ElectricalConnection(
         'power': 500,
         'powerUnit': 'kVA',
         'powerPercentResistance': 0.55,
-        'winding1Winding3PercentReactance': 1,
+        'winding2Winding3PercentReactance': 1,
     })
 db.add(electrical_connection)
 
-
+# Line codes
 line_type_mtx601 = LineType(
     id='mtx601',
     attributes={
         'baseFrequency': 60,
         'phaseCount': 3,
         'resistanceMatrix': [
-            [0.3465, 0, 0],
-            [0.1560, 0.3375, 0],
+            [0.3465],
+            [0.1560, 0.3375],
             [0.1580, 0.1535, 0.3414],
         ],
         'resistanceMatrixUnit': 'ohms/mi',
         'reactanceMatrix': [
-            [1.0179, 0, 0],
-            [0.5017, 1.0478, 0],
+            [1.0179],
+            [0.5017, 1.04],
             [0.4236, 0.3849, 1.0348],
         ],
         'reactanceMatrixUnit': 'ohms/mi',
@@ -283,14 +377,14 @@ line_type_mtx602 = LineType(
         'baseFrequency': 60,
         'phaseCount': 3,
         'resistanceMatrix': [
-            [0.7526, 0, 0],
-            [0.1580, 0.7475, 0],
+            [0.7526],
+            [0.1580, 0.7475],
             [0.1560, 0.1535, 0.7436],
         ],
         'resistanceMatrixUnit': 'ohms/mi',
         'reactanceMatrix': [
-            [1.1814, 0, 0],
-            [0.4236, 1.1983, 0],
+            [1.1814],
+            [0.4236, 1.1983],
             [0.5017, 0.3849, 1.2112],
         ],
         'reactanceMatrixUnit': 'ohms/mi',
@@ -304,13 +398,13 @@ line_type_mtx603 = LineType(
         'baseFrequency': 60,
         'phaseCount': 2,
         'resistanceMatrix': [
-            [1.3238, 0],
-            [0.2066, 1.3294],
+            [1.3294],
+            [0.2066, 1.3238],
         ],
         'resistanceMatrixUnit': 'ohms/mi',
         'reactanceMatrix': [
-            [1.3569, 0],
-            [0.4591, 1.3471],
+            [1.3471],
+            [0.4591, 1.3569],
         ],
         'reactanceMatrixUnit': 'ohms/mi',
     })
@@ -323,12 +417,12 @@ line_type_mtx604 = LineType(
         'baseFrequency': 60,
         'phaseCount': 2,
         'resistanceMatrix': [
-            [1.3238, 0],
+            [1.3238],
             [0.2066, 1.3294],
         ],
         'resistanceMatrixUnit': 'ohms/mi',
         'reactanceMatrix': [
-            [1.3569, 0],
+            [1.3569],
             [0.4591, 1.3471],
         ],
         'reactanceMatrixUnit': 'ohms/mi',
@@ -359,23 +453,17 @@ line_type_mtx606 = LineType(
         'baseFrequency': 60,
         'phaseCount': 3,
         'resistanceMatrix': [
-            [0.791721, 0, 0],
-            [0.318476, 0.781649, 0],
-            [0.28345, 0.318476, 0.791721],
+            [0.7982],
+            [0.3192, 0.7891],
+            [0.2849, 0.3192, 0.7982],
         ],
         'resistanceMatrixUnit': 'ohms/mi',
         'reactanceMatrix': [
-            [0.438352, 0, 0],
-            [0.0276838, 0.396697, 0],
-            [-0.0184204, 0.0276838, 0.4383],
+            [0.4463],
+            [0.0328, 0.4041],
+            [-0.0143, 0.0328, 0.4463],
         ],
         'reactanceMatrixUnit': 'ohms/mi',
-        'capacitanceMatrix': [
-            [383.948, 0, 0],
-            [0, 383.948, 0],
-            [0, 0, 383.948],
-        ],
-        'capacitanceMatrixUnit': 'nF/mi',
     })
 db.add(line_type_mtx606)
 
@@ -393,16 +481,12 @@ line_type_mtx607 = LineType(
             [0.5124],
         ],
         'reactanceMatrixUnit': 'ohms/mi',
-        'capacitanceMatrix': [
-            [236],
-        ],
-        'capacitanceMatrixUnit': 'nF/mi',
     })
 db.add(line_type_mtx607)
 
-
+# Loads
 load_671 = Asset(
-    id='671',
+    id='load_671',
     type_code='m',
     attributes={
         'phaseCount': 3,
@@ -419,14 +503,361 @@ electrical_connection = ElectricalConnection(
         'busNodes': [1, 2, 3],
         'baseVoltage': 4.16,
         'baseVoltageUnit': 'kV',
-        'activePower': 115,
+        'activePower': 1155,
         'activePowerUnit': 'kW',
         'reactivePower': 660,
         'reactivePowerUnit': 'kVAR',
     })
 db.add(electrical_connection)
 
+load_634_1 = Asset(
+    id='634_1',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 1,
+    })
+db.add(load_634_1)
 
+electrical_connection = ElectricalConnection(
+    asset_id=load_634_1.id,
+    bus_id=ieee_634_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [1],
+        'baseVoltage': 0.277,
+        'baseVoltageUnit': 'kV',
+        'activePower': 160,
+        'activePowerUnit': 'kW',
+        'reactivePower': 110,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+load_634_2 = Asset(
+    id='634_2',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 1,
+    })
+db.add(load_634_2)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_634_2.id,
+    bus_id=ieee_634_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [2],
+        'baseVoltage': 0.277,
+        'baseVoltageUnit': 'kV',
+        'activePower': 120,
+        'activePowerUnit': 'kW',
+        'reactivePower': 90,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+load_634_3 = Asset(
+    id='634_3',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 1,
+    })
+db.add(load_634_3)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_634_3.id,
+    bus_id=ieee_634_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [3],
+        'baseVoltage': 0.277,
+        'baseVoltageUnit': 'kV',
+        'activePower': 120,
+        'activePowerUnit': 'kW',
+        'reactivePower': 90,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+load_645_2 = Asset(
+    id='645_2',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 1,
+    })
+db.add(load_645_2)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_645_2.id,
+    bus_id=ieee_645_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [2],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'activePower': 170,
+        'activePowerUnit': 'kW',
+        'reactivePower': 125,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+load_646_2 = Asset(
+    id='646_2',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 1,
+    })
+db.add(load_646_2)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_646_2.id,
+    bus_id=ieee_646_bus.id,
+    attributes={
+        'connectionType': 'delta',
+        'busNodes': [2, 3],
+        'baseVoltage': 4.16,
+        'baseVoltageUnit': 'kV',
+        'activePower': 230,
+        'activePowerUnit': 'kW',
+        'reactivePower': 132,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+load_652_1 = Asset(
+    id='652_1',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 2,
+    })
+db.add(load_652_1)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_652_1.id,
+    bus_id=ieee_652_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [1],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'activePower': 128,
+        'activePowerUnit': 'kW',
+        'reactivePower': 86,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+load_675_1 = Asset(
+    id='675_1',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 1,
+    })
+db.add(load_675_1)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_675_1.id,
+    bus_id=ieee_675_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [1],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'activePower': 485,
+        'activePowerUnit': 'kW',
+        'reactivePower': 190,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+load_675_2 = Asset(
+    id='675_2',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 1,
+    })
+db.add(load_675_2)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_675_2.id,
+    bus_id=ieee_675_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [2],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'activePower': 68,
+        'activePowerUnit': 'kW',
+        'reactivePower': 60,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+load_675_3 = Asset(
+    id='675_3',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 1,
+    })
+db.add(load_675_3)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_675_3.id,
+    bus_id=ieee_675_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [3],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'activePower': 290,
+        'activePowerUnit': 'kW',
+        'reactivePower': 212,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+load_692_3 = Asset(
+    id='692_3',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 5,
+    })
+db.add(load_692_3)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_692_3.id,
+    bus_id=ieee_692_bus.id,
+    attributes={
+        'connectionType': 'delta',
+        'busNodes': [3, 1],
+        'baseVoltage': 4.16,
+        'baseVoltageUnit': 'kV',
+        'activePower': 170,
+        'activePowerUnit': 'kW',
+        'reactivePower': 151,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+load_611_3 = Asset(
+    id='611_3',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 5,
+    })
+db.add(load_611_3)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_611_3.id,
+    bus_id=ieee_611_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [3],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'activePower': 170,
+        'activePowerUnit': 'kW',
+        'reactivePower': 80,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+load_670_1 = Asset(
+    id='670_1',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 1,
+    })
+db.add(load_670_1)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_670_1.id,
+    bus_id=ieee_670_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [1],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'activePower': 17,
+        'activePowerUnit': 'kW',
+        'reactivePower': 10,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+load_670_2 = Asset(
+    id='670_2',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 1,
+    })
+db.add(load_670_2)
+
+electrical_connection = ElectricalConnection(
+    asset_id=load_670_2.id,
+    bus_id=ieee_670_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [2],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'activePower': 66,
+        'activePowerUnit': 'kW',
+        'reactivePower': 38,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+load_670_3 = Asset(
+    id='670_3',
+    type_code='m',
+    attributes={
+        'phaseCount': 1,
+        'loadModel': 1,
+    })
+db.add(load_670_3)
+electrical_connection = ElectricalConnection(
+    asset_id=load_670_3.id,
+    bus_id=ieee_670_bus.id,
+    attributes={
+        'connectionType': 'wye',
+        'busNodes': [3],
+        'baseVoltage': 2.4,
+        'baseVoltageUnit': 'kV',
+        'activePower': 117,
+        'activePowerUnit': 'kW',
+        'reactivePower': 68,
+        'reactivePowerUnit': 'kVAR',
+    })
+db.add(electrical_connection)
+
+
+# Capacitors
 capacitor1 = Asset(
     id='cap1',
     type_code='qc',
@@ -440,10 +871,12 @@ electrical_connection = ElectricalConnection(
     asset_id=capacitor1.id,
     bus_id=ieee_675_bus.id,
     attributes={
+        'busNodes': [1, 2, 3],
         'baseVoltage': 4.16,
         'baseVoltageUnit': 'kV',
         'reactivePower': 600,
-        'reactivePowerUnit': 'kVAR',
+        'reactivePowerUnit': 'kVAr',
+        'connectionType': 'wye',
     })
 db.add(electrical_connection)
 
@@ -465,25 +898,112 @@ electrical_connection = ElectricalConnection(
         'baseVoltage': 2.4,
         'baseVoltageUnit': 'kV',
         'reactivePower': 100,
-        'reactivePowerUnit': 'kVAR',
+        'reactivePowerUnit': 'kVAr',
+    })
+db.add(electrical_connection)
+
+# lines
+line_632_645 = Asset(
+    id='632-645',
+    type_code='l',
+    attributes={
+        'phaseCount': 2,
+        'lineType': 'mtx603',
+        'lineLength': 0.09,
+        'lengthUnit': 'mi',
+    })
+db.add(line_632_645)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_632_645.id,
+    bus_id=ieee_632_bus.id,
+    attributes={
+        'busNodes': [2, 3],
     })
 db.add(electrical_connection)
 
 
-line_650_632 = Asset(
-    id='650-632',
+electrical_connection = ElectricalConnection(
+    asset_id=line_632_645.id,
+    bus_id=ieee_645_bus.id,
+    attributes={
+        'busNodes': [2, 3],
+    })
+db.add(electrical_connection)
+
+line_632_633 = Asset(
+    id='632-633',
+    type_code='l',
+    attributes={
+        'phaseCount': 3,
+        'lineType': 'mtx602',
+        'lineLength': 0.09,
+        'lengthUnit': 'mi',
+    })
+db.add(line_632_633)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_632_633.id,
+    bus_id=ieee_632_bus.id,
+    attributes={
+        'busNodes': [1, 2, 3],
+    })
+db.add(electrical_connection)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_632_633.id,
+    bus_id=ieee_633_bus.id,
+    attributes={
+        'busNodes': [1, 2, 3],
+    })
+db.add(electrical_connection)
+
+line_645_646 = Asset(
+    id='645-646',
+    type_code='l',
+    attributes={
+        'phaseCount': 2,
+        'lineType': 'mtx603',
+        'lineLength': 0.06,
+        'lengthUnit': 'mi',
+    })
+db.add(line_645_646)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_645_646.id,
+    bus_id=ieee_645_bus.id,
+    attributes={
+        'busNodes': [2, 3],
+    })
+db.add(electrical_connection)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_645_646.id,
+    bus_id=ieee_646_bus.id,
+    attributes={
+        'busNodes': [2, 3],
+    })
+db.add(electrical_connection)
+
+line_rg60_632 = Asset(
+    id='rg60-632',
     type_code='l',
     attributes={
         'phaseCount': 3,
         'lineType': 'mtx601',
-        'lineLength': 2000,
-        'lengthUnit': 'ft',
+        'lineLength': 0.38,
+        'lengthUnit': 'mi',
     })
-db.add(line_650_632)
+db.add(line_rg60_632)
 
 
 electrical_connection = ElectricalConnection(
-    asset_id=line_650_632.id,
+    asset_id=line_rg60_632.id,
     bus_id=ieee_rg60_bus.id,
     attributes={
         'busNodes': [1, 2, 3],
@@ -492,7 +1012,56 @@ db.add(electrical_connection)
 
 
 electrical_connection = ElectricalConnection(
-    asset_id=line_650_632.id,
+    asset_id=line_rg60_632.id,
+    bus_id=ieee_632_bus.id,
+    attributes={
+        'busNodes': [1, 2, 3],
+    })
+db.add(electrical_connection)
+
+line_684_652 = Asset(
+    id='684-652',
+    type_code='l',
+    attributes={
+        'phaseCount': 1,
+        'lineType': 'mtx607',
+        'lineLength': 0.15,
+        'lengthUnit': 'mi',
+    })
+db.add(line_684_652)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_684_652.id,
+    bus_id=ieee_684_bus.id,
+    attributes={
+        'busNodes': [1],
+    })
+db.add(electrical_connection)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_684_652.id,
+    bus_id=ieee_652_bus.id,
+    attributes={
+        'busNodes': [1],
+    })
+db.add(electrical_connection)
+
+line_632_671 = Asset(
+    id='632-671',
+    type_code='l',
+    attributes={
+        'phaseCount': 3,
+        'lineType': 'mtx601',
+        'lineLength': 0.38,
+        'lengthUnit': 'mi',
+    })
+db.add(line_632_671)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_632_671.id,
     bus_id=ieee_632_bus.id,
     attributes={
         'busNodes': [1, 2, 3],
@@ -500,6 +1069,131 @@ electrical_connection = ElectricalConnection(
 db.add(electrical_connection)
 
 
+electrical_connection = ElectricalConnection(
+    asset_id=line_632_671.id,
+    bus_id=ieee_671_bus.id,
+    attributes={
+        'busNodes': [1, 2, 3],
+    })
+db.add(electrical_connection)
+
+line_671_684 = Asset(
+    id='671-684',
+    type_code='l',
+    attributes={
+        'phaseCount': 2,
+        'lineType': 'mtx604',
+        'lineLength': 0.06,
+        'lengthUnit': 'mi',
+    })
+db.add(line_671_684)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_671_684.id,
+    bus_id=ieee_671_bus.id,
+    attributes={
+        'busNodes': [1, 3],
+    })
+db.add(electrical_connection)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_671_684.id,
+    bus_id=ieee_684_bus.id,
+    attributes={
+        'busNodes': [1, 3],
+    })
+db.add(electrical_connection)
+
+line_671_680 = Asset(
+    id='671-680',
+    type_code='l',
+    attributes={
+        'phaseCount': 3,
+        'lineType': 'mtx601',
+        'lineLength': 0.19,
+        'lengthUnit': 'mi',
+    })
+db.add(line_671_680)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_671_680.id,
+    bus_id=ieee_671_bus.id,
+    attributes={
+        'busNodes': [1, 2, 3],
+    })
+db.add(electrical_connection)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_671_680.id,
+    bus_id=ieee_680_bus.id,
+    attributes={
+        'busNodes': [1, 2, 3],
+    })
+db.add(electrical_connection)
+
+line_684_611 = Asset(
+    id='684-611',
+    type_code='l',
+    attributes={
+        'phaseCount': 1,
+        'lineType': 'mtx605',
+        'lineLength': 0.06,
+        'lengthUnit': 'mi',
+    })
+db.add(line_684_611)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_684_611.id,
+    bus_id=ieee_684_bus.id,
+    attributes={
+        'busNodes': [3],
+    })
+db.add(electrical_connection)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_684_611.id,
+    bus_id=ieee_611_bus.id,
+    attributes={
+        'busNodes': [3],
+    })
+db.add(electrical_connection)
+
+line_692_675 = Asset(
+    id='692-675',
+    type_code='l',
+    attributes={
+        'phaseCount': 3,
+        'lineType': 'mtx606',
+        'lineLength': 0.09,
+        'lengthUnit': 'mi',
+    })
+db.add(line_692_675)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_692_675.id,
+    bus_id=ieee_692_bus.id,
+    attributes={
+        'busNodes': [1, 2, 3],
+    })
+db.add(electrical_connection)
+
+
+electrical_connection = ElectricalConnection(
+    asset_id=line_692_675.id,
+    bus_id=ieee_675_bus.id,
+    attributes={
+        'busNodes': [1, 2, 3],
+    })
+db.add(electrical_connection)
+
+# Switches
 switch = Asset(
     id='671-692',
     type_code='x',
@@ -525,6 +1219,7 @@ electrical_connection = ElectricalConnection(
     asset_id=switch.id,
     bus_id=ieee_671_bus.id,
     attributes={
+        'busNodes': [1, 2, 3],
     })
 db.add(electrical_connection)
 
@@ -536,3 +1231,6 @@ electrical_connection = ElectricalConnection(
         'busNodes': [1, 2, 3],
     })
 db.add(electrical_connection)
+
+
+db.commit()
