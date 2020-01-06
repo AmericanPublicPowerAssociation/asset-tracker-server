@@ -3,11 +3,11 @@ from collections import namedtuple
 from getopt import getopt
 
 try:
-    from .models import Asset, ElectricalConnection, db, LineType
-    from .opendss import Line, Switch, Meter, Regulator, Capacitor, Transformer, Generator, Circuit, LineCode
+    from dss_server.models import Asset, ElectricalConnection, db, LineType
+    from dss_server.opendss import Line, Switch, Meter, Regulator, Capacitor, Transformer, Generator, Circuit, LineCode
 except ModuleNotFoundError:
-    from models import Asset, ElectricalConnection, db, LineType
-    from opendss import Line, Switch, Meter, Regulator, Capacitor, Transformer, Generator, Circuit, LineCode
+    from dss_server.models import Asset, ElectricalConnection, db, LineType
+    from dss_server.opendss import Line, Switch, Meter, Regulator, Capacitor, Transformer, Generator, Circuit, LineCode
 
 
 ASSET = (Line, Switch, Meter, Regulator, Capacitor, Transformer, Generator)

@@ -1,4 +1,4 @@
-from models import Asset, ElectricalConnection, LineType, db
+from dss_server.models import Asset, ElectricalConnection, LineType, db
 
 # Root Source
 generator = Asset(
