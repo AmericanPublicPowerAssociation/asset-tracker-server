@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.types import PickleType, String
 
 
-engine = create_engine('sqlite:///:memory:', echo=True)
+engine = create_engine('sqlite:///local.sqlite', echo=False)
 Base = declarative_base()
 
 
@@ -39,6 +39,8 @@ class LineType(Base):
     attributes = Column(PickleType)
 
 
-Base.metadata.create_all(engine)
+if __name__ == '__main__':
+    Base.metadata.create_all(engine)
+
 Session = sessionmaker(bind=engine)
 db = Session()

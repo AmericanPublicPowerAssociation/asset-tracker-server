@@ -1,13 +1,13 @@
 {
   "g": [
     ["baseFrequency", "number"],
-    ["baseVoltage", "number"]
-    ["baseVoltageUnit", ["kV"]]
+    ["baseVoltage", "number"],
+    ["baseVoltageUnit", ["kV"]],
     ["perUnitVoltage", "number"],
     ["phaseCount", [1, 2, 3]],
     ["phaseAngle", "number"],
     ["shortCircuit3PhasePower", "number"],
-    ["shortCircuit3PhasePowerUnit", ["MVA"]]
+    ["shortCircuit3PhasePowerUnit", ["MVA"]],
     ["shortCircuit1PhasePower", "number"],
     ["shortCircuit1PhasePowerUnit", ["MVA"]]
   ],
@@ -24,16 +24,85 @@
       ["powerPercentResistance", "number"]
     ]]
   ],
-  "qr": [
+  "qc": [
+      ["phaseCount", [1, 2 ,3]],
+      ["windingCount", "number"],
+      ["percentLoadLoss", "number"],
+      ["regulatedVoltage", "number"],
+      ["regulatedVoltageUnit", ["V"]],
+      ["bandwidthVoltage", "number"],
+      ["bandwidthVoltageUnit", ["V"]],
+      ["potentialTransformerRatio", "number"],
+      ["currentTransformerRating", "number"],
+      ["currentTransformerRatingUnit", ["A"]],
+      ["rSettingVoltage", "number"],
+      ["rSettingVoltageUnit", ["V"]],
+      ["xSettingVoltage", "number"],
+      ["xSettingVoltageUnit", ["V"]],
+      ["electricalConnectionAttributes", [
+        ["baseVoltage", "number"],
+        ["baseVoltageUnit", ["kV"]],
+        ["power", "number"],
+        ["powerUnit", ["kVA"]]
+      ]]
   ],
   "b": [
   ],
   "m": [
+    ["phaseCount", [1, 2 ,3]],
+    ["loadModel", "number"],
+    ["electricalConnectionAttributes", [
+      ["connectionType", ["delta", "wye"]],
+      ["baseVoltage", "number"],
+      ["baseVoltageUnit", ["kV"]],
+      ["activePower", "number"],
+      ["activePowerUnit", ["kW"]],
+      ["reactivePower", "number"],
+      ["reactivePowerUnit", ["kVAR"]]
+    ]]
   ],
-  "qc": [
+  "qr": [
+      ["phaseCount", [1, 2 ,3]],
+      ["windingCount", "number"],
+      ["winding1Winding2PercentReactance", "number"],
+      ["percentLoadLoss", "number"],
+      ["regulatedVoltage", "number"],
+      ["regulatedVoltageUnit", ["V"]],
+      ["bandwidthVoltage", "number"],
+      ["bandwidthVoltageUnit", ["V"]],
+      ["potentialTransformerRatio", "number"],
+      ["currentTransformerRating", "number"],
+      ["currentTransformerRatingUnit", ["A"]],
+      ["rSettingVoltage", "number"],
+      ["rSettingVoltageUnit", ["V"]],
+      ["xSettingVoltage", "number"],
+      ["xSettingVoltageUnit", ["V"]],
+      ["electricalConnectionAttributes", [
+        ["baseVoltage", "number"],
+        ["baseVoltageUnit", ["kV"]],
+        ["power", "number"],
+        ["powerUnit", ["kW"]]
+      ]]
   ],
   "l": [
+    ["phaseCount", [1, 2, 3]],
+    ["lineType", "lineType"],
+    ["lineLength", "number"],
+    ["lengthUnit", ["ft", "mi", "m", "km"]]
   ],
   "x": [
+        ["phaseCount", [1, 2, 3]],
+        ["positiveSequenceResistance", "number"],
+        ["positiveSequenceResistanceUnit", ["ohms/mi"]],
+        ["zeroSequenceResistance", "number"],
+        ["zeroSequenceResistanceUnit", ["ohms/mi"]],
+        ["positiveSequenceReactance", "number"],
+        ["positiveSequenceReactanceUnit", ["ohms/mi"]],
+        ["zeroSequenceReactance", "number"],
+        ["zeroSequenceReactanceUnit", ["ohms/mi"]],
+        ["positiveSequenceCapacitance", "number"],
+        ["positiveSequenceCapacitanceUnit", ["nF/mi"]],
+        ["zeroSequenceCapacitance", "number"],
+        ["zeroSequenceCapacitanceUnit", ["nF/mi"]]
   ]
 }
