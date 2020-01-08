@@ -14,7 +14,7 @@ class Asset(Base):
     name = Column(String)
     type_code = Column(String)
     attributes = Column(PickleType)
-    connections = relationship(Connection)
+    connections = relationship('Connection')
 
     def __repr__(self):
         return f'<Asset({self.id})>'
