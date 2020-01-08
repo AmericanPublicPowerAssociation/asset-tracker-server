@@ -26,7 +26,7 @@ class Bus(Base):
 
 
 class Connection(Base):
-    __tablename__ = 'electrical_connection'
+    __tablename__ = 'connection'
     asset_id = Column(String, ForeignKey('asset.id'), primary_key=True)
     bus_id = Column(String, ForeignKey('bus.id'), primary_key=True)
     attributes = Column(PickleType)
