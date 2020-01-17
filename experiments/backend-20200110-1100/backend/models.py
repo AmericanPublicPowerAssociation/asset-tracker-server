@@ -28,14 +28,37 @@ Base = declarative_base(metadata=metadata)
 # Define your classes
 class Asset(Base):
     __tablename__ = 'asset'
-    id = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String)
     type_code = Column(String)
     attributes = Column(PickleType)
     connections = relationship('Connection')
+    json_required_field = [('name', str), ('type_code', str)]
 
     def __repr__(self):
         return f'<Asset({self.id})>'
+
+    def get_json_d(self):
+        d = dict(self.attributes or {}, **{
+            'id': self.id,
+            'name': self.name,
+            'type_code': self.type_code,
+            'busByIndex': [_.get_json_d() for _ in self.connections]
+        })
+        return d
+
+    @classmethod
+    def make_asset_from_json(cls, json):
+        for column, d_type in cls.json_required_field:
+            if not isinstance(column, d_type):
+                return None
+        # returns one asset
+        pass
+
+    @classmethod
+    def update_from_json_list(cls, old_asset, updated_asset):
+        # returns updated data
+        pass
 
 
 class Bus(Base):
@@ -48,6 +71,11 @@ class Connection(Base):
     asset_id = Column(String, ForeignKey('asset.id'), primary_key=True)
     bus_id = Column(String, ForeignKey('bus.id'), primary_key=True)
     attributes = Column(PickleType)
+
+    def get_json_d(self):
+        return dict(self.attributes or {}, **{
+            'busId': self.bus_id,
+        })
 
     def __repr__(self):
         argument_string = ', '.join((
