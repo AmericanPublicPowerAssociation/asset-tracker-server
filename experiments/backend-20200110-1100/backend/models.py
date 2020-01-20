@@ -3,7 +3,7 @@ from sqlalchemy import engine_from_config, create_engine
 from sqlalchemy import ForeignKey, Column, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import MetaData
-from sqlalchemy.types import PickleType, String
+from sqlalchemy.types import PickleType, String, Boolean
 
 
 import zope.sqlalchemy
@@ -28,11 +28,12 @@ Base = declarative_base(metadata=metadata)
 # Define your classes
 class Asset(Base):
     __tablename__ = 'asset'
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     name = Column(String)
     type_code = Column(String)
     attributes = Column(PickleType)
     connections = relationship('Connection')
+    deleted = Column('deleted', Boolean(name='deleted_bool'), default=False)
     json_required_field = [('name', str), ('type_code', str)]
 
     def __repr__(self):
@@ -75,6 +76,7 @@ class Connection(Base):
     def get_json_d(self):
         return dict(self.attributes or {}, **{
             'busId': self.bus_id,
+            'attributes': self.attributes
         })
 
     def __repr__(self):
