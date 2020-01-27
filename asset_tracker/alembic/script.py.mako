@@ -3,7 +3,7 @@ Revision ID: ${up_revision}
 Revises: ${down_revision | comma,n}
 Create Date: ${create_date}
 """
-import geoalchemy2
+# import geoalchemy2
 import sqlalchemy as sa
 from alembic import op
 ${imports if imports else ""}

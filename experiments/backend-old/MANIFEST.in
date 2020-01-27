@@ -1,0 +1,2 @@
+include *.ini *.md
+recursive-include asset_tracker *.json
