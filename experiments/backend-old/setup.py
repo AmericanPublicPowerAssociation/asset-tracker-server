@@ -54,6 +54,7 @@ setup(
     version='0.0.4',
     description='Asset Tracker',
     long_description=DESCRIPTION,
+    long_description_content_type='text/markdown',
     classifiers=APP_CLASSIFIERS,
     author='CrossCompute Inc.',
     author_email='support@crosscompute.com',
