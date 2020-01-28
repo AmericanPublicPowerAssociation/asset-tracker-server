@@ -1,5 +1,6 @@
 import pendulum
 from datetime import datetime
+from invisibleroads_macros_log import get_timestamp
 from invisibleroads_macros_security import make_random_string
 from sqlalchemy import Column
 from sqlalchemy.exc import IntegrityError
@@ -14,7 +15,6 @@ from ..constants.database import (
     RECORD_ID_LENGTH,
     RECORD_RETRY_COUNT)
 from ..exceptions import DatabaseRecordError
-from ..macros.timestamp import get_timestamp
 
 
 class RecordMixin(object):

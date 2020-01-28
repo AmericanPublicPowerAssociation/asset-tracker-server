@@ -27,6 +27,7 @@ APP_REQUIREMENTS = [
     'zope.sqlalchemy',
     # shortcut
     'invisibleroads-macros-configuration',
+    'invisibleroads-macros-log>=1.0.1',
     'invisibleroads-macros-security',
     # time
     'pendulum',
