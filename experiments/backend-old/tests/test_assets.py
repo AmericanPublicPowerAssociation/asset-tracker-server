@@ -37,7 +37,3 @@ class TestAddAssetJson(object):
                 'typeId': 'p', }
             add_asset_json(website_request)
         assert "'name': 'is required'" in str(excinfo.value)
-
-
-
-

@@ -25,10 +25,13 @@ APP_REQUIREMENTS = [
     'sqlalchemy',
     'transaction',
     'zope.sqlalchemy',
+    # shortcut
+    'invisibleroads-macros-configuration',
+    'invisibleroads-macros-security',
+    # time
+    'pendulum',
     # cache
     # 'dogpile.cache',
-    # time
-    # 'pendulum',
     # table
     # 'pandas>=0.25.1',
     # geotable

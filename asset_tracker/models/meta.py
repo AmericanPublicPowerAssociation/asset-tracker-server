@@ -1,5 +1,6 @@
 import pendulum
 from datetime import datetime
+from invisibleroads_macros_security import make_random_string
 from sqlalchemy import Column
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,7 +14,6 @@ from ..constants.database import (
     RECORD_ID_LENGTH,
     RECORD_RETRY_COUNT)
 from ..exceptions import DatabaseRecordError
-from ..macros.security import make_random_string
 from ..macros.timestamp import get_timestamp
 
 

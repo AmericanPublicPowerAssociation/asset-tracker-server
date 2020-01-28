@@ -4,7 +4,7 @@ from asset_tracker.routines.geometry import get_bounding_box
 from asset_tracker.models import Asset
 
 
-class TestGeometryBoundingBox(object): 
+class TestGeometryBoundingBox(object):
     coords = {
         'one': [[74.0060, 40.7128]],
         'many': [

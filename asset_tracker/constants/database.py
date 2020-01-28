@@ -6,3 +6,4 @@ NAMING_CONVENTION = {
     'pk': 'pk_%(table_name)s',
 }
 RECORD_ID_LENGTH = 8
+RECORD_RETRY_COUNT = 3
