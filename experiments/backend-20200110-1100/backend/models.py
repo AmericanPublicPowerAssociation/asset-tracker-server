@@ -1,9 +1,11 @@
+import enum
 from sqlalchemy.orm import sessionmaker, configure_mappers, relationship
 from sqlalchemy import engine_from_config, create_engine
 from sqlalchemy import ForeignKey, Column, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import MetaData
-from sqlalchemy.types import PickleType, String, Boolean
+from sqlalchemy.types import (PickleType, String, Boolean,
+    Enum, Unicode, UnicodeText)
 
 
 import zope.sqlalchemy
@@ -44,7 +46,7 @@ class Asset(Base):
             'id': self.id,
             'name': self.name,
             'type_code': self.type_code,
-            'busByIndex': [_.get_json_d() for _ in self.connections]
+            'busByIndex': {_.id: _.get_json_d() for _ in self.connections}
         })
         return d
 
@@ -75,7 +77,7 @@ class Connection(Base):
 
     def get_json_d(self):
         return dict(self.attributes or {}, **{
-            'busId': self.bus_id,
+            'busId': self.asset_id,
             'attributes': self.attributes
         })
 
@@ -91,6 +93,37 @@ class LineType(Base):
     __tablename__ = 'line_type'
     id = Column(String, primary_key=True)
     attributes = Column(PickleType)
+
+
+class TaskStatus(enum.Enum):
+    Cancelled = -100
+    New = 0
+    Pending = 50
+    Done = 100
+
+
+class Task(Base):
+    __tablename__ = 'task'
+    id = Column(String, primary_key=True)
+    asset_id = Column(String, ForeignKey('asset.id'))
+    asset = relationship('Asset', backref='tasks')
+    reference_uri = Column(String)
+    name = Column(Unicode)
+    status = Column(Enum(TaskStatus), default=TaskStatus.New)
+    creation_user_id = Column(String)
+    assignment_user_id = Column(String)
+
+    def get_json_d(self):
+        return {
+            'id': self.id,
+            'assetId': self.asset_id,
+            'assetName': self.asset.name,
+            'referenceUri': self.reference_uri,
+            'name': self.name,
+            'status': self.status.value,
+            'creationUserId': self.creation_user_id,
+            'assignmentUserId': self.assignment_user_id,
+        }
 
 
 # Configures transaction manager
