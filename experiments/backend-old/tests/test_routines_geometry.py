@@ -36,4 +36,3 @@ class TestGeometryBoundingBox(object):
         assert min_lat > -90 and min_lat < 90
         assert max_lon > -180 and max_lon < 180
         assert max_lat > -90 and max_lat < 90
-        

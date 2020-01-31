@@ -1,0 +1,67 @@
+[{
+  "id": "1",
+  "type": "s",
+  "name": "Substation A"
+}, {
+  "id": "2",
+  "type": "t",
+  "name": "Substation Transformer 1",
+  "attributes": { 
+    "vendorName": "Schneider Electric",
+    "productName": "HVT36A",
+    "productVersion": "2.0.1",
+    "phaseCount": 3,
+    "windingCount": 2,
+    "winding1Winding2PercentReactance": 0.008
+  },
+  "connections": [{
+    "bus": "Ai",
+    "attributes": {
+      "connectionType": "delta",
+      "baseVoltage": 115,
+      "baseVoltageUnit": "kV",
+      "power": 5000,
+      "powerUnit": "kVA",
+      "powerPercentResistance": 0.0005
+    }
+  }, {
+    "bus": "Ao",
+    "attributes": {
+      "connectionType": "wye",
+      "baseVoltage": 4.16,
+      "baseVoltageUnit": "kV",
+      "power": 5000,
+      "powerUnit": "kVA",
+      "powerPercentResistance": 0.0005
+    }
+  }]
+}, {
+  "id": "3",
+  "type": "m",
+  "name": "Industrial Meter 1",
+  "attributes": { 
+    "vendorName": "Schneider Electric",
+    "productName": "SCH-MV10",
+    "productVersion": "10.5.7",
+    "phaseCount": 3,
+    "loadModel": 1
+  },
+  "connections": [{
+    "bus": "L1o"
+  }]
+}, {
+  "id": "5",
+  "type": "l",
+  "name": "Line 1",
+  "attributes": {
+    "phaseCount": 3,
+    "lineType": "mtx601",
+    "lineLength": 2000,
+    "lengthUnit": "ft"
+  },
+  "connections": [{
+    "bus": "Ao"
+  }, {
+    "bus": "L1o"
+  }]
+}]

@@ -1,4 +1,7 @@
 def includeme(config):
+    config.add_route(
+        'assets.json',
+        '/assets.json')
     """
     config.add_route(
         'dashboards.json',
@@ -6,9 +9,6 @@ def includeme(config):
     config.add_route(
         'assets_kit.json',
         '/assetsKit.json')
-    config.add_route(
-        'assets.json',
-        '/assets.json')
     config.add_route(
         'assets_metrics.json',
         '/assets/metrics.json')
@@ -46,4 +46,3 @@ def includeme(config):
         'shape.csv',
         '/assets/{asset}/shape.csv')
     """
-    pass
