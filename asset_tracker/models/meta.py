@@ -79,7 +79,6 @@ class ModificationMixin(object):
         return Class.modification_datetime
 
 
-
 CLASS_REGISTRY = {}
 metadata = MetaData(naming_convention=NAMING_CONVENTION)
 Base = declarative_base(class_registry=CLASS_REGISTRY, metadata=metadata)

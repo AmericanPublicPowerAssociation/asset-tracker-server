@@ -1,5 +1,5 @@
 # 0.0.4
--
+- Start from scratch
 
 # 0.0.3
 - Add /tasks.json
