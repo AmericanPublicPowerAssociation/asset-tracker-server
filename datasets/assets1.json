@@ -1,10 +1,10 @@
 [{
   "id": "1",
-  "type": "s",
+  "typeCode": "s",
   "name": "Substation A"
 }, {
   "id": "2",
-  "type": "t",
+  "typeCode": "t",
   "name": "Substation Transformer 1",
   "attributes": { 
     "vendorName": "Schneider Electric",
@@ -15,7 +15,7 @@
     "winding1Winding2PercentReactance": 0.008
   },
   "connections": [{
-    "bus": "Ai",
+    "busId": "Ai",
     "attributes": {
       "connectionType": "delta",
       "baseVoltage": 115,
@@ -25,7 +25,7 @@
       "powerPercentResistance": 0.0005
     }
   }, {
-    "bus": "Ao",
+    "busId": "Ao",
     "attributes": {
       "connectionType": "wye",
       "baseVoltage": 4.16,
@@ -37,7 +37,7 @@
   }]
 }, {
   "id": "3",
-  "type": "m",
+  "typeCode": "m",
   "name": "Industrial Meter 1",
   "attributes": { 
     "vendorName": "Schneider Electric",
@@ -47,11 +47,11 @@
     "loadModel": 1
   },
   "connections": [{
-    "bus": "L1o"
+    "busId": "L1o"
   }]
 }, {
   "id": "5",
-  "type": "l",
+  "typeCode": "l",
   "name": "Line 1",
   "attributes": {
     "phaseCount": 3,
@@ -60,8 +60,8 @@
     "lengthUnit": "ft"
   },
   "connections": [{
-    "bus": "Ao"
+    "busId": "Ao"
   }, {
-    "bus": "L1o"
+    "busId": "L1o"
   }]
 }]

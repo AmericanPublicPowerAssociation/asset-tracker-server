@@ -1,14 +1,14 @@
 def includeme(config):
     config.add_route(
+        'assetsKit.json',
+        '/assetsKit.json')
+    config.add_route(
         'assets.json',
         '/assets.json')
     """
     config.add_route(
         'dashboards.json',
         '/dashboards.json')
-    config.add_route(
-        'assets_kit.json',
-        '/assetsKit.json')
     config.add_route(
         'assets_metrics.json',
         '/assets/metrics.json')
