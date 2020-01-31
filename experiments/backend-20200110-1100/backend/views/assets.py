@@ -90,10 +90,8 @@ class AssetsViews:
         new_assets = self.get_required_param(
             'newAssets', params, list)
         for asset in new_assets:
-            try:
-                asset_id = asset['id'] # TODO create unique ID
-            except KeyError:
-                raise HTTPBadRequest({'id': 'is required'})
+            import time
+            asset_id = str(time.time())
             try:
                 name = asset['name']
             except KeyError:
