@@ -29,7 +29,7 @@
     }
   }, {
     "type": "Feature",
-    "properties": {"id": 5},
+    "properties": {"id": 4},
     "geometry": {
       "type":"LineString",
       "coordinates": [

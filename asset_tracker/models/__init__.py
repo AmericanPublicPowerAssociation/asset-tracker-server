@@ -2,7 +2,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy.orm import configure_mappers, sessionmaker
 from zope.sqlalchemy import register as register_transaction_listener
 
-from .asset import Asset  # noqa
+from .asset import Asset, AssetTypeCode, Bus, Connection  # noqa
 # from .asset import Asset, AssetStatus         # noqa
 # from .log import Log, LogEvent                # noqa
 # from .task import Task, TaskNote, TaskStatus  # noqa
@@ -17,8 +17,7 @@ def includeme(config):
     get_database_session = define_get_database_session(database_engine)
     config.add_request_method(
         lambda r: get_transaction_manager_session(get_database_session, r.tm),
-        'db',
-        reify=True)
+        'db', reify=True)
 
 
 def get_database_engine(settings, prefix='sqlalchemy.'):

@@ -1,17 +1,31 @@
+import enum
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import (
+    Enum,
     PickleType,
-    String)
+    String,
+    Unicode)
 
-from .meta import Base
+from .meta import (
+    Base,
+    CreationMixin,
+    ModificationMixin,
+    RecordMixin)
 
 
-class Asset(Base):
+class AssetTypeCode(enum.Enum):
+    LINE = 'l'
+    METER = 'm'
+    TRANSFORMER = 't'
+    SUBSTATION = 's'
+
+
+class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
     __tablename__ = 'asset'
     id = Column(String, primary_key=True)
-    name = Column(String)
-    type_code = Column(String)
+    name = Column(Unicode)
+    type_code = Column(Enum(AssetTypeCode))
     attributes = Column(PickleType)
     connections = relationship('Connection')
 
@@ -19,7 +33,7 @@ class Asset(Base):
         return f'<Asset({self.id})>'
 
 
-class Bus(Base):
+class Bus(RecordMixin, Base):
     __tablename__ = 'bus'
     id = Column(String, primary_key=True)
 

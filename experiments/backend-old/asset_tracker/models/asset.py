@@ -15,16 +15,6 @@ from .meta import Base, CreationMixin, ModificationMixin, RecordMixin
 from ..constants import ASSET_TYPE_BY_ID
 
 
-asset_child = Table(
-    'asset_child', Base.metadata,
-    Column('parent_asset_id', String, ForeignKey('asset.id')),
-    Column('child_asset_id', String, ForeignKey('asset.id')))
-asset_connection = Table(
-    'asset_connection', Base.metadata,
-    Column('left_asset_id', String, ForeignKey('asset.id')),
-    Column('right_asset_id', String, ForeignKey('asset.id')))
-
-
 class AssetStatus(enum.Enum):
     Broken = -100
     Planned = 0
@@ -40,18 +30,7 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
             'utility_id', 'name', name='unique_utility_asset_name'),
     )
     utility_id = Column(String)
-    name = Column(Unicode)
     status = Column(Enum(AssetStatus), default=AssetStatus.Operational)
-    type_id = Column(String)
-    children = relationship(
-        'Asset', secondary=asset_child,
-        primaryjoin='asset_child.c.parent_asset_id == Asset.id',
-        secondaryjoin='asset_child.c.child_asset_id == Asset.id',
-        backref='parents')
-    connections = relationship(
-        'Asset', secondary=asset_connection,
-        primaryjoin='asset_connection.c.left_asset_id == Asset.id',
-        secondaryjoin='asset_connection.c.right_asset_id == Asset.id')
     attributes = Column(PickleType)
     _geometry = Column(Geometry(management=True))
     shape = Column(PickleType, default={})
@@ -76,10 +55,6 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
     @property
     def can_be_mass_produced(self):
         return not self.primary_type.get('unique', False)
-
-    @property
-    def can_have_connection(self):
-        return len(self.primary_type.get('connectedIds', [])) > 0
 
     @property
     def can_have_location(self):
@@ -173,20 +148,6 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
 
         if self.is_line:
             update_line_geometry(self)
-
-    def add_connection(self, asset):
-        if self == asset:
-            return
-        if asset not in self.connections:
-            self.connections.append(asset)
-        if self not in asset.connections:
-            asset.connections.append(self)
-
-    def remove_connection(self, asset):
-        if asset in self.connections:
-            self.connections.remove(asset)
-        if self in asset.connections:
-            asset.connections.remove(self)
 
     def get_json_d(self):
         d = dict(self.attributes or {}, **{
