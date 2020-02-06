@@ -1,5 +1,4 @@
 import enum
-from geoalchemy2 import Geometry
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import (
@@ -24,12 +23,10 @@ class AssetTypeCode(enum.Enum):
 
 class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
     __tablename__ = 'asset'
-    id = Column(String, primary_key=True)
     name = Column(Unicode)
     type_code = Column(Enum(AssetTypeCode))
     attributes = Column(PickleType)
     connections = relationship('Connection')
-    geometry = Column(Geometry())
 
     def __repr__(self):
         return f'<Asset({self.id})>'
@@ -37,7 +34,6 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
 
 class Bus(RecordMixin, Base):
     __tablename__ = 'bus'
-    id = Column(String, primary_key=True)
 
     def __repr__(self):
         return f'<Bus({self.id})>'

@@ -1,6 +1,5 @@
 from pytest import raises
 from pyramid.exceptions import HTTPBadRequest
-from asset_tracker.models import Asset
 from asset_tracker.views.assets import add_asset_json
 
 

@@ -22,9 +22,10 @@ def includeme(config):
 
 def get_database_engine(settings, prefix='sqlalchemy.'):
     engine = engine_from_config(settings, prefix)
-    if settings[prefix + 'url'].startswith('sqlite'):
+    with_sqlite = settings[prefix + 'url'].startswith('sqlite')
+    if with_sqlite:
         load_spatialite_sqlite_extension(engine)
-        apply_spatialite_sqlite_modifications()
+    # configure_geometry_columns(with_sqlite)
     return engine
 
 
@@ -56,10 +57,11 @@ def load_spatialite_sqlite_extension(engine):
     return engine
 
 
-def apply_spatialite_sqlite_modifications():
+def configure_geometry_columns(with_sqlite):
     from geoalchemy2 import Geometry
     from sqlalchemy import Column
-    Asset.geometry = Column(Geometry(management=True))
+    d = {'management': True} if with_sqlite else {}
+    Asset.geometry = Column(Geometry(**d))
 
 
 configure_mappers()

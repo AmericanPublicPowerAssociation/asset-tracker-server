@@ -12,7 +12,6 @@ from ..models import Asset
     request_method='GET')
 def see_assets_kit_json(request):
     db = request.db
-    print(db.query(Asset).count())
     REPOSITORY_FOLDER = dirname(PACKAGE_FOLDER)
     DATASETS_FOLDER = join(REPOSITORY_FOLDER, 'datasets')
     assets_json_path = join(DATASETS_FOLDER, 'assets1.json')
