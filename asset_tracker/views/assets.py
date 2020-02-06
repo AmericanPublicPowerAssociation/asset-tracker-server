@@ -7,10 +7,10 @@ from ..models import Asset
 
 
 @view_config(
-    route_name='assetsKit.json',
+    route_name='assets.json',
     renderer='json',
     request_method='GET')
-def see_assets_kit_json(request):
+def see_assets_json(request):
     db = request.db
     REPOSITORY_FOLDER = dirname(PACKAGE_FOLDER)
     DATASETS_FOLDER = join(REPOSITORY_FOLDER, 'datasets')

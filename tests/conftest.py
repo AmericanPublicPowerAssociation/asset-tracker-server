@@ -1,3 +1,4 @@
+import json
 import transaction
 from os.path import dirname, join
 from pyramid import testing
@@ -11,8 +12,9 @@ from asset_tracker.models import (
 from asset_tracker.models.meta import Base
 
 
-REPOSITORY_FOLDER = dirname(PACKAGE_FOLDER)
-DATASETS_FOLDER = join(REPOSITORY_FOLDER, 'datasets')
+def load_dataset_json(dataset_name):
+    dataset_path = join(DATASETS_FOLDER, dataset_name)
+    return json.load(open(dataset_path, 'rt'))
 
 
 @fixture
@@ -46,7 +48,6 @@ def website_config(config):
 def db(config):
     settings = config.get_settings()
     database_engine = get_database_engine(settings)
-    '''
     Base.metadata.create_all(database_engine)
     get_database_session = define_get_database_session(database_engine)
     database_session = get_transaction_manager_session(
@@ -54,7 +55,6 @@ def db(config):
     yield database_session
     transaction.abort()
     Base.metadata.drop_all(database_engine)
-    '''
 
 
 @fixture
@@ -69,3 +69,13 @@ def settings():
     return {
         'sqlalchemy.url': 'sqlite://',
     }
+
+
+REPOSITORY_FOLDER = dirname(PACKAGE_FOLDER)
+DATASETS_FOLDER = join(REPOSITORY_FOLDER, 'datasets')
+EXAMPLE_BY_NAME = {
+    'basic': {
+        'assets': load_dataset_json('assets1.json'),
+        'assetsGeoJson': load_dataset_json('assets1.geojson'),
+    },
+}

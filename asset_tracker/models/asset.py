@@ -1,4 +1,5 @@
 import enum
+from geoalchemy2 import Geometry
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import (
@@ -27,6 +28,8 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
     type_code = Column(Enum(AssetTypeCode))
     attributes = Column(PickleType)
     connections = relationship('Connection')
+    # geometry = Column(Geometry())  # PostgreSQL
+    geometry = Column(Geometry(management=True))  # SQLite
 
     def __repr__(self):
         return f'<Asset({self.id})>'
