@@ -36,8 +36,8 @@ APP_REQUIREMENTS = [
     # table
     # 'pandas>=0.25.1',
     # geotable
-    # 'geoalchemy2>=0.6.3',
-    # 'shapely',
+    'geoalchemy2>=0.6.3',
+    'shapely',
     # 'geotable',
     # 'utm',
     # computation

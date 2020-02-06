@@ -31,8 +31,6 @@ class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
     )
     utility_id = Column(String)
     status = Column(Enum(AssetStatus), default=AssetStatus.Operational)
-    attributes = Column(PickleType)
-    _geometry = Column(Geometry(management=True))
     shape = Column(PickleType, default={})
 
     def __init__(self, **kwargs):
