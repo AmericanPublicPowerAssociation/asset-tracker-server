@@ -4,6 +4,22 @@ from ..exceptions import DataValidationError
 from ..models import Asset, AssetTypeCode, Bus, Connection
 
 
+class RecordIdMirror(object):
+
+    def __init__(self):
+        self.record_id_by_temporary_id = {}
+
+    def get(self, record_id):
+        record_id = str(record_id)
+        return self.record_id_by_temporary_id.get(record_id, record_id)
+
+    def set(self, temporary_id, record_id):
+        temporary_id = str(temporary_id)
+        record_id = str(record_id)
+        self.record_id_by_temporary_id[temporary_id] = record_id
+        return record_id
+
+
 def get_assets_json_list(assets):
     return [_.get_json_dictionary() for _ in assets]
 
@@ -22,7 +38,7 @@ def get_assets_geojson_dictionary(assets):
     }
 
 
-def update_assets(db, asset_dictionaries, asset_id_by_temporary_id):
+def update_assets(db, asset_dictionaries, asset_id_mirror):
     error_by_index = {}
 
     for index, asset_dictionary in enumerate(asset_dictionaries):
@@ -35,12 +51,11 @@ def update_assets(db, asset_dictionaries, asset_id_by_temporary_id):
             error_by_index[index] = e.args[0]
             continue
 
-        asset_id = asset_id_by_temporary_id.get(asset_id, asset_id)
+        asset_id = asset_id_mirror.get(asset_id)
         asset = db.query(Asset).get(asset_id)
         if not asset:
             asset = Asset.make_unique_record(db)
-            asset_id_by_temporary_id[asset_id] = asset.id
-            asset_id = asset.id
+            asset_id = asset_id_mirror.set(asset_id, asset.id)
 
         asset.type_code = asset_type_code
         asset.name = asset_name
@@ -49,11 +64,13 @@ def update_assets(db, asset_dictionaries, asset_id_by_temporary_id):
 
     if error_by_index:
         raise DataValidationError(error_by_index)
+    db.flush()
+    print(db.query(Asset).all())
 
 
-def update_asset_connections(db, asset_dictionaries, asset_id_by_temporary_id):
+def update_asset_connections(db, asset_dictionaries, asset_id_mirror):
     error_by_index = {}
-    bus_id_by_temporary_id = {}
+    bus_id_mirror = RecordIdMirror()
 
     for index, asset_dictionary in enumerate(asset_dictionaries):
         try:
@@ -63,18 +80,17 @@ def update_asset_connections(db, asset_dictionaries, asset_id_by_temporary_id):
             error_by_index[index] = e.args[0]
             continue
 
-        asset_id = asset_id_by_temporary_id.get(asset_id, asset_id)
+        asset_id = asset_id_mirror.get(asset_id)
         asset = db.query(Asset).get(asset_id)
 
         connections = []
         for connection_dictionary in connection_dictionaries:
             bus_id = get_bus_id(connection_dictionary)
-            bus_id = bus_id_by_temporary_id.get(bus_id, bus_id)
+            bus_id = bus_id_mirror.get(bus_id)
             bus = db.query(Bus).get(bus_id)
             if not bus:
                 bus = Bus.make_unique_record(db)
-                bus_id_by_temporary_id[bus_id] = bus.id
-                bus_id = bus.id
+                bus_id = bus_id_mirror.set(bus_id, bus.id)
             db.add(bus)
             connection = db.query(Connection).get({
                 'asset_id': asset_id, 'bus_id': bus_id})
@@ -83,14 +99,14 @@ def update_asset_connections(db, asset_dictionaries, asset_id_by_temporary_id):
                 connection.attributes = connection_dictionary.get(
                     'attributes', {})
             connections.append(connection)
-        asset.connections = asset
+        asset.connections = connections
 
     if error_by_index:
         raise DataValidationError(error_by_index)
+    db.flush()
 
 
-def update_asset_geometries(
-        db, asset_feature_collection, asset_id_by_temporary_id):
+def update_asset_geometries(db, asset_feature_collection, asset_id_mirror):
     error_by_index = {}
     asset_features = asset_feature_collection['features']
 
@@ -102,13 +118,14 @@ def update_asset_geometries(
             error_by_index[index] = e.args[0]
             continue
 
-        asset_id = asset_id_by_temporary_id.get(asset_id, asset_id)
+        asset_id = asset_id_mirror.get(asset_id)
         asset = db.query(Asset).get(asset_id)
         asset.geometry = asset_geometry
         db.add(asset)
 
     if error_by_index:
         raise DataValidationError(error_by_index)
+    db.flush()
 
 
 def get_asset_dictionaries(params):

@@ -106,13 +106,13 @@ class GeometryMixin(object):
     @property
     def geometry(self):
         value = self._geometry
-        if not value:
+        if value is None:
             return
         return to_shape(value)
 
     @geometry.setter
     def geometry(self, value):
-        if value:
+        if value is not None:
             value = from_shape(value)
         self._geometry = value
 

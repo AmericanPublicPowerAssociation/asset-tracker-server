@@ -7,6 +7,7 @@ from ..constants import PACKAGE_FOLDER
 from ..exceptions import DataValidationError
 from ..models import Asset
 from ..routines.assets import (
+    RecordIdMirror,
     get_asset_dictionaries,
     get_asset_feature_collection,
     get_assets_geojson_dictionary,
@@ -50,17 +51,14 @@ def change_assets_json(request):
         raise HTTPBadRequest(e.args[0])
 
     db = request.db
-    asset_id_by_temporary_id = {}
+    asset_id_mirror = RecordIdMirror()
     try:
-        update_assets(
-            db, asset_dictionaries, asset_id_by_temporary_id)
-        update_asset_connections(
-            db, asset_dictionaries, asset_id_by_temporary_id)
+        update_assets(db, asset_dictionaries, asset_id_mirror)
+        update_asset_connections(db, asset_dictionaries, asset_id_mirror)
     except DataValidationError as e:
         raise HTTPBadRequest({'assets': e.args[0]})
     try:
-        update_asset_geometries(
-            db, asset_feature_collection, asset_id_by_temporary_id)
+        update_asset_geometries(db, asset_feature_collection, asset_id_mirror)
     except DataValidationError as e:
         raise HTTPBadRequest({'assetsGeoJson': e.args[0]})
 

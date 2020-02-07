@@ -29,10 +29,10 @@ class TestChangeAssetsJson(object):
         for old_asset_dictionary in old_asset_dictionaries:
             new_asset_dictionary = new_asset_dictionary_by_name[
                 old_asset_dictionary['name']]
-            assert len(old_asset_dictionary['attributes']) == len(
-                new_asset_dictionary['attributes'])
-            assert len(old_asset_dictionary['connections']) == len(
-                new_asset_dictionary['connections'])
+            assert len(old_asset_dictionary.get('attributes', [])) == len(
+                new_asset_dictionary.get('attributes', []))
+            assert len(old_asset_dictionary.get('connections', [])) == len(
+                new_asset_dictionary.get('connections', []))
 
         old_asset_features = old_asset_feature_collection['features']
         new_asset_features = new_asset_feature_collection['features']
