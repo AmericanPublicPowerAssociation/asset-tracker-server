@@ -28,7 +28,7 @@ def get_assets_geojson_dictionary(assets):
     features = []
     for asset in assets:
         try:
-            feature = asset.get_geojson_dictionary()
+            feature = asset.get_geojson_feature()
         except AttributeError:
             continue
         features.append(feature)

@@ -47,8 +47,12 @@ class Asset(
             } for _ in self.connections],
         }
 
-    def get_geojson_dictionary(self):
-        return get_geojson_dictionary(self.geometry)
+    def get_geojson_feature(self):
+        return {
+            'type': 'Feature',
+            'properties': {'id': self.id},
+            'geometry': get_geojson_dictionary(self.geometry),
+        }
 
     def __repr__(self):
         return f'<Asset({self.id})>'
