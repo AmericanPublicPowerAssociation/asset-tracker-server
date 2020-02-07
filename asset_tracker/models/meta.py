@@ -8,6 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import MetaData
 from sqlalchemy.types import (
     DateTime,
+    PickleType,
     String)
 
 from ..constants.database import (
@@ -77,6 +78,22 @@ class ModificationMixin(object):
     @classmethod
     def get_datetime(Class):
         return Class.modification_datetime
+
+
+class AttributesMixin(object):
+
+    _attributes = Column(PickleType)
+
+    @property
+    def attributes(self):
+        value = self._attributes
+        # Return {} if value is None
+        return value or {}
+
+    @attributes.setter
+    def attributes(self, value):
+        # Store None if value is {}
+        self._attributes = value or None
 
 
 CLASS_REGISTRY = {}

@@ -4,3 +4,7 @@ class AssetTrackerError(Exception):
 
 class DatabaseRecordError(IOError, AssetTrackerError):
     pass
+
+
+class DataValidationError(ValueError, AssetTrackerError):
+    pass

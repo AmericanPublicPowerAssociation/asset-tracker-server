@@ -4,11 +4,11 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import (
     Enum,
-    PickleType,
     String,
     Unicode)
 
 from .meta import (
+    AttributesMixin,
     Base,
     CreationMixin,
     ModificationMixin,
@@ -22,12 +22,17 @@ class AssetTypeCode(enum.Enum):
     SUBSTATION = 's'
 
 
-class Asset(ModificationMixin, CreationMixin, RecordMixin, Base):
+class Asset(
+        AttributesMixin,
+        ModificationMixin,
+        CreationMixin,
+        RecordMixin,
+        Base):
     __tablename__ = 'asset'
     name = Column(Unicode)
     type_code = Column(Enum(AssetTypeCode))
-    attributes = Column(PickleType)
-    connections = relationship('Connection')
+    connections = relationship('Connection', cascade='all, delete-orphan')
+
     # geometry = Column(Geometry())  # PostgreSQL
     geometry = Column(Geometry(management=True))  # SQLite
 
@@ -42,11 +47,10 @@ class Bus(RecordMixin, Base):
         return f'<Bus({self.id})>'
 
 
-class Connection(Base):
+class Connection(AttributesMixin, Base):
     __tablename__ = 'connection'
     asset_id = Column(String, ForeignKey('asset.id'), primary_key=True)
     bus_id = Column(String, ForeignKey('bus.id'), primary_key=True)
-    attributes = Column(PickleType)
 
     def __repr__(self):
         argument_string = ', '.join((
@@ -56,7 +60,6 @@ class Connection(Base):
         return f'<Connection({argument_string})>'
 
 
-class LineType(Base):
+class LineType(AttributesMixin, Base):
     __tablename__ = 'line_type'
     id = Column(String, primary_key=True)
-    attributes = Column(PickleType)

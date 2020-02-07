@@ -20,13 +20,12 @@ class TestChangeAssetsJson(object):
             'assetsGeoJson': old_asset_feature_collection,
         }
         website_response_d = change_assets_json(website_request)
-
         new_asset_dictionaries = website_response_d['assets']
-        new_asset_dictionary_by_name = {
-            _['name']: _ for _ in new_asset_dictionaries}
         new_asset_feature_collection = website_response_d['assetsGeoJson']
         assert len(old_asset_dictionaries) == len(new_asset_dictionaries)
 
+        new_asset_dictionary_by_name = {
+            _['name']: _ for _ in new_asset_dictionaries}
         for old_asset_dictionary in old_asset_dictionaries:
             new_asset_dictionary = new_asset_dictionary_by_name[
                 old_asset_dictionary['name']]
