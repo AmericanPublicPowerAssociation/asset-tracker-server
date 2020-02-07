@@ -1,8 +1,25 @@
-from geoalchemy2.shape import from_shape
 from shapely.geometry import shape
 
 from ..exceptions import DataValidationError
 from ..models import Asset, AssetTypeCode, Bus, Connection
+
+
+def get_assets_json_list(assets):
+    return [_.get_json_dictionary() for _ in assets]
+
+
+def get_assets_geojson_dictionary(assets):
+    features = []
+    for asset in assets:
+        try:
+            feature = asset.get_geojson_dictionary()
+        except AttributeError:
+            continue
+        features.append(feature)
+    return {
+        'type': 'FeatureCollection',
+        'features': features,
+    }
 
 
 def update_assets(db, asset_dictionaries, asset_id_by_temporary_id):
@@ -87,7 +104,7 @@ def update_asset_geometries(
 
         asset_id = asset_id_by_temporary_id.get(asset_id, asset_id)
         asset = db.query(Asset).get(asset_id)
-        asset.geometry = from_shape(asset_geometry)
+        asset.geometry = asset_geometry
         db.add(asset)
 
     if error_by_index:

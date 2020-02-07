@@ -1,5 +1,7 @@
 import pendulum
 from datetime import datetime
+from geoalchemy2 import Geometry
+from geoalchemy2.shape import from_shape, to_shape
 from invisibleroads_macros_log import get_timestamp
 from invisibleroads_macros_security import make_random_string
 from sqlalchemy import Column
@@ -94,6 +96,25 @@ class AttributesMixin(object):
     def attributes(self, value):
         # Store None if value is {}
         self._attributes = value or None
+
+
+class GeometryMixin(object):
+
+    # geometry = Column(Geometry)  # PostgreSQL
+    _geometry = Column(Geometry(management=True))  # SQLite
+
+    @property
+    def geometry(self):
+        value = self._geometry
+        if not value:
+            return
+        return to_shape(value)
+
+    @geometry.setter
+    def geometry(self, value):
+        if value:
+            value = from_shape(value)
+        self._geometry = value
 
 
 CLASS_REGISTRY = {}

@@ -1,16 +1,17 @@
 import enum
-from geoalchemy2 import Geometry
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import (
     Enum,
     String,
     Unicode)
+from shapely.geometry import mapping as get_geojson_dictionary
 
 from .meta import (
     AttributesMixin,
     Base,
     CreationMixin,
+    GeometryMixin,
     ModificationMixin,
     RecordMixin)
 
@@ -23,18 +24,31 @@ class AssetTypeCode(enum.Enum):
 
 
 class Asset(
+        GeometryMixin,
         AttributesMixin,
         ModificationMixin,
         CreationMixin,
         RecordMixin,
         Base):
     __tablename__ = 'asset'
-    name = Column(Unicode)
     type_code = Column(Enum(AssetTypeCode))
+    name = Column(Unicode)
     connections = relationship('Connection', cascade='all, delete-orphan')
 
-    # geometry = Column(Geometry())  # PostgreSQL
-    geometry = Column(Geometry(management=True))  # SQLite
+    def get_json_dictionary(self):
+        return {
+            'id': self.id,
+            'type_code': self.type_code.value,
+            'name': self.name,
+            'attributes': self.attributes,
+            'connections': [{
+                'busId': _.bus_id,
+                'attributes': _.attributes,
+            } for _ in self.connections],
+        }
+
+    def get_geojson_dictionary(self):
+        return get_geojson_dictionary(self.geometry)
 
     def __repr__(self):
         return f'<Asset({self.id})>'

@@ -5,9 +5,12 @@ from pyramid.view import view_config
 
 from ..constants import PACKAGE_FOLDER
 from ..exceptions import DataValidationError
-from ..routines import (
+from ..models import Asset
+from ..routines.assets import (
     get_asset_dictionaries,
     get_asset_feature_collection,
+    get_assets_geojson_dictionary,
+    get_assets_json_list,
     update_asset_connections,
     update_asset_geometries,
     update_assets)
@@ -39,6 +42,7 @@ def see_assets_json(request):
     request_method='PATCH')
 def change_assets_json(request):
     params = request.json_body
+    # TODO: Check whether user has edit privileges to specified assets
     try:
         asset_dictionaries = get_asset_dictionaries(params)
         asset_feature_collection = get_asset_feature_collection(params)
@@ -60,4 +64,9 @@ def change_assets_json(request):
     except DataValidationError as e:
         raise HTTPBadRequest({'assetsGeoJson': e.args[0]})
 
-    return {}
+    # TODO: Get assets for which user has view privileges
+    assets = db.query(Asset).all()
+    return {
+        'assets': get_assets_json_list(assets),
+        'assetsGeoJson': get_assets_geojson_dictionary(assets),
+    }
