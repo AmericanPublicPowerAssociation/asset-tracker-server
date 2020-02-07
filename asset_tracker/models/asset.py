@@ -38,7 +38,7 @@ class Asset(
     def get_json_dictionary(self):
         return {
             'id': self.id,
-            'type_code': self.type_code.value,
+            'typeCode': self.type_code.value,
             'name': self.name,
             'attributes': self.attributes,
             'connections': [{
