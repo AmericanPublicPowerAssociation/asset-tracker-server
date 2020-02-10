@@ -17,6 +17,12 @@ class TaskStatus(enum.Enum):
     DONE = 100
 
 
+class TaskPriority(enum.Enum):
+    HIGH = 1
+    NORMAL = 10
+    LOW = 100
+
+
 class Task(ModificationMixin, CreationMixin, RecordMixin, Base):
     __tablename__ = 'task'
     asset_id = Column(String, ForeignKey('asset.id'))
@@ -24,6 +30,7 @@ class Task(ModificationMixin, CreationMixin, RecordMixin, Base):
     reference_uri = Column(String)
     name = Column(Unicode)
     status = Column(Enum(TaskStatus), default=TaskStatus.NEW)
+    priority = Column(Enum(TaskPriority), default=TaskPriority.NORMAL)
     creation_user_id = Column(String)
     assignment_user_id = Column(String)
 
