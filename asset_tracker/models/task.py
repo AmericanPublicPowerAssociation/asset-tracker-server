@@ -47,8 +47,8 @@ class Task(ModificationMixin, CreationMixin, RecordMixin, Base):
         }
 
 
-class TaskNote(ModificationMixin, CreationMixin, RecordMixin, Base):
-    __tablename__ = 'task_note'
+class TaskComment(ModificationMixin, CreationMixin, RecordMixin, Base):
+    __tablename__ = 'task_comment'
     task_id = Column(String, ForeignKey('task.id'))
     user_id = Column(String)
     text = Column(UnicodeText)
