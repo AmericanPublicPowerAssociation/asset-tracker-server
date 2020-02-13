@@ -17,3 +17,6 @@ EXAMPLE_BY_NAME = {
         'assetsGeoJson': load_dataset_json('assets1.geojson'),
     },
 }
+pytest_plugins = [
+    'asset_tracker.tests',
+]

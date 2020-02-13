@@ -55,8 +55,9 @@ class Asset(
         }
 
     @classmethod
-    def get_viewable_ids(Class, database):
-        return [_[0] for _ in database.query(Asset.id)]
+    def get_viewable_ids(Class, request):
+        db = request.db
+        return [_[0] for _ in db.query(Asset.id)]
 
     def __repr__(self):
         return f'<Asset({self.id})>'
