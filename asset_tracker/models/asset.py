@@ -54,6 +54,10 @@ class Asset(
             'geometry': get_geojson_dictionary(self.geometry),
         }
 
+    @classmethod
+    def get_viewable_ids(Class, database):
+        return [_[0] for _ in database.query(Asset.id)]
+
     def __repr__(self):
         return f'<Asset({self.id})>'
 
