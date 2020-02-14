@@ -1,7 +1,6 @@
 # vim
-*.sw?
+*.sw[op]
 *~
-.sw?
 # python
 *.egg
 *.egg-info
