@@ -11,12 +11,6 @@ from backend.models import (Connection)
     route_name='connections.json',
     renderer='json')
 class ConnectionsViews:
-    def __init__(self, request):
-        self.request = request
-
-    @property
-    def query(self):
-        return self.request.db.query(Connection)
 
     @view_config(request_method='GET')
     def get(self):

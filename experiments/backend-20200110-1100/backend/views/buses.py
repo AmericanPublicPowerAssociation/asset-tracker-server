@@ -6,17 +6,10 @@ from pyramid.httpexceptions import HTTPBadRequest
 from sqlalchemy.orm import selectinload
 from backend.models import (Bus)
 
-
 @view_defaults(
     route_name='buses.json',
     renderer='json')
 class BusesViews:
-    def __init__(self):
-        self.request = request
-
-    @property
-    def query(self):
-        return self.request.query(Bus)
 
     @view_config(request_method='GET')
     def get(self):

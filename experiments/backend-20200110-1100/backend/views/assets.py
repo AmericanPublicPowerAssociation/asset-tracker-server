@@ -11,12 +11,6 @@ from backend.models import (Asset)
     route_name='assets.json',
     renderer='json')
 class AssetsViews:
-    def __init__(self, request):
-        self.request = request
-
-    @property
-    def query(self):
-        return self.request.db.query(Asset).filter_by(deleted=False)
     
     def get_required_param(self, key, obj, obj_type):
         try:
@@ -82,7 +76,6 @@ class AssetsViews:
         self.request.db.add(db_asset)
         self.request.db.flush()
         return {'deleted': asset_id}
-
 
     @view_config(request_method='POST')
     def post(self):
