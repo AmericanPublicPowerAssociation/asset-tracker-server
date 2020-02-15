@@ -1,5 +1,6 @@
 from shapely.geometry import shape
 
+from ..constants.assets import ASSET_TYPES
 from ..exceptions import DataValidationError
 from ..models import Asset, AssetTypeCode, Bus, Connection
 
@@ -18,6 +19,17 @@ class RecordIdMirror(object):
         record_id = str(record_id)
         self.record_id_by_temporary_id[temporary_id] = record_id
         return record_id
+
+
+def absorb_asset_types(delta_asset_types):
+    asset_type_by_code = {_['code']: _ for _ in ASSET_TYPES}
+    keys = 'assetAttributes', 'connectionAttributes'
+    for delta_asset_type in delta_asset_types:
+        asset_type = asset_type_by_code[delta_asset_type['code']]
+        for key in keys:
+            values = asset_type.get(key, [])
+            delta_values = delta_asset_type.get(key, [])
+            asset_type[key] = values + delta_values
 
 
 def get_assets_json_list(assets):

@@ -2,10 +2,10 @@ from sqlalchemy import engine_from_config
 from sqlalchemy.orm import configure_mappers, sessionmaker
 from zope.sqlalchemy import register as register_transaction_listener
 
-from .asset import Asset, AssetTypeCode, Bus, Connection  # noqa
+from .assets import Asset, AssetTypeCode, Bus, Connection  # noqa
 # from .asset import AssetStatus         # noqa
 # from .log import Log, LogEvent         # noqa
-from .task import Task, TaskComment, TaskStatus  # noqa
+from .tasks import Task, TaskComment, TaskStatus  # noqa
 
 
 def includeme(config):
