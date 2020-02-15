@@ -17,4 +17,63 @@
 }, {
   "code": "mi",
   "name": "Industrial Meter"
+}, {
+  "code": "t",
+  "name": "Transformer"
+}, {
+  "code": "x",
+  "name": "Switch",
+  "subCodes": ["xf", "xb", "xc", "xi", "xs", "xr"]
+}, {
+  "code": "xf",
+  "name": "Fuse Switch"
+}, {
+  "code": "xb",
+  "name": "Breaker Switch"
+}, {
+  "code": "xc",
+  "name": "Recloser Switch"
+}, {
+  "code": "xi",
+  "name": "Interrupter Switch"
+}, {
+  "code": "xs",
+  "name": "Sectionalizer Switch"
+}, {
+  "code": "xr",
+  "name": "Relay Switch"
+}, {
+  "code": "q",
+  "name": "Power Quality",
+  "subCodes": ["qc", "qr", "qb"]
+}, {
+  "code": "qc",
+  "name": "Capacitor"
+}, {
+  "code": "qr",
+  "name": "Regulator"
+}, {
+  "code": "qb",
+  "name": "Booster"
+}, {
+  "code": "c",
+  "name": "Control"
+}, {
+  "code": "b",
+  "name": "Busbar"
+}, {
+  "code": "o",
+  "name": "Storage"
+}, {
+  "code": "g",
+  "name": "Generator"
+}, {
+  "code": "s",
+  "name": "Substation"
+}, {
+  "code": "S",
+  "name": "Station"
+}, {
+  "code": "X",
+  "name": "Other"
 }]
