@@ -1,6 +1,7 @@
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
 
+from ..constants.assets import ASSET_TYPES
 from ..exceptions import DataValidationError
 from ..models import Asset
 from ..routines.assets import (
@@ -23,7 +24,7 @@ def see_assets_json(request):
     # TODO: Get assets for which user has view privileges
     assets = db.query(Asset).all()
     return {
-        # 'assetTypes':
+        'assetTypes': ASSET_TYPES,
         'assets': get_assets_json_list(assets),
         'assetsGeoJson': get_assets_geojson_dictionary(assets),
         # 'boundingBox':
