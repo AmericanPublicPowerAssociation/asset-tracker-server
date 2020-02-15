@@ -1,0 +1,20 @@
+[{
+  "code": "p",
+  "name": "Pole"
+}, {
+  "code": "l",
+  "name": "Line"
+}, {
+  "code": "m",
+  "name": "Meter",
+  "subCodes": ["mr", "mc", "mi"]
+}, {
+  "code": "mr",
+  "name": "Residential Meter"
+}, {
+  "code": "mc",
+  "name": "Commercial Meter"
+}, {
+  "code": "mi",
+  "name": "Industrial Meter"
+}]
