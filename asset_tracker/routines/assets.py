@@ -23,13 +23,16 @@ class RecordIdMirror(object):
 
 def absorb_asset_types(delta_asset_types):
     asset_type_by_code = {_['code']: _ for _ in ASSET_TYPES}
-    keys = 'assetAttributes', 'connectionAttributes'
     for delta_asset_type in delta_asset_types:
         asset_type = asset_type_by_code[delta_asset_type['code']]
-        for key in keys:
-            values = asset_type.get(key, [])
+        for key in [
+            'assetAttributes',
+            'connectionAttributes',
+        ]:
             delta_values = delta_asset_type.get(key, [])
-            asset_type[key] = values + delta_values
+            if not delta_values:
+                continue
+            asset_type[key] = asset_type.get(key, []) + delta_values
 
 
 def get_assets_json_list(assets):
