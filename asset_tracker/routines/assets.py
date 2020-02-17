@@ -201,14 +201,14 @@ def get_asset_name(asset_dictionary):
 
 
 def get_asset_attributes(asset_dictionary):
-    asset_attributes = asset_dictionary.get('attributes', {})
+    d = asset_dictionary.get('attributes', {})
 
     try:
-        asset_attributes = dict(asset_attributes)
+        d = dict(asset_attributes)
     except Exception:
         raise DataValidationError({'attributes': 'is invalid'})
 
-    return asset_attributes
+    return {k: v for k, v in d.items() if v not in (None, '')}
 
 
 def get_asset_connections(asset_dictionary):
