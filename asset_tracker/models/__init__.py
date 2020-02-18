@@ -5,7 +5,6 @@ from zope.sqlalchemy import register as register_transaction_listener
 from .assets import Asset, AssetTypeCode, Bus, Connection  # noqa
 # from .asset import AssetStatus         # noqa
 # from .log import Log, LogEvent         # noqa
-from .tasks import Task, TaskComment, TaskStatus  # noqa
 
 
 def includeme(config):
