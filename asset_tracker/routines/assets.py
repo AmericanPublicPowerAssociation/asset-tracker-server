@@ -212,14 +212,14 @@ def get_asset_attributes(asset_dictionary):
 
 
 def get_asset_connections(asset_dictionary):
-    asset_connections = asset_dictionary.get('connections', [])
+    connections = asset_dictionary.get('connections', [])
 
     try:
-        asset_connections = list(asset_connections)
+        connections = list(connections)
     except Exception:
         raise DataValidationError({'connections': 'is invalid'})
 
-    return asset_connections
+    return connections
 
 
 def get_asset_feature_id(asset_feature):
