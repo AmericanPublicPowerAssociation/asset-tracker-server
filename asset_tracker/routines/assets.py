@@ -1,4 +1,5 @@
 from shapely.geometry import shape
+from sqlalchemy.orm import joinedload
 
 from ..constants.assets import ASSET_TYPES
 from ..exceptions import DataValidationError
@@ -19,6 +20,11 @@ class RecordIdMirror(object):
         record_id = str(record_id)
         self.record_id_by_temporary_id[temporary_id] = record_id
         return record_id
+
+
+def get_viewable_assets(database):
+    # TODO: Get assets for which user has view privileges
+    return database.query(Asset).options(joinedload(Asset.connections)).all()
 
 
 def absorb_asset_types(delta_asset_types):
@@ -80,7 +86,6 @@ def update_assets(db, asset_dictionaries, asset_id_mirror):
     if error_by_index:
         raise DataValidationError(error_by_index)
     db.flush()
-    print(db.query(Asset).all())
 
 
 def update_asset_connections(db, asset_dictionaries, asset_id_mirror):

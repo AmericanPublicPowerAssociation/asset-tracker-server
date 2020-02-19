@@ -1,16 +1,15 @@
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
-from sqlalchemy.orm import joinedload
 
 from ..constants.assets import ASSET_TYPES
 from ..exceptions import DataValidationError
-from ..models import Asset
 from ..routines.assets import (
     RecordIdMirror,
     get_asset_dictionaries,
     get_asset_feature_collection,
     get_assets_geojson_dictionary,
     get_assets_json_list,
+    get_viewable_assets,
     update_asset_connections,
     update_asset_geometries,
     update_assets)
@@ -22,8 +21,7 @@ from ..routines.assets import (
     request_method='GET')
 def see_assets_json(request):
     db = request.db
-    # TODO: Get assets for which user has view privileges
-    assets = db.query(Asset).options(joinedload(Asset.connections)).all()
+    assets = get_viewable_assets(db)
     return {
         'assetTypes': ASSET_TYPES,
         'assets': get_assets_json_list(assets),
@@ -57,8 +55,7 @@ def change_assets_json(request):
     except DataValidationError as e:
         raise HTTPBadRequest({'assetsGeoJson': e.args[0]})
 
-    # TODO: Get assets for which user has view privileges
-    assets = db.query(Asset).all()
+    assets = get_viewable_assets(db)
     return {
         'assets': get_assets_json_list(assets),
         'assetsGeoJson': get_assets_geojson_dictionary(assets),
