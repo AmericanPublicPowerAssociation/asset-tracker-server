@@ -85,7 +85,6 @@ def update_assets(db, asset_dictionaries, asset_id_mirror):
 
     if error_by_index:
         raise DataValidationError(error_by_index)
-    db.flush()
 
 
 def update_asset_connections(db, asset_dictionaries, asset_id_mirror):
@@ -123,7 +122,6 @@ def update_asset_connections(db, asset_dictionaries, asset_id_mirror):
 
     if error_by_index:
         raise DataValidationError(error_by_index)
-    db.flush()
 
 
 def update_asset_geometries(db, asset_feature_collection, asset_id_mirror):
@@ -140,12 +138,12 @@ def update_asset_geometries(db, asset_feature_collection, asset_id_mirror):
 
         asset_id = asset_id_mirror.get(asset_id)
         asset = db.query(Asset).get(asset_id)
-        asset.geometry = asset_geometry
+        if asset.geometry != asset_geometry:
+            asset.geometry = asset_geometry
         db.add(asset)
 
     if error_by_index:
         raise DataValidationError(error_by_index)
-    db.flush()
 
 
 def get_asset_dictionaries(params):
