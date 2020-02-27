@@ -67,7 +67,7 @@ class CreationMixin(object):
 class ModificationMixin(object):
     # Adapted from invisibleroads-records
 
-    modification_datetime = Column(DateTime)
+    modification_datetime = Column(DateTime, default=datetime.utcnow)
 
     @property
     def modification_timestamp(self):
