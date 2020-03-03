@@ -43,9 +43,9 @@ APP_REQUIREMENTS = [
     # computation
     # 'networkx',
     # 'numpy',
+    'pytest>=3.7.4',
 ]
 TEST_REQUIREMENTS = [
-    'pytest>=3.7.4',
     'pytest-cov',
 ]
 FOLDER = dirname(abspath(__file__))
