@@ -24,7 +24,7 @@ class RecordIdMirror(object):
 
 def get_viewable_assets(database):
     # TODO: Get assets for which user has view privileges
-    return database.query(Asset).options(joinedload(Asset.connections)).all()
+    return database.query(Asset).filter_by(is_deleted=False).options(joinedload(Asset.connections)).all()
 
 
 def absorb_asset_types(delta_asset_types):
@@ -68,6 +68,7 @@ def update_assets(db, asset_dictionaries, asset_id_mirror):
             asset_type_code = get_asset_type_code(asset_dictionary)
             asset_name = get_asset_name(asset_dictionary)
             asset_attributes = get_asset_attributes(asset_dictionary)
+            asset_is_deleted = get_asset_is_deleted(asset_dictionary)
         except DataValidationError as e:
             error_by_index[index] = e.args[0]
             continue
@@ -81,6 +82,7 @@ def update_assets(db, asset_dictionaries, asset_id_mirror):
         asset.type_code = asset_type_code
         asset.name = asset_name
         asset.attributes = asset_attributes
+        asset.is_deleted = asset_is_deleted
         db.add(asset)
 
     if error_by_index:
@@ -212,6 +214,13 @@ def get_asset_attributes(asset_dictionary):
         raise DataValidationError({'attributes': 'is invalid'})
 
     return {k: v for k, v in value_by_key.items() if v not in (None, '')}
+
+
+def get_asset_is_deleted(asset_dictionary):
+    is_deleted = asset_dictionary.get('is_deleted', False)
+    if not isinstance(is_deleted, bool):
+        raise DataValidationError({'is_deleted': 'is invalid'})
+    return is_deleted
 
 
 def get_asset_connections(asset_dictionary):

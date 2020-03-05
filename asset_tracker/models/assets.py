@@ -11,6 +11,7 @@ from .meta import (
     AttributesMixin,
     Base,
     CreationMixin,
+    DeletionMixin,
     GeometryMixin,
     ModificationMixin,
     RecordMixin)
@@ -28,6 +29,7 @@ class Asset(
         AttributesMixin,
         ModificationMixin,
         CreationMixin,
+        DeletionMixin,
         RecordMixin,
         Base):
     __tablename__ = 'asset'
