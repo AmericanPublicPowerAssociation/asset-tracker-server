@@ -19,7 +19,6 @@ dist/
 # transient
 *.log
 *.map
-*.out
 *.tmp
 .DS_Store
 data_*
