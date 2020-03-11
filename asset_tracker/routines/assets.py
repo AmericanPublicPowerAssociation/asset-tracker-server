@@ -218,7 +218,9 @@ def get_asset_attributes(asset_dictionary):
 
 def get_asset_is_deleted(asset_dictionary):
     is_deleted = asset_dictionary.get('is_deleted', False)
-    if not isinstance(is_deleted, bool):
+    try:
+        is_deleted = bool(is_deleted)
+    except Exception:
         raise DataValidationError({'is_deleted': 'is invalid'})
     return is_deleted
 
