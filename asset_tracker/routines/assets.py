@@ -24,7 +24,8 @@ class RecordIdMirror(object):
 
 def get_viewable_assets(database):
     # TODO: Get assets for which user has view privileges
-    return database.query(Asset).filter_by(is_deleted=False).options(joinedload(Asset.connections)).all()
+    return database.query(Asset).filter_by(is_deleted=False).options(
+            joinedload(Asset.connections)).all()
 
 
 def absorb_asset_types(delta_asset_types):
