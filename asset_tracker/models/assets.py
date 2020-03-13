@@ -11,6 +11,7 @@ from .meta import (
     AttributesMixin,
     Base,
     CreationMixin,
+    DeletionMixin,
     GeometryMixin,
     ModificationMixin,
     RecordMixin)
@@ -28,6 +29,7 @@ class Asset(
         AttributesMixin,
         ModificationMixin,
         CreationMixin,
+        DeletionMixin,
         RecordMixin,
         Base):
     __tablename__ = 'asset'
@@ -48,9 +50,10 @@ class Asset(
         }
 
     def get_geojson_feature(self):
+        properties = {'id': self.id, 'typeCode': self.type_code.value}
         return {
             'type': 'Feature',
-            'properties': {'id': self.id},
+            'properties': properties,
             'geometry': get_geojson_dictionary(self.geometry),
         }
 
