@@ -34,7 +34,7 @@ APP_REQUIREMENTS = [
     # cache
     # 'dogpile.cache',
     # table
-    # 'pandas>=0.25.1',
+    'pandas>=0.25.1',
     # geotable
     'geoalchemy2>=0.6.3',
     'shapely',
