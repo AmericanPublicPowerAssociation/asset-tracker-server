@@ -1,12 +1,15 @@
+import json
+from cgi import FieldStorage
+
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.response import Response
 from pyramid.view import view_config
+from shapely import wkt
 from sqlalchemy.orm import selectinload
-import pandas as pd
 from ..constants.assets import ASSET_TYPES
 from ..exceptions import DataValidationError
-from ..macros.exporter import build_flat_dict_structure
-from ..models import Asset
+from ..macros.exporter import build_flat_dict_structure, validate_assets_df, get_extra_columns_df
+from ..models import Asset, Bus, Connection, AssetTypeCode
 from ..routines.assets import (
     RecordIdMirror,
     get_asset_dictionaries,
@@ -17,6 +20,9 @@ from ..routines.assets import (
     update_asset_connections,
     update_asset_geometries,
     update_assets)
+
+import pandas as pd
+import numpy as np
 
 
 @view_config(
@@ -91,7 +97,6 @@ def see_assets_csv(request):
         columns = set()
         for asset in assets:
             flat_asset = build_flat_dict_structure(asset)
-            print(flat_asset)
             flat_assets.append(flat_asset)
             headers = set(flat_asset.keys())
             columns.update(headers - base_columns)
@@ -112,3 +117,93 @@ def see_assets_csv(request):
         status=200,
         content_type='text/csv',
         content_disposition='attachment')
+
+
+@view_config(
+    route_name='assets.csv',
+    renderer='json',
+    request_method='PATCH')
+def receive_assets_file(request):
+    override_records = request.params.get('overwrite') == 'true'
+
+    try:
+        f = request.params['file']
+    except KeyError:
+        raise HTTPBadRequest({'file': 'is required'})
+    if not isinstance(f, FieldStorage):
+        raise HTTPBadRequest({'file': 'must be an upload'})
+
+    def load_json(json_string):
+        try:
+          return json.loads(json_string)
+        except json.decoder.JSONDecodeError:
+          return json.loads(json_string.replace("'", '"'))
+
+    validated_assets, errors = validate_assets_df(pd.read_csv(f.file, comment='#', converters={'connections': load_json}))
+
+    if errors:
+        raise HTTPBadRequest(errors)
+
+    has_connections = 'connections' in validated_assets.columns
+    has_wkt = 'wkt' in validated_assets.columns
+
+    db = request.db
+
+    extra_columns = get_extra_columns_df(validated_assets, [
+        'id',
+        'typeCode',
+        'name',
+        'connections',
+        'wkt',
+    ])
+    for name, row in validated_assets.iterrows():
+        asset = db.query(Asset).get(row['id'])
+        if asset:
+            if not override_records:
+                continue
+        else:
+            asset = Asset(id=row['id'])
+        asset.type_code = AssetTypeCode(row['typeCode'])
+        asset.name = row['name']
+
+        extra = {}
+        for column in extra_columns:
+            value = row[column]
+            if isinstance(value, float) and np.isnan(value):
+                continue
+            extra[column] = value
+        asset.attributes = extra
+
+        if has_wkt:
+            geometry = row['wkt']
+            if not (isinstance(geometry, float) and np.isnan(geometry)):
+                asset.geometry = wkt.loads(geometry)
+
+        db.add(asset)
+
+    for name, row in validated_assets.iterrows():
+        asset = db.query(Asset).get(row['id'])
+
+        if has_connections:
+            for connection in row['connections']:
+                bus = db.query(Bus).get(connection['busId'])
+                if not bus:
+                    bus = Bus(id=connection['busId'])
+                    db.add(bus)
+
+                conn = db.query(Connection).get({"asset_id": asset.id, "bus_id": bus.id})
+
+                if conn:
+                    conn._attributes = connection['attributes']
+                else:
+                    conn = Connection(asset_id=asset.id, bus_id=bus.id, _attributes=connection['attributes'])
+                    db.add(conn)
+
+    try:
+        db.flush()
+    except Exception:
+        db.rollback()
+
+    return {
+        'error': False
+    }
