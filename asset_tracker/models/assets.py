@@ -60,8 +60,8 @@ class Asset(
     @classmethod
     def get_viewable_ids(Class, request):
         db = request.db
-        assets = db.query(Asset.id).filter_by(is_deleted=False)
-        return [_[0] for _ in assets]
+        asset_ids = db.query(Asset.id).filter_by(is_deleted=False)
+        return [_[0] for _ in asset_ids]
 
     def __repr__(self):
         return f'<Asset({self.id})>'
