@@ -3,6 +3,7 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import (
     Enum,
+    Integer,
     String,
     Unicode)
 from shapely.geometry import mapping as get_geojson_dictionary
@@ -43,10 +44,10 @@ class Asset(
             'typeCode': self.type_code.value,
             'name': self.name,
             'attributes': self.attributes,
-            'connections': [{
+            'connections': {_.asset_vertex_index: {
                 'busId': _.bus_id,
                 'attributes': _.attributes,
-            } for _ in self.connections],
+            } for _ in self.connections},
         }
 
     def get_geojson_feature(self):
@@ -76,11 +77,13 @@ class Bus(RecordMixin, Base):
 class Connection(AttributesMixin, Base):
     __tablename__ = 'connection'
     asset_id = Column(String, ForeignKey('asset.id'), primary_key=True)
+    asset_vertex_index = Column(Integer)
     bus_id = Column(String, ForeignKey('bus.id'), primary_key=True)
 
     def __repr__(self):
         argument_string = ', '.join((
             f'asset_id={self.asset_id}',
+            f'asset_vertex_index={self.asset_vertex_index}',
             f'bus_id={self.bus_id}',
         ))
         return f'<Connection({argument_string})>'

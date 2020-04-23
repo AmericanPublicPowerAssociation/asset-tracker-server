@@ -25,7 +25,7 @@ class RecordIdMirror(object):
 def get_viewable_assets(database):
     # TODO: Get assets for which user has view privileges
     return database.query(Asset).filter_by(is_deleted=False).options(
-            joinedload(Asset.connections)).all()
+        joinedload(Asset.connections)).all()
 
 
 def absorb_asset_types(delta_asset_types):
@@ -94,19 +94,21 @@ def update_asset_connections(db, asset_dictionaries, asset_id_mirror):
     error_by_index = {}
     bus_id_mirror = RecordIdMirror()
 
-    for index, asset_dictionary in enumerate(asset_dictionaries):
+    for asset_index, asset_dictionary in enumerate(asset_dictionaries):
         try:
             asset_id = get_asset_id(asset_dictionary)
-            connection_dictionaries = get_asset_connections(asset_dictionary)
+            connection_by_index = get_asset_connections(asset_dictionary)
         except DataValidationError as e:
-            error_by_index[index] = e.args[0]
+            error_by_index[asset_index] = e.args[0]
             continue
-
         asset_id = asset_id_mirror.get(asset_id)
         asset = db.query(Asset).get(asset_id)
 
         connections = []
-        for connection_dictionary in connection_dictionaries:
+        for (
+            asset_vertex_index,
+            connection_dictionary,
+        ) in connection_by_index.items():
             bus_id = get_bus_id(connection_dictionary)
             bus_id = bus_id_mirror.get(bus_id)
             bus = db.query(Bus).get(bus_id)
@@ -120,6 +122,7 @@ def update_asset_connections(db, asset_dictionaries, asset_id_mirror):
                 connection = Connection(bus_id=bus_id)
                 connection.attributes = connection_dictionary.get(
                     'attributes', {})
+            connection.asset_vertex_index = asset_vertex_index
             connections.append(connection)
         asset.connections = connections
 
@@ -157,6 +160,12 @@ def get_asset_dictionaries(params):
     except Exception:
         raise DataValidationError({'assets': 'is invalid'})
 
+    for index, asset_dictionary in enumerate(asset_dictionaries):
+        try:
+            asset_dictionaries[index] = dict(asset_dictionary)
+        except Exception:
+            raise DataValidationError({'assets': 'has invalid values'})
+
     return asset_dictionaries
 
 
@@ -168,11 +177,16 @@ def get_asset_feature_collection(params):
     except Exception:
         raise DataValidationError({'assetsGeoJson': 'is invalid'})
 
+    try:
+        asset_features = list(asset_feature_collection.get('features', []))
+    except Exception:
+        raise DataValidationError({'assetsGeoJson': 'has invalid values'})
+
+    asset_feature_collection['features'] = asset_features
     return asset_feature_collection
 
 
 def get_asset_id(asset_dictionary):
-
     try:
         asset_id = asset_dictionary['id']
     except KeyError:
@@ -182,7 +196,6 @@ def get_asset_id(asset_dictionary):
 
 
 def get_asset_type_code(asset_dictionary):
-
     try:
         asset_type_code = asset_dictionary['typeCode']
     except KeyError:
@@ -207,14 +220,16 @@ def get_asset_name(asset_dictionary):
 
 
 def get_asset_attributes(asset_dictionary):
-    value_by_key = asset_dictionary.get('attributes', {})
+    attribute_value_by_name = asset_dictionary.get('attributes', {})
 
     try:
-        value_by_key = dict(value_by_key)
+        attribute_value_by_name = dict(attribute_value_by_name)
     except Exception:
         raise DataValidationError({'attributes': 'is invalid'})
 
-    return {k: v for k, v in value_by_key.items() if v not in (None, '')}
+    return {
+        name: value for name, value in attribute_value_by_name.items()
+        if value not in (None, '')}
 
 
 def get_asset_is_deleted(asset_dictionary):
@@ -227,18 +242,39 @@ def get_asset_is_deleted(asset_dictionary):
 
 
 def get_asset_connections(asset_dictionary):
-    connections = asset_dictionary.get('connections', [])
-
+    raw_connection_by_index = asset_dictionary.get('connections', {})
     try:
-        connections = list(connections)
+        raw_connection_by_index = dict(raw_connection_by_index)
     except Exception:
         raise DataValidationError({'connections': 'is invalid'})
 
-    return connections
+    connection_by_index = {}
+    for index, connection in raw_connection_by_index.items():
+        try:
+            index = int(index)
+        except Exception:
+            raise DataValidationError({
+                'connections': 'has invalid indices'})
+
+        try:
+            connection = dict(connection)
+        except Exception:
+            raise DataValidationError({
+                'connections': 'has invalid values'})
+
+        attributes = connection.get('attributes', {})
+        try:
+            connection['attributes'] = dict(attributes)
+        except Exception:
+            raise DataValidationError({
+                'connections': 'has invalid attributes'})
+
+        connection_by_index[index] = connection
+
+    return connection_by_index
 
 
 def get_asset_feature_id(asset_feature):
-
     try:
         asset_feature_properties = asset_feature['properties']
     except KeyError:

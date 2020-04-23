@@ -3,12 +3,6 @@ from asset_tracker.views.assets import change_assets_json
 from conftest import EXAMPLE_BY_NAME
 
 
-class TestSeeAssetsJson(object):
-
-    def test_accept_parameters(self, website_request, db):
-        pass
-
-
 class TestChangeAssetsJson(object):
 
     def test_accept_parameters(self, website_request, db):
