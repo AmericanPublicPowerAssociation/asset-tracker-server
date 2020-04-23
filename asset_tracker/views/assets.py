@@ -8,7 +8,7 @@ from shapely import wkt
 from sqlalchemy.orm import selectinload
 from ..constants.assets import ASSET_TYPES
 from ..exceptions import DataValidationError
-from ..macros.exporter import build_flat_dict_structure, validate_assets_df, get_extra_columns_df
+from asset_tracker.routines.exporter import build_flat_dict_structure, validate_assets_df, get_extra_columns_df
 from ..models import Asset, Bus, Connection, AssetTypeCode
 from ..routines.assets import (
     RecordIdMirror,
