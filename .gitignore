@@ -2,8 +2,7 @@
 *.sw[op]
 *~
 # python
-*.egg
-*.egg-info
+*.egg*
 *.py[co]
 .cache
 .coverage
@@ -18,7 +17,6 @@ dist/
 *.sqlite-journal
 # transient
 *.log
-*.map
 *.tmp
+*_data
 .DS_Store
-data_*

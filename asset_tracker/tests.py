@@ -1,63 +1,15 @@
-import transaction
-from pyramid import testing
 from pytest import fixture
+from webtest import TestApp
 
-from asset_tracker.models import (
-    define_get_database_session,
-    get_database_engine,
-    get_transaction_manager_session)
-from asset_tracker.models.meta import Base
+from . import main as get_app
 
 
 @fixture
-def website_request(records_request):
-    website_request = records_request
-    yield website_request
+def application(application_request):
+    settings = application_request.registry.settings
+    yield TestApp(get_app({}, **settings))
 
 
 @fixture
-def records_request(posts_request, db):
-    # Adapted from invisibleroads-records
-    records_request = posts_request
-    records_request.db = db
+def application_request(records_request):
     yield records_request
-
-
-@fixture
-def posts_request(website_config):
-    # Adapted from invisibleroads-posts
-    posts_request = testing.DummyRequest()
-    yield posts_request
-
-
-@fixture
-def website_config(config):
-    config.include('asset_tracker')
-    yield config
-
-
-@fixture
-def db(config):
-    settings = config.get_settings()
-    database_engine = get_database_engine(settings)
-    Base.metadata.create_all(database_engine)
-    get_database_session = define_get_database_session(database_engine)
-    database_session = get_transaction_manager_session(
-        get_database_session, transaction.manager)
-    yield database_session
-    transaction.abort()
-    Base.metadata.drop_all(database_engine)
-
-
-@fixture
-def config(settings):
-    config = testing.setUp(settings=settings)
-    yield config
-    testing.tearDown()
-
-
-@fixture
-def settings():
-    return {
-        'sqlalchemy.url': 'sqlite://',
-    }

@@ -1,0 +1,62 @@
+{
+  "p": {
+    "name": "Pole"
+  },
+  "l": {
+    "name": "Line"
+  },
+  "m": {
+    "name": "Meter",
+    "assetAttributes": [
+      "meterType": [
+        "residential",
+        "commercial",
+        "industrial"
+      ]
+    ]
+  },
+  "t": {
+    "name": "Transformer"
+  },
+  "x": {
+    "name": "Switch",
+    "assetAttributes": [
+      "switchType": [
+        "fuse",
+        "breaker",
+        "recloser",
+        "interrupter",
+        "sectionalizer",
+        "relay"
+      ]
+    ]
+  },
+  "q": {
+    "name": "Power Quality",
+    "assetAttributes": [
+      "qualityType": [
+        "capacitor",
+        "regulator",
+        "booster"
+      ]
+    ]
+  },
+  "c": {
+    "name": "Control"
+  },
+  "o": {
+    "name": "Storage"
+  },
+  "g": {
+    "name": "Generator"
+  },
+  "s": {
+    "name": "Substation"
+  },
+  "S": {
+    "name": "Station"
+  },
+  "X": {
+    "name": "Asset"
+  }
+}
