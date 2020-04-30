@@ -11,6 +11,7 @@ from .meta import (
     AttributesMixin,
     Base,
     CreationMixin,
+    DeletionMixin,
     GeometryMixin,
     ModificationMixin,
     RecordMixin)
@@ -28,6 +29,7 @@ class Asset(
         AttributesMixin,
         ModificationMixin,
         CreationMixin,
+        DeletionMixin,
         RecordMixin,
         Base):
     __tablename__ = 'asset'
@@ -48,16 +50,18 @@ class Asset(
         }
 
     def get_geojson_feature(self):
+        properties = {'id': self.id, 'typeCode': self.type_code.value}
         return {
             'type': 'Feature',
-            'properties': {'id': self.id},
+            'properties': properties,
             'geometry': get_geojson_dictionary(self.geometry),
         }
 
     @classmethod
     def get_viewable_ids(Class, request):
         db = request.db
-        return [_[0] for _ in db.query(Asset.id)]
+        asset_ids = db.query(Asset.id).filter_by(is_deleted=False)
+        return [_[0] for _ in asset_ids]
 
     def __repr__(self):
         return f'<Asset({self.id})>'

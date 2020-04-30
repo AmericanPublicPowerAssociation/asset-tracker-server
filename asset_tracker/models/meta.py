@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import MetaData
 from sqlalchemy.types import (
+    Boolean,
     DateTime,
     PickleType,
     String)
@@ -62,6 +63,11 @@ class CreationMixin(object):
     @classmethod
     def get_datetime(Class):
         return Class.creation_datetime
+
+
+class DeletionMixin(object):
+
+    is_deleted = Column(Boolean(name='is_deleted_bool'), default=False)
 
 
 class ModificationMixin(object):
