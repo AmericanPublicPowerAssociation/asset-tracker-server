@@ -1,19 +1,22 @@
 from asset_tracker.exceptions import DataValidationError
 from asset_tracker.routines.assets import (
-    get_asset_attributes, get_asset_connections, get_asset_dictionaries,
+    get_asset_attributes, get_asset_connections, get_asset_dictionary_by_id,
     get_asset_feature_collection)
 from pytest import raises
 
 
-def test_get_asset_dictionaries():
+def test_get_asset_dictionary_by_id():
     with raises(DataValidationError):
-        get_asset_dictionaries({'assets': 1})
+        get_asset_dictionary_by_id({'assetById': 1})
     with raises(DataValidationError):
-        get_asset_dictionaries({'assets': [1]})
-    get_asset_dictionaries({})
-    get_asset_dictionaries({'assets': []})
-    get_asset_dictionaries({'assets': [{}]})
-    get_asset_dictionaries({'assets': [{'id': 'a'}]})
+        get_asset_dictionary_by_id({'assetById': [1]})
+    with raises(DataValidationError):
+        get_asset_dictionary_by_id({'assetById': {'a': 1}})
+    with raises(DataValidationError):
+        get_asset_dictionary_by_id({'assetById': {'a': [1]}})
+    get_asset_dictionary_by_id({})
+    get_asset_dictionary_by_id({'assetById': {'a': {}}})
+    get_asset_dictionary_by_id({'assetById': {'a': {'name': 'x'}}})
 
 
 def test_get_asset_feature_collection():
