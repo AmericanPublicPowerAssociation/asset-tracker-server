@@ -1,6 +1,7 @@
 import json
 from cgi import FieldStorage
 
+import shapely
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -8,7 +9,7 @@ from shapely import wkt
 from sqlalchemy.orm import selectinload
 from ..constants.assets import ASSET_TYPES
 from ..exceptions import DataValidationError
-# from ..macros.exporter import build_flat_dict_structure, validate_assets_df, get_extra_columns_df
+from ..routines.exporter import build_flat_dict_structure, validate_assets_df, get_extra_columns_df
 from ..models import Asset, Bus, Connection, AssetTypeCode
 from ..routines.geometry import get_bounding_box
 from ..routines.assets import (
@@ -71,9 +72,6 @@ def change_assets_json(request):
         'assets': get_assets_json_list(assets),
         'assetsGeoJson': get_assets_geojson_dictionary(assets),
     }
-
-
-'''
 
 
 @view_config(
@@ -143,7 +141,12 @@ def receive_assets_file(request):
         except json.decoder.JSONDecodeError:
           return json.loads(json_string.replace("'", '"'))
 
-    validated_assets, errors = validate_assets_df(pd.read_csv(f.file, comment='#', converters={'connections': load_json}))
+    try:
+      validated_assets, errors = validate_assets_df(pd.read_csv(f.file, comment='#', converters={'connections': load_json}))
+    except json.decoder.JSONDecodeError as e:
+        raise HTTPBadRequest(str(e).strip())
+    except pd.errors.ParserError as e:
+        raise HTTPBadRequest(str(e).split(':')[-1].strip())
 
     if errors:
         raise HTTPBadRequest(errors)
@@ -167,6 +170,7 @@ def receive_assets_file(request):
                 continue
         else:
             asset = Asset(id=row['id'])
+
         asset.type_code = AssetTypeCode(row['typeCode'])
         asset.name = row['name']
 
@@ -181,7 +185,10 @@ def receive_assets_file(request):
         if has_wkt:
             geometry = row['wkt']
             if not (isinstance(geometry, float) and np.isnan(geometry)):
-                asset.geometry = wkt.loads(geometry)
+                try:
+                    asset.geometry = wkt.loads(geometry)
+                except shapely.errors.WKTReadingError as e:
+                    raise HTTPBadRequest(f'failed to parse ')
 
         db.add(asset)
 
@@ -194,10 +201,14 @@ def receive_assets_file(request):
                 if not bus:
                     bus = Bus(id=connection['busId'])
                     db.add(bus)
+                elif not override_records:
+                    continue
 
                 conn = db.query(Connection).get({"asset_id": asset.id, "bus_id": bus.id})
 
                 if conn:
+                    if not override_records:
+                        continue
                     conn._attributes = connection['attributes']
                 else:
                     conn = Connection(asset_id=asset.id, bus_id=bus.id, _attributes=connection['attributes'])
@@ -211,6 +222,3 @@ def receive_assets_file(request):
     return {
         'error': False
     }
-
-
-'''
