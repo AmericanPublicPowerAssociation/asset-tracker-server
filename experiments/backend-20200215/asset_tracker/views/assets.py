@@ -337,28 +337,6 @@ def drop_asset_json(request):
 
 @view_config(
     route_name='shape.csv',
-    request_method='GET')
-def see_asset_shape(request):
-    asset_id = request.matchdict['asset']
-    print(asset_id)
-    db = request.db
-
-    asset = db.query(Asset).get(asset_id)
-
-    if not asset:
-        raise HTTPNotFound({'asset': 'does not exists'})
-
-    df = pd.DataFrame.from_dict(asset.shape)
-
-    return Response(
-        body=df.to_csv(),
-        status=200,
-        content_type='text/csv',
-        content_disposition='attachment')
-
-
-@view_config(
-    route_name='shape.csv',
     renderer='json',
     request_method='POST')
 def receive_asset_shape(request):

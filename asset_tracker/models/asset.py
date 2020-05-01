@@ -41,7 +41,8 @@ class Asset(
 
     def get_json_dictionary(self):
         return {
-            'id': self.id,
+            # !!! Remove if view returns assetById
+            # 'id': self.id,
             'typeCode': self.type_code.value,
             'name': self.name,
             'attributes': self.attributes,
@@ -54,7 +55,11 @@ class Asset(
     def get_geojson_feature(self):
         return {
             'type': 'Feature',
-            'properties': {'id': self.id},
+            'properties': {
+                'id': self.id,
+                # !!! Remove if view splits assets by type
+                'typeCode': self.type_code,
+            },
             'geometry': get_geojson_dictionary(self.geometry),
         }
 
