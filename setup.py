@@ -6,47 +6,38 @@ ENTRY_POINTS = '''
 [paste.app_factory]
 main = asset_tracker:main
 '''
-APP_CLASSIFIERS = [
+APPLICATION_CLASSIFIERS = [
     'Programming Language :: Python',
     'Framework :: Pyramid',
+    'Framework :: Pyramid :: InvisibleRoads',
     'Topic :: Internet :: WWW/HTTP',
     'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
 ]
-APP_REQUIREMENTS = [
+APPLICATION_REQUIREMENTS = [
+    # architecture
+    'invisibleroads-posts >= 0.7.4',
+    'invisibleroads-records >= 0.5.3',
     # web
-    'plaster-pastedeploy',
     'pyramid',
-    'pyramid-ipython',
-    'waitress',
     # database
     'alembic',
-    'pyramid-retry',
-    'pyramid-tm',
     'sqlalchemy',
-    'transaction',
-    'zope.sqlalchemy',
-    # shortcut
-    'invisibleroads-macros-configuration',
-    'invisibleroads-macros-log>=1.0.1',
-    'invisibleroads-macros-security',
-    # time
-    'pendulum',
-    # cache
-    # 'dogpile.cache',
-    # table
-    'pandas>=0.25.1',
-    # geotable
-    'geoalchemy2>=0.6.3',
-    'shapely',
+    # test
+    'pytest',
+    # geometry
+    'geoalchemy2',
     'geotable',
+    'shapely',
     'utm',
     # computation
-    # 'networkx',
-    # 'numpy',
-    'pytest>=3.7.4',
+    'numpy',
+    'pandas',
+    # shortcut
+    'invisibleroads-macros-configuration >= 1.0.3',
 ]
 TEST_REQUIREMENTS = [
     'pytest-cov',
+    'webtest',
 ]
 FOLDER = dirname(abspath(__file__))
 DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
@@ -55,18 +46,18 @@ DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
 
 setup(
     name='asset-tracker',
-    version='0.0.4',
+    version='0.0.5',
     description='Asset Tracker',
     long_description=DESCRIPTION,
     long_description_content_type='text/markdown',
-    classifiers=APP_CLASSIFIERS,
+    classifiers=APPLICATION_CLASSIFIERS,
     author='CrossCompute Inc.',
     author_email='support@crosscompute.com',
-    url='https://crosscompute.com',
-    keywords='web pyramid pylons',
+    url='https://assets.publicpower.org',
+    keywords='web wsgi bfg pylons pyramid invisibleroads',
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    extras_require={'testing': TEST_REQUIREMENTS},
-    install_requires=APP_REQUIREMENTS,
+    extras_require={'test': TEST_REQUIREMENTS},
+    install_requires=APPLICATION_REQUIREMENTS,
     entry_points=ENTRY_POINTS)

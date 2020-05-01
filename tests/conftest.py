@@ -1,20 +1,21 @@
-import json
 from os.path import dirname, join
+from crosscompute_macros_configuration import load_json
 
 
 def load_example_json(example_name):
-    example_path = join(EXAMPLES_FOLDER, example_name)
-    return json.load(open(example_path, 'rt'))
+    return load_json(join(EXAMPLES_FOLDER, example_name))
 
 
 TESTS_FOLDER = dirname(__file__)
 EXAMPLES_FOLDER = join(TESTS_FOLDER, 'examples')
 EXAMPLE_BY_NAME = {
     'basic': {
-        'assets': load_example_json('assets1.json'),
-        'assetsGeoJson': load_example_json('assets1.geojson'),
+        'assetById': load_example_json(join('basic', 'assetById.json')),
+        'assetsGeoJson': load_example_json(join('basic', 'assets.geojson')),
     },
 }
 pytest_plugins = [
+    'invisibleroads_posts.tests',
+    'invisibleroads_records.tests',
     'asset_tracker.tests',
 ]

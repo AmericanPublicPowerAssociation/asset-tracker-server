@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def build_flat_dict_structure(asset):
     asset_json = asset.get_json_dictionary()
     attributes = asset.attributes.copy()
@@ -12,7 +13,6 @@ def build_flat_dict_structure(asset):
     }
 
     return flat_asset
-
 
 
 def validate_field_existence_df(df, fields):

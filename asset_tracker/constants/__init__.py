@@ -1,5 +1,5 @@
-from os.path import dirname
+from os.path import dirname, join
 
 
-CONSTANTS_FOLDER = dirname(__file__)
-PACKAGE_FOLDER = dirname(CONSTANTS_FOLDER)
+PACKAGE_FOLDER = dirname(__file__)
+DATASETS_FOLDER = join(PACKAGE_FOLDER, 'datasets')
