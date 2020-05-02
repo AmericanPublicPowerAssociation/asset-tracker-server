@@ -1,6 +1,6 @@
 import json
 from invisibleroads_macros_configuration import (
-    expand_environment_variables,
+    fill_environment_variables,
     set_default)
 from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPException
@@ -11,7 +11,7 @@ from .models.meta import CLASS_REGISTRY
 
 
 def main(global_config, **settings):
-    settings = expand_environment_variables(settings)
+    fill_environment_variables(settings)
     with Configurator(settings=settings) as config:
         config.include('asset_tracker')
     return config.make_wsgi_app()
