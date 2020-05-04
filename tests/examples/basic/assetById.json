@@ -6,7 +6,7 @@
   "1": {
     "typeCode": "t",
     "name": "Substation Transformer 1",
-    "attributes": { 
+    "attributes": {
       "vendorName": "Schneider Electric",
       "productName": "HVT36A",
       "productVersion": "2.0.1",
@@ -42,7 +42,7 @@
   "2": {
     "typeCode": "m",
     "name": "Industrial Meter 1",
-    "attributes": { 
+    "attributes": {
       "vendorName": "Schneider Electric",
       "productName": "SCH-MV10",
       "productVersion": "10.5.7",
