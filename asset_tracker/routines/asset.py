@@ -3,7 +3,7 @@ from sqlalchemy.orm import joinedload
 
 from ..constants.asset import ASSET_TYPE_BY_CODE
 from ..exceptions import DataValidationError
-from ..macros.asset import RecordIdMirror
+from ..macros.database import RecordIdMirror
 from ..models import Asset, AssetTypeCode, Bus, Connection
 
 

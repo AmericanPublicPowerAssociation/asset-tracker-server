@@ -33,7 +33,8 @@ APPLICATION_REQUIREMENTS = [
     'numpy',
     'pandas',
     # shortcut
-    'invisibleroads-macros-configuration >= 1.0.3',
+    'invisibleroads-macros-configuration >= 1.0.4',
+    'invisibleroads-macros-database >= 1.0.0',
 ]
 TEST_REQUIREMENTS = [
     'pytest-cov',

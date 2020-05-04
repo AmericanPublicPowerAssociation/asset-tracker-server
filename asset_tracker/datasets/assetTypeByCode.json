@@ -8,11 +8,11 @@
   "m": {
     "name": "Meter",
     "assetAttributes": [
-      "meterType": [
+      ["meterType", [
         "residential",
         "commercial",
         "industrial"
-      ]
+      ]]
     ]
   },
   "t": {
@@ -21,7 +21,7 @@
   "x": {
     "name": "Switch",
     "assetAttributes": [
-      "switchType": [
+      ["switchType", [
         "fuse",
         "breaker",
         "recloser",
@@ -34,11 +34,11 @@
   "q": {
     "name": "Power Quality",
     "assetAttributes": [
-      "qualityType": [
+      ["qualityType", [
         "capacitor",
         "regulator",
         "booster"
-      ]
+      ]]
     ]
   },
   "c": {
