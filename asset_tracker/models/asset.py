@@ -1,9 +1,9 @@
 import enum
 from invisibleroads_records.models import (
+    Base,
     CreationMixin,
     ModificationMixin,
-    RecordMixin,
-    Base)
+    RecordMixin)
 from shapely.geometry import mapping as get_geojson_dictionary
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
