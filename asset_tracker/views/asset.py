@@ -68,6 +68,7 @@ def change_assets_json(request):
         raise HTTPBadRequest({'assetsGeoJson': e.args[0]})
 
     d = see_assets_json(request)
+    d['assetIdById'] = asset_id_mirror.get_json_dictionary()
     del d['assetTypeByCode']
     return d
 

@@ -12,3 +12,6 @@ class RecordIdMirror(object):
         record_id = str(record_id)
         self.record_id_by_temporary_id[temporary_id] = record_id
         return record_id
+
+    def get_json_dictionary(self):
+        return self.record_id_by_temporary_id
