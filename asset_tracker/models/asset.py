@@ -58,7 +58,7 @@ class Asset(
             'properties': {
                 'id': self.id,
                 # !!! Remove if view splits assets by type
-                'typeCode': self.type_code,
+                'typeCode': self.type_code.value,
             },
             'geometry': get_geojson_dictionary(self.geometry),
         }
