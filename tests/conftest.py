@@ -1,5 +1,5 @@
 from os.path import dirname, join
-from crosscompute_macros_configuration import load_json
+from invisibleroads_macros_configuration import load_json
 
 
 def load_example_json(example_name):

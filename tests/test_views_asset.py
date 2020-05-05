@@ -1,22 +1,22 @@
-from asset_tracker.views.assets import change_assets_json
+from asset_tracker.views.asset import change_assets_json
 
 from conftest import EXAMPLE_BY_NAME
 
 
 class TestChangeAssetsJson(object):
 
-    def test_accept_parameters(self, website_request, db):
+    def test_accept_parameters(self, application_request):
         example = EXAMPLE_BY_NAME['basic']
         old_asset_dictionary_by_id = example['assetById']
         old_asset_feature_collection = example['assetsGeoJson']
         old_asset_features = old_asset_feature_collection['features']
-        website_request.json_body = {
+        application_request.json_body = {
             'assetById': old_asset_dictionary_by_id,
             'assetsGeoJson': old_asset_feature_collection,
         }
-        website_response_d = change_assets_json(website_request)
-        new_asset_dictionary_by_id = website_response_d['assetById']
-        new_asset_feature_collection = website_response_d['assetsGeoJson']
+        application_response_d = change_assets_json(application_request)
+        new_asset_dictionary_by_id = application_response_d['assetById']
+        new_asset_feature_collection = application_response_d['assetsGeoJson']
         new_asset_features = new_asset_feature_collection['features']
 
         assert len(old_asset_dictionary_by_id) == len(

@@ -1,5 +1,5 @@
 from asset_tracker.exceptions import DataValidationError
-from asset_tracker.routines.assets import (
+from asset_tracker.routines.asset import (
     get_asset_attributes, get_asset_connections, get_asset_dictionary_by_id,
     get_asset_feature_collection)
 from pytest import raises
