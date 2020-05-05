@@ -15,8 +15,8 @@ APPLICATION_CLASSIFIERS = [
 ]
 APPLICATION_REQUIREMENTS = [
     # architecture
-    'invisibleroads-posts >= 0.7.4',
-    'invisibleroads-records >= 0.5.3',
+    'invisibleroads-posts >= 0.7.6',
+    'invisibleroads-records >= 0.5.5',
     # web
     'pyramid',
     # database
@@ -33,7 +33,8 @@ APPLICATION_REQUIREMENTS = [
     'numpy',
     'pandas',
     # shortcut
-    'invisibleroads-macros-configuration >= 1.0.3',
+    'invisibleroads-macros-configuration >= 1.0.5',
+    'invisibleroads-macros-database >= 1.0.1',
 ]
 TEST_REQUIREMENTS = [
     'pytest-cov',

@@ -11,7 +11,7 @@ from sqlalchemy.orm import selectinload
 
 from ..constants.asset import ASSET_TYPE_BY_CODE
 from ..exceptions import DataValidationError
-from ..macros.asset import RecordIdMirror
+from ..macros.database import RecordIdMirror
 from ..models import Asset, Bus, Connection, AssetTypeCode
 from ..routines.asset import (
     get_asset_by_id_json_dictionary,
