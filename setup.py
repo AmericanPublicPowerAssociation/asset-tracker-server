@@ -24,10 +24,11 @@ APPLICATION_REQUIREMENTS = [
     'sqlalchemy',
     # test
     'pytest',
+    'webtest',
     # geometry
     'geoalchemy2',
     'geotable',
-    'shapely == 1.6.4',  # https://github.com/Toblerity/Shapely/issues/905
+    'shapely < 1.7.0',  # https://github.com/Toblerity/Shapely/issues/905
     'utm',
     # computation
     'numpy',
@@ -38,7 +39,6 @@ APPLICATION_REQUIREMENTS = [
 ]
 TEST_REQUIREMENTS = [
     'pytest-cov',
-    'webtest',
 ]
 FOLDER = dirname(abspath(__file__))
 DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
