@@ -28,7 +28,7 @@ APPLICATION_REQUIREMENTS = [
     # geometry
     'geoalchemy2',
     'geotable',
-    'shapely < 1.7.0',  # https://github.com/Toblerity/Shapely/issues/905
+    'shapely',
     'utm',
     # computation
     'numpy',
