@@ -40,9 +40,12 @@ class Asset(
     connections = relationship('Connection', cascade='all, delete-orphan')
 
     def get_json_dictionary(self):
+        d = self.get_json_dictionary_without_id()
+        d['id'] = self.id
+        return d
+
+    def get_json_dictionary_without_id(self):
         return {
-            # !!! Remove if view returns assetById
-            # 'id': self.id,
             'typeCode': self.type_code.value,
             'name': self.name,
             'attributes': self.attributes,

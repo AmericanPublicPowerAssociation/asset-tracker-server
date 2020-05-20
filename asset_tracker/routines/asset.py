@@ -30,10 +30,6 @@ def get_viewable_assets(request):
     ).all()
 
 
-def get_asset_by_id_json_dictionary(assets):
-    return {_.id: _.get_json_dictionary() for _ in assets}
-
-
 def get_assets_geojson_dictionary(assets):
     features = []
     for asset in assets:

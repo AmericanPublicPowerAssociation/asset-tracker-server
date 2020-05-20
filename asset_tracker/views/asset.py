@@ -14,7 +14,6 @@ from ..exceptions import DataValidationError
 from ..macros.database import RecordIdMirror
 from ..models import Asset, Bus, Connection, AssetTypeCode
 from ..routines.asset import (
-    get_asset_by_id_json_dictionary,
     get_asset_dictionary_by_id,
     get_asset_feature_collection,
     get_assets_geojson_dictionary,
@@ -36,7 +35,8 @@ def see_assets_json(request):
     assets = get_viewable_assets(request)
     return {
         'assetTypeByCode': ASSET_TYPE_BY_CODE,
-        'assetById': get_asset_by_id_json_dictionary(assets),
+        'assetById': {
+            _.id: _.get_json_dictionary_without_id() for _ in assets},
         'assetsGeoJson': get_assets_geojson_dictionary(assets),
         'boundingBox': get_bounding_box(assets),
     }
