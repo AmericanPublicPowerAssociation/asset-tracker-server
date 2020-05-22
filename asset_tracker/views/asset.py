@@ -100,9 +100,12 @@ def see_assets_csv(request):
             flat_assets.append(flat_asset)
             headers = set(flat_asset.keys())
             columns.update(headers - base_columns)
-
+        '''
         order_columns = [
             'id', 'typeCode', 'name', *sorted(columns), 'wkt', 'connections']
+        '''
+        order_columns = [
+            'id', 'typeCode', 'name', *sorted(columns), 'wkt']
 
         for asset in flat_assets:
             headers = set(asset.keys())
@@ -142,8 +145,10 @@ def receive_assets_file(request):
             return json.loads(json_string.replace("'", '"'))
 
     try:
+        # validated_assets, errors = validate_assets_df(pd.read_csv(
+        #    f.file, comment='#', converters={'connections': load_json}))
         validated_assets, errors = validate_assets_df(pd.read_csv(
-            f.file, comment='#', converters={'connections': load_json}))
+            f.file, comment='#'))
     except json.decoder.JSONDecodeError as e:
         raise HTTPBadRequest(str(e).strip())
     except pd.errors.ParserError as e:
@@ -152,7 +157,8 @@ def receive_assets_file(request):
     if errors:
         raise HTTPBadRequest(errors)
 
-    has_connections = 'connections' in validated_assets.columns
+    # has_connections = 'connections' in validated_assets.columns
+    has_connections = False
     has_wkt = 'wkt' in validated_assets.columns
 
     db = request.db
@@ -164,7 +170,11 @@ def receive_assets_file(request):
         'connections',
         'wkt',
     ])
+
+    save_errors = {}
     for name, row in validated_assets.iterrows():
+        asset_id = row['id']
+        asset_save_errors = {}
         asset = db.query(Asset).get(row['id'])
         if asset:
             if not override_records:
@@ -172,7 +182,10 @@ def receive_assets_file(request):
         else:
             asset = Asset(id=row['id'])
 
-        asset.type_code = AssetTypeCode(row['typeCode'])
+        try:
+            asset.type_code = AssetTypeCode(row['typeCode'])
+        except ValueError as e:
+            asset_save_errors['typeCode'] = e.args[0]
         asset.name = row['name']
 
         extra = {}
@@ -189,8 +202,12 @@ def receive_assets_file(request):
                 try:
                     asset.geometry = wkt.loads(geometry)
                 except shapely.errors.WKTReadingError:
-                    raise HTTPBadRequest(f'failed to parse ')
+                    # raise HTTPBadRequest(f'failed to parse ')
+                    asset_save_errors['wkt'] = 'invalid geometry'
 
+        if len(asset_save_errors):
+            save_errors[asset_id] = asset_save_errors
+            continue
         db.add(asset)
 
     for name, row in validated_assets.iterrows():
@@ -223,5 +240,5 @@ def receive_assets_file(request):
         db.rollback()
 
     return {
-        'error': False
+        'error': (save_errors if len(save_errors) else False)
     }
