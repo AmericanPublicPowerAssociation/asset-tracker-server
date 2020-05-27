@@ -11,7 +11,7 @@ def get_bounding_box(assets):
     geometry_collection = GeometryCollection(geometries)
     if len(geometries) == 1:
         # Buffer one decimal degree if there is only one geometry
-        geometry_collection = geometry_collection.buffer(1)
+        geometry_collection = geometry_collection.buffer(.001)
     [
         minimum_longitude, minimum_latitude,
         maximum_longitude, maximum_latitude,
