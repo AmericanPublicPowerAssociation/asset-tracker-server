@@ -23,6 +23,7 @@ class AssetTypeCode(enum.Enum):
     LINE = 'l'
     METER = 'm'
     TRANSFORMER = 't'
+    GENERATOR = 'g'
     SUBSTATION = 's'
 
 
