@@ -5,6 +5,7 @@ def build_flat_dict_structure(asset):
     asset_json = asset.get_json_dictionary()
     attributes = asset.attributes.copy()
     del asset_json['attributes']
+    del asset_json['connections']
 
     flat_asset = {
         **asset_json,
