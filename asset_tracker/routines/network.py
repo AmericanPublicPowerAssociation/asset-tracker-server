@@ -96,9 +96,14 @@ class AssetNetwork(object):
         for generator_bus_id in generator_bus_ids:
             paths = []
             for reference_bus_id in reference_bus_ids:
-                path_bus_ids = shortest_path(
-                    self.bus_graph, generator_bus_id, reference_bus_id)
+                try:
+                    path_bus_ids = shortest_path(
+                        self.bus_graph, generator_bus_id, reference_bus_id)
+                except Exception:
+                    continue
                 paths.append(path_bus_ids)
+            if not paths:
+                continue
             chosen_path = choose_shortest_path(paths)
             # print('GENERATOR', chosen_path)
             generator_edges.update(get_adjacent_pairs(chosen_path))
@@ -114,9 +119,14 @@ class AssetNetwork(object):
             for target_bus_id in target_bus_ids:
                 paths = []
                 for reference_bus_id in reference_bus_ids:
-                    path_bus_ids = shortest_path(
-                        self.bus_graph, reference_bus_id, target_bus_id)
+                    try:
+                        path_bus_ids = shortest_path(
+                            self.bus_graph, reference_bus_id, target_bus_id)
+                    except Exception:
+                        continue
                     paths.append(path_bus_ids)
+                if not paths:
+                    continue
                 chosen_path = choose_shortest_path(paths)
                 # print('TARGET', chosen_path)
                 target_edges.update(get_adjacent_pairs(chosen_path))
