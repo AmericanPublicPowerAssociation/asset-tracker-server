@@ -1,79 +1,79 @@
 {
-	"LEt2HHtsbBS5nLcs1590713636143": {
+	"generator": {
 			"typeCode": "g",
 			"name": "Generator",
 			"connections": {
 				"0": {
-						"busId": "5OKB0MAjovFPmGBKr1V2hgA76RLoYCs21590713636144"
+						"busId": "generator-bus0"
 				}
 			}
 	},
-	"DaBGRPemyBnRWeCy1590713640634": {
+	"transformer": {
 			"typeCode": "t",
 			"name": "Substation Transformer",
 			"connections": {
 				"0": {
-						"busId": "7eiRTMZvBnCyI7XYh3TcEKEPfhQlQ1pu1590713640634"
+						"busId": "transformer-bus0"
 				},
 				"1": {
-						"busId": "ZgrinywpZAraZskinBkXOZJZBfr7BTRx1590713640634"
+						"busId": "transformer-bus1"
 				}
 			}
 	},
-	"KI17TkZm5h2YscUt1590713644106": {
+	"meter0": {
+			"typeCode": "m",
+			"name": "Meter 0",
+			"connections": {
+				"0": {
+						"busId": "meter0-bus0"
+				}
+			}
+	},
+	"meter1": {
 			"typeCode": "m",
 			"name": "Meter 1",
 			"connections": {
 				"0": {
-						"busId": "jowizBuHpR2UBRPipeKSLvy7u4huVKTg1590713644106"
+						"busId": "meter1-bus0"
 				}
 			}
 	},
-	"TxkSnpD1HHvrzVAJ1590713647194": {
+	"meter2": {
 			"typeCode": "m",
 			"name": "Meter 2",
 			"connections": {
 				"0": {
-						"busId": "mxscsJBUYseJZdp675GrWDFU8wEd9nl61590713647194"
+						"busId": "meter2-bus0"
 				}
 			}
 	},
-	"Z6TNGPcHHglZMofc1590713649457": {
-			"typeCode": "m",
-			"name": "Meter 3",
+	"line0": {
+			"typeCode": "l",
+			"name": "Line 0",
 			"connections": {
 				"0": {
-						"busId": "yiltSxjZCZegScHGOYCVGKXbvWmYB3s51590713649457"
+						"busId": "generator-bus0"
+				},
+				"1": {
+						"busId": "transformer-bus1"
 				}
 			}
 	},
-	"WQXPuulxpbPFgdB21590713652547": {
+	"line1": {
 			"typeCode": "l",
 			"name": "Line 1",
 			"connections": {
 				"0": {
-						"busId": "5OKB0MAjovFPmGBKr1V2hgA76RLoYCs21590713636144"
+						"busId": "transformer-bus0"
 				},
 				"1": {
-						"busId": "ZgrinywpZAraZskinBkXOZJZBfr7BTRx1590713640634"
-				}
-			}
-	},
-	"oW6Nc22qRlighEqo1590713658813": {
-			"typeCode": "l",
-			"name": "Line 2",
-			"connections": {
-				"0": {
-						"busId": "7eiRTMZvBnCyI7XYh3TcEKEPfhQlQ1pu1590713640634"
-				},
-				"1": {
-						"busId": "yiltSxjZCZegScHGOYCVGKXbvWmYB3s51590713649457"
+						"busId": "meter2-bus0"
 				},
 				"2": {
-						"busId": "mxscsJBUYseJZdp675GrWDFU8wEd9nl61590713647194"
+						"busId": "meter1-bus0"
 				},
 				"3": {
-						"busId": "jowizBuHpR2UBRPipeKSLvy7u4huVKTg1590713644106"
+						"busId": "meter0-bus0"
 				}
 			}
 	}

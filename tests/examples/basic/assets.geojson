@@ -3,7 +3,7 @@
 	"features": [{
 		"type": "Feature",
 		"properties": {
-			"id": "LEt2HHtsbBS5nLcs1590713636143",
+			"id": "generator",
 			"typeCode": "g"
 		},
 		"geometry": {
@@ -13,7 +13,7 @@
 	}, {
 		"type": "Feature",
 		"properties": {
-			"id": "DaBGRPemyBnRWeCy1590713640634",
+			"id": "transformer",
 			"typeCode": "t"
 		},
 		"geometry": {
@@ -23,7 +23,7 @@
 	}, {
 		"type": "Feature",
 		"properties": {
-			"id": "KI17TkZm5h2YscUt1590713644106",
+			"id": "meter0",
 			"typeCode": "m"
 		},
 		"geometry": {
@@ -33,7 +33,7 @@
 	}, {
 		"type": "Feature",
 		"properties": {
-			"id": "TxkSnpD1HHvrzVAJ1590713647194",
+			"id": "meter1",
 			"typeCode": "m"
 		},
 		"geometry": {
@@ -43,20 +43,17 @@
 	}, {
 		"type": "Feature",
 		"properties": {
-			"id": "Z6TNGPcHHglZMofc1590713649457",
+			"id": "meter2",
 			"typeCode": "m"
 		},
 		"geometry": {
 			"type": "Point",
-			"coordinates": [
-				-93.25918017196643,
-				37.24432028138266
-			]
+			"coordinates": [-93.25918017196643, 37.24432028138266]
 		}
 	}, {
 		"type": "Feature",
 		"properties": {
-			"id": "WQXPuulxpbPFgdB21590713652547",
+			"id": "line0",
 			"typeCode": "l"
 		},
 		"geometry": {
@@ -69,7 +66,7 @@
 	}, {
 		"type": "Feature",
 		"properties": {
-			"id": "oW6Nc22qRlighEqo1590713658813",
+			"id": "line1",
 			"typeCode": "l"
 		},
 		"geometry": {

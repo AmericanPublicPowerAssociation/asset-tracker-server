@@ -9,6 +9,9 @@ class PairSet(set):
     def update(self, pairs):
         super().update(get_sorted_tuple(_) for _ in pairs)
 
+    def union(self, pairs):
+        return super().union(get_sorted_tuple(_) for _ in pairs)
+
 
 def get_adjacent_pairs(iterable):
     # https://docs.python.org/3/library/itertools.html#itertools-recipes
