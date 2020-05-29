@@ -31,6 +31,7 @@ APPLICATION_REQUIREMENTS = [
     'shapely',
     'utm',
     # computation
+    'networkx',
     'numpy',
     'pandas',
     # shortcut

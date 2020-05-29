@@ -1,80 +1,80 @@
 {
-	"generator": {
-			"typeCode": "g",
-			"name": "Generator",
-			"connections": {
-				"0": {
-						"busId": "generator-bus0"
-				}
-			}
-	},
-	"transformer": {
-			"typeCode": "t",
-			"name": "Substation Transformer",
-			"connections": {
-				"0": {
-						"busId": "transformer-bus0"
-				},
-				"1": {
-						"busId": "transformer-bus1"
-				}
-			}
-	},
-	"meter0": {
-			"typeCode": "m",
-			"name": "Meter 0",
-			"connections": {
-				"0": {
-						"busId": "meter0-bus0"
-				}
-			}
-	},
-	"meter1": {
-			"typeCode": "m",
-			"name": "Meter 1",
-			"connections": {
-				"0": {
-						"busId": "meter1-bus0"
-				}
-			}
-	},
-	"meter2": {
-			"typeCode": "m",
-			"name": "Meter 2",
-			"connections": {
-				"0": {
-						"busId": "meter2-bus0"
-				}
-			}
-	},
-	"line0": {
-			"typeCode": "l",
-			"name": "Line 0",
-			"connections": {
-				"0": {
-						"busId": "generator-bus0"
-				},
-				"1": {
-						"busId": "transformer-bus1"
-				}
-			}
-	},
-	"line1": {
-			"typeCode": "l",
-			"name": "Line 1",
-			"connections": {
-				"0": {
-						"busId": "transformer-bus0"
-				},
-				"1": {
-						"busId": "meter2-bus0"
-				},
-				"2": {
-						"busId": "meter1-bus0"
-				},
-				"3": {
-						"busId": "meter0-bus0"
-				}
-			}
-	}
+  "generator": {
+      "typeCode": "g",
+      "name": "Generator",
+      "connections": {
+        "0": {
+            "busId": "generator-bus0"
+        }
+      }
+  },
+  "transformer": {
+      "typeCode": "t",
+      "name": "Substation Transformer",
+      "connections": {
+        "0": {
+            "busId": "transformer-bus0"
+        },
+        "1": {
+            "busId": "transformer-bus1"
+        }
+      }
+  },
+  "meter0": {
+      "typeCode": "m",
+      "name": "Meter 0",
+      "connections": {
+        "0": {
+            "busId": "meter0-bus0"
+        }
+      }
+  },
+  "meter1": {
+      "typeCode": "m",
+      "name": "Meter 1",
+      "connections": {
+        "0": {
+            "busId": "meter1-bus0"
+        }
+      }
+  },
+  "meter2": {
+      "typeCode": "m",
+      "name": "Meter 2",
+      "connections": {
+        "0": {
+            "busId": "meter2-bus0"
+        }
+      }
+  },
+  "line0": {
+      "typeCode": "l",
+      "name": "Line 0",
+      "connections": {
+        "0": {
+            "busId": "generator-bus0"
+        },
+        "1": {
+            "busId": "transformer-bus1"
+        }
+      }
+  },
+  "line1": {
+      "typeCode": "l",
+      "name": "Line 1",
+      "connections": {
+        "0": {
+            "busId": "transformer-bus0"
+        },
+        "1": {
+            "busId": "meter2-bus0"
+        },
+        "2": {
+            "busId": "meter1-bus0"
+        },
+        "3": {
+            "busId": "meter0-bus0"
+        }
+      }
+  }
 }

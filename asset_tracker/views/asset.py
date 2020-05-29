@@ -54,6 +54,7 @@ def change_assets_json(request):
         asset_feature_collection = get_asset_feature_collection(params)
     except DataValidationError as e:
         raise HTTPBadRequest(e.args[0])
+    print(asset_dictionary_by_id)
 
     db = request.db
     asset_id_mirror = RecordIdMirror()
