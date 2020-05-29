@@ -68,7 +68,7 @@ class AssetNetwork(object):
         self.line_ids_by_bus_id = line_ids_by_bus_id
         self.vertex_index_by_line_id_bus_id = vertex_index_by_line_id_bus_id
 
-    def prepare_downstream_analysis(self, reference_asset_id):
+    def get_downstream_analysis(self, reference_asset_id):
         downstream_packs = self.get_downstream_packs(
             reference_asset_id, AssetTypeCode.METER.value)
         meter_ids = [_[0] for _ in downstream_packs]
@@ -100,7 +100,7 @@ class AssetNetwork(object):
                     self.bus_graph, generator_bus_id, reference_bus_id)
                 paths.append(path_bus_ids)
             chosen_path = choose_shortest_path(paths)
-            print('GENERATOR', chosen_path)
+            # print('GENERATOR', chosen_path)
             generator_edges.update(get_adjacent_pairs(chosen_path))
 
         # Get shortest path between the reference asset and each target asset
@@ -118,7 +118,7 @@ class AssetNetwork(object):
                         self.bus_graph, reference_bus_id, target_bus_id)
                     paths.append(path_bus_ids)
                 chosen_path = choose_shortest_path(paths)
-                print('TARGET', chosen_path)
+                # print('TARGET', chosen_path)
                 target_edges.update(get_adjacent_pairs(chosen_path))
             # If there is no edge overlap, then we have a downstream asset
             if not generator_edges.intersection(target_edges):
