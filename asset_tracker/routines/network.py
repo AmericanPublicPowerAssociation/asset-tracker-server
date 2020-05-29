@@ -4,7 +4,7 @@ from networkx import Graph, shortest_path
 from shapely.geometry import LineString
 
 from ..macros.geometry import get_line_length_in_meters
-from ..macros.iterable import get_adjacent_pairs
+from ..macros.iterable import PairSet, get_adjacent_pairs
 from ..models import AssetTypeCode
 
 
@@ -16,7 +16,7 @@ class AssetNetwork(object):
         bus_ids_by_asset_id = defaultdict(set)
         for asset_dictionary in asset_dictionaries:
             asset_id = asset_dictionary['id']
-            type_value = asset_dictionary['typeCode'].value
+            type_value = asset_dictionary['typeCode']
             asset_ids_by_type_value[type_value].add(asset_id)
             connections = asset_dictionary['connections']
             sorted_connections = sorted(connections.items())
@@ -45,7 +45,7 @@ class AssetNetwork(object):
         # Get shortest paths between each generator and the reference asset
         generator_bus_ids = self.get_bus_ids_by_type_value(
             AssetTypeCode.GENERATOR.value)
-        generator_edges = set()
+        generator_edges = PairSet()
         for generator_bus_id in generator_bus_ids:
             for reference_bus_id in reference_bus_ids:
                 path_bus_ids = shortest_path(
@@ -55,7 +55,7 @@ class AssetNetwork(object):
         # Get shortest path between the reference asset and each target asset
         downstream_packs = set()
         for target_asset_id in target_asset_ids:
-            target_edges = set()
+            target_edges = PairSet()
             try:
                 target_bus_ids = self.bus_ids_by_asset_id[target_asset_id]
             except KeyError:
@@ -67,10 +67,10 @@ class AssetNetwork(object):
                     target_edges.update(get_adjacent_pairs(path_bus_ids))
             # If there is no edge overlap, then we have a downstream asset
             if not generator_edges.intersection(target_edges):
-                downstream_packs.add((target_asset_id, target_edges))
+                downstream_packs.add((target_asset_id, tuple(target_edges)))
         return downstream_packs
 
-    @lru_cache
+    @lru_cache()
     def get_bus_ids_by_type_value(self, type_value):
         bus_ids = set()
         try:
@@ -95,7 +95,8 @@ def get_geojson_from_edges(bus_edges, line_dictionaries, line_geojsons):
         for vertex_index, connection in line_dictionary['connections'].items():
             bus_id = connection['busId']
             line_ids_by_bus_id[bus_id].add(line_id)
-            vertex_index_by_line_id_bus_id[(line_id, bus_id)] = vertex_index
+            vertex_index_by_line_id_bus_id[(line_id, bus_id)] = int(
+                vertex_index)
         line_dictionary_by_asset_id[line_id] = line_dictionary
     # Gather geojson features
     geojson_features = []
