@@ -79,19 +79,17 @@ def change_assets_json(request):
     request_method='GET')
 def see_assets_csv(request):
     # TODO: Review and clean
-    db = request.db
+    # db = request.db
+    '''
     assets = db.query(Asset).options(
         selectinload(Asset.connections),
     ).all()
-
-    instructions = '\n'.join([
-        'To import new assets, specify typeCode, name, wkt',
-        'To update old assets, include id and choose override when uploading',
-    ])
+    '''
+    assets = get_viewable_assets(request)
 
     base_columns = {'id', 'typeCode', 'name', 'wkt', 'connections'}
     columns = ','.join(base_columns)
-    csv = f'{instructions}\n{columns}'
+    csv = f'{columns}'
 
     if len(assets) > 0:
         flat_assets = []
@@ -115,7 +113,7 @@ def see_assets_csv(request):
 
         data = pd.DataFrame(flat_assets)
         csv_data = data[order_columns].to_csv(index=False, )
-        csv = f'{instructions}\n{csv_data}'
+        csv = f'{csv_data}'
 
     return Response(
         body=csv,
@@ -187,7 +185,6 @@ def receive_assets_file(request):
             asset.type_code = AssetTypeCode(row['typeCode'])
         except ValueError as e:
             asset_save_errors['typeCode'] = e.args[0]
-        asset.name = row['name']
 
         extra = {}
         for column in extra_columns:
@@ -209,6 +206,8 @@ def receive_assets_file(request):
         if len(asset_save_errors):
             save_errors[asset_id] = asset_save_errors
             continue
+        else:
+            asset.name = row['name']
         db.add(asset)
 
     for name, row in validated_assets.iterrows():
