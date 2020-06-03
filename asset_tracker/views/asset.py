@@ -177,7 +177,8 @@ def receive_assets_file(request):
         asset = db.query(Asset).get(row['id'])
         if asset:
             if not override_records:
-                continue
+                asset_save_errors['overwrite'] = 'Asset exist - \
+                    Check overwrite existing records.'
         else:
             asset = Asset(id=row['id'])
 
