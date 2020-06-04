@@ -137,8 +137,7 @@ def update_asset_connections(db, asset_dictionary_by_id, asset_id_mirror):
                 'asset_id': asset_id, 'bus_id': bus_id})
             if not connection:
                 connection = Connection(bus_id=bus_id)
-                connection.attributes = connection_dictionary.get(
-                    'attributes', {})
+            connection.attributes = connection_dictionary.get('attributes', {})
             connection.asset_vertex_index = asset_vertex_index
             connections.append(connection)
         asset.connections = connections
