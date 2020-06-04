@@ -11,7 +11,7 @@ def build_flat_dict_structure(asset):
     flat_asset = {
         **asset_json,
         **attributes,
-        'wkt': asset.geometry.wkt if asset.geometry else '',
+        'wkt': asset.geometry.wkt,
     }
 
     return flat_asset

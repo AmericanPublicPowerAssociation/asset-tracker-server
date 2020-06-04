@@ -95,10 +95,11 @@ def see_assets_csv(request):
         flat_assets = []
         columns = set()
         for asset in assets:
-            flat_asset = build_flat_dict_structure(asset)
-            flat_assets.append(flat_asset)
-            headers = set(flat_asset.keys())
-            columns.update(headers - base_columns)
+            if asset.geometry:
+                flat_asset = build_flat_dict_structure(asset)
+                flat_assets.append(flat_asset)
+                headers = set(flat_asset.keys())
+                columns.update(headers - base_columns)
         '''
         order_columns = [
             'id', 'typeCode', 'name', *sorted(columns), 'wkt', 'connections']
