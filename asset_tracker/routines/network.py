@@ -12,16 +12,6 @@ from ..models import AssetTypeCode
 class AssetNetwork(object):
 
     def __init__(self, asset_dictionaries, assets_geojson):
-        g = Graph()
-        for asset_dictionary in asset_dictionaries:
-            connections = asset_dictionary['connections']
-            sorted_connections = sorted(connections.items())
-            adjacent_pairs = get_adjacent_pairs(sorted_connections)
-            for connection_pack1, connection_pack2 in adjacent_pairs:
-                bus1_id = connection_pack1[1]['busId']
-                bus2_id = connection_pack2[1]['busId']
-                g.add_edge(bus1_id, bus2_id)
-
         asset_ids_by_type_value = defaultdict(set)
         for asset_dictionary in asset_dictionaries:
             asset_id = asset_dictionary['id']
@@ -61,8 +51,8 @@ class AssetNetwork(object):
                 vertex_index_by_line_id_bus_id[(line_id, bus_id)] = int(
                     vertex_index)
 
+        self.bus_graph = get_bus_graph(asset_dictionaries)
         self.asset_ids_by_type_value = asset_ids_by_type_value
-        self.bus_graph = g
         self.bus_ids_by_asset_id = bus_ids_by_asset_id
         self.line_feature_by_asset_id = line_feature_by_asset_id
         self.line_ids_by_bus_id = line_ids_by_bus_id
@@ -179,6 +169,19 @@ class AssetNetwork(object):
                 'geometry': best_line_geometry.__geo_interface__,
             })
         return geojson_features
+
+
+def get_bus_graph(asset_dictionaries):
+    g = Graph()
+    for asset_dictionary in asset_dictionaries:
+        connections = asset_dictionary['connections']
+        sorted_connections = sorted(connections.items())
+        adjacent_pairs = get_adjacent_pairs(sorted_connections)
+        for connection_pack1, connection_pack2 in adjacent_pairs:
+            bus1_id = connection_pack1[1]['busId']
+            bus2_id = connection_pack2[1]['busId']
+            g.add_edge(bus1_id, bus2_id)
+    return g
 
 
 def choose_shortest_path(paths):
