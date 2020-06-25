@@ -127,7 +127,7 @@ def see_assets_csv(request):
     route_name='assets.csv',
     renderer='json',
     request_method='PATCH')
-def receive_assets_file(request):
+def change_assets_csv(request):
     # TODO: Review and clean
     override_records = request.params.get('overwrite') == 'true'
 
