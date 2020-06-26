@@ -25,6 +25,12 @@ class AssetTypeCode(enum.Enum):
     TRANSFORMER = 't'
     GENERATOR = 'g'
     SUBSTATION = 's'
+    SWITCH = 'x'
+    STATION = 'S'
+    STORAGE = 'o'
+    POWERQUALITY = 'q'
+    CAPACITOR = 'qc'
+    REGULATOR = 'rr'
 
 
 class Asset(
