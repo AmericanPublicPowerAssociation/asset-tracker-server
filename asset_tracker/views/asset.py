@@ -134,9 +134,19 @@ def change_assets_csv(request):
     try:
         f = request.params['file']
     except KeyError:
-        raise HTTPBadRequest({'file': 'is required'})
+        raise HTTPBadRequest(
+            headers={'content_type': 'application/json'},
+            body=json.dumps({
+                'errors':
+                    {'file': 'is required'},
+                }))
     if not isinstance(f, FieldStorage):
-        raise HTTPBadRequest({'file': 'must be an upload'})
+        raise HTTPBadRequest(
+            headers={'content_type': 'application/json'},
+            body=json.dumps({
+                'errors':
+                    {'file': 'must be an upload'},
+                }))
 
     def load_json(json_string):
         try:
@@ -145,17 +155,47 @@ def change_assets_csv(request):
             return json.loads(json_string.replace("'", '"'))
 
     try:
-        # validated_assets, errors = validate_assets_df(pd.read_csv(
-        #    f.file, comment='#', converters={'connections': load_json}))
-        validated_assets, errors = validate_assets_df(pd.read_csv(
-            f.file, comment='#'))
+        fileName = f.filename
+        if '.xls' in fileName or '.xlsx' in fileName:
+            validated_assets, errors = validate_assets_df(pd.read_excel(
+                f.file, comment='#', converters={'connections': load_json}))
+        elif '.ods' in fileName:
+            validated_assets, errors = validate_assets_df(pd.read_excel(
+                f.file, comment='#', converters={'connections': load_json},
+                engine="odf"))
+        elif '.csv' in fileName:
+            validated_assets, errors = validate_assets_df(pd.read_csv(
+                f.file, comment='#', converters={'connections': load_json}))
+        else:
+            raise HTTPBadRequest(
+                headers={'content_type': 'application/json'},
+                body=json.dumps({
+                    'errors':
+                        {'file': 'file format is not supported.'},
+                    }))
     except json.decoder.JSONDecodeError as e:
-        raise HTTPBadRequest(str(e).strip())
+        raise HTTPBadRequest(
+            headers={'content_type': 'application/json'},
+            body=json.dumps({
+                'errors':
+                    {'file': str(e).strip()},
+                }))
+
     except pd.errors.ParserError as e:
-        raise HTTPBadRequest(str(e).split(':')[-1].strip())
+        raise HTTPBadRequest(
+            headers={'content_type': 'application/json'},
+            body=json.dumps({
+                'errors':
+                    {'file': str(e).split(':')[-1].strip()},
+                }))
 
     if errors:
-        raise HTTPBadRequest(errors)
+        raise HTTPBadRequest(
+            headers={'content_type': 'application/json'},
+            body=json.dumps({
+                'errors':
+                    {'file': errors},
+                }))
 
     # has_connections = 'connections' in validated_assets.columns
     has_connections = False
@@ -242,5 +282,6 @@ def change_assets_csv(request):
         db.rollback()
 
     return {
-        'error': (save_errors if len(save_errors) else False)
+        'errors': (
+            {'save_errors': save_errors} if len(save_errors) else False)
     }
