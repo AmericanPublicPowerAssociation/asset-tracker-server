@@ -95,10 +95,11 @@ def see_assets_csv(request):
         flat_assets = []
         columns = set()
         for asset in assets:
-            flat_asset = build_flat_dict_structure(asset)
-            flat_assets.append(flat_asset)
-            headers = set(flat_asset.keys())
-            columns.update(headers - base_columns)
+            if asset.geometry:
+                flat_asset = build_flat_dict_structure(asset)
+                flat_assets.append(flat_asset)
+                headers = set(flat_asset.keys())
+                columns.update(headers - base_columns)
         '''
         order_columns = [
             'id', 'typeCode', 'name', *sorted(columns), 'wkt', 'connections']
@@ -126,7 +127,7 @@ def see_assets_csv(request):
     route_name='assets.csv',
     renderer='json',
     request_method='PATCH')
-def receive_assets_file(request):
+def change_assets_csv(request):
     # TODO: Review and clean
     override_records = request.params.get('overwrite') == 'true'
 
@@ -177,7 +178,8 @@ def receive_assets_file(request):
         asset = db.query(Asset).get(row['id'])
         if asset:
             if not override_records:
-                continue
+                asset_save_errors['overwrite'] = 'Asset exist - \
+                    Check overwrite existing records.'
         else:
             asset = Asset(id=row['id'])
 

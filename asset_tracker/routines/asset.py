@@ -137,8 +137,7 @@ def update_asset_connections(db, asset_dictionary_by_id, asset_id_mirror):
                 'asset_id': asset_id, 'bus_id': bus_id})
             if not connection:
                 connection = Connection(bus_id=bus_id)
-                connection.attributes = connection_dictionary.get(
-                    'attributes', {})
+            connection.attributes = connection_dictionary.get('attributes', {})
             connection.asset_vertex_index = asset_vertex_index
             connections.append(connection)
         asset.connections = connections
@@ -209,11 +208,11 @@ def get_asset_attributes(asset_dictionary):
 
 
 def get_asset_is_deleted(asset_dictionary):
-    is_deleted = asset_dictionary.get('is_deleted', False)
+    is_deleted = asset_dictionary.get('isDeleted', False)
     try:
         is_deleted = bool(is_deleted)
     except Exception:
-        raise DataValidationError({'is_deleted': 'is invalid'})
+        raise DataValidationError({'isDeleted': 'is invalid'})
     return is_deleted
 
 

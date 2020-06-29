@@ -1,4 +1,7 @@
-from asset_tracker.routines.network import AssetNetwork
+from asset_tracker.routines.network import (
+    AssetNetwork,
+    choose_shortest_path,
+    get_bus_graph)
 
 from conftest import EXAMPLE_BY_NAME, get_asset_dictionaries
 
@@ -19,3 +22,29 @@ class TestAssetNetwork(object):
             reference_asset_id)
         assert len(meter_ids) == 3
         assert len(line_geojson['features']) == 3
+
+
+def test_get_bus_graph():
+    bus_graph = get_bus_graph([{
+        'connections': {
+            2: {'busId': 'a'},
+            0: {'busId': 'b'},
+            3: {'busId': 'c'},
+        },
+    }, {
+        'connections': {
+            3: {'busId': 'c'},
+            1: {'busId': 'a'},
+        },
+    }])
+    bus_graph_edges = bus_graph.edges()
+    assert 'a' in bus_graph
+    assert 'b' in bus_graph
+    assert 'c' in bus_graph
+    assert ('a', 'b') in bus_graph_edges
+    assert ('a', 'c') in bus_graph_edges
+    assert ('b', 'c') not in bus_graph_edges
+
+
+def test_choose_shortest_path():
+    assert choose_shortest_path([[1, 2], [9], [2, 1, 2]]) == [9]
