@@ -34,6 +34,9 @@ APPLICATION_REQUIREMENTS = [
     'networkx',
     'numpy',
     'pandas',
+    # excel
+    'xlrd',
+    'odfpy',
     # shortcut
     'invisibleroads-macros-configuration >= 1.0.5',
     'invisibleroads-macros-database >= 1.0.1',
