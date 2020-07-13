@@ -31,6 +31,7 @@ class AssetTypeCode(enum.Enum):
     POWERQUALITY = 'q'
     CAPACITOR = 'qc'
     REGULATOR = 'rr'
+    CONTROL = 'c'
 
 
 class Asset(
