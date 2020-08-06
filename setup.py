@@ -51,7 +51,7 @@ DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
 
 setup(
     name='asset-tracker',
-    version='0.0.5',
+    version='0.0.6',
     description='Asset Tracker',
     long_description=DESCRIPTION,
     long_description_content_type='text/markdown',
