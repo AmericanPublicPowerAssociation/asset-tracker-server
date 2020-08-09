@@ -1,8 +1,7 @@
 from alembic import context
+from invisibleroads_records.models import Base
 from pyramid.paster import get_appsettings, setup_logging
 from sqlalchemy import engine_from_config
-
-from asset_tracker.models import Base
 
 
 config = context.config
