@@ -1,12 +1,10 @@
 from alembic import context
-from invisibleroads_records.models import Base
-from pyramid.paster import get_appsettings, setup_logging
-from sqlalchemy import engine_from_config
+from invisibleroads_posts.routines.configuration import load_filled_settings
+from invisibleroads_records.models import Base, get_database_engine
 
 
 config = context.config
-setup_logging(config.config_file_name)
-settings = get_appsettings(config.config_file_name)
+settings = load_filled_settings(config.config_file_name)
 target_metadata = Base.metadata
 
 
@@ -17,7 +15,7 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
-    engine = engine_from_config(settings, prefix='sqlalchemy.')
+    engine = get_database_engine(settings, prefix='sqlalchemy.')
     connection = engine.connect()
     context.configure(connection=connection, target_metadata=target_metadata)
     try:
