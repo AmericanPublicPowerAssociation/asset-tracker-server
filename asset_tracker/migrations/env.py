@@ -1,14 +1,11 @@
 from alembic import context
-from pyramid.paster import get_appsettings, setup_logging
+from invisibleroads_posts.routines.configuration import load_filled_settings
+from invisibleroads_records.models import Base, get_database_engine
 from pyramid.settings import aslist
-from sqlalchemy import engine_from_config
-
-from asset_tracker.models import Base
 
 
 config = context.config
-setup_logging(config.config_file_name)
-settings = get_appsettings(config.config_file_name)
+settings = load_filled_settings(config.config_file_name)
 target_metadata = Base.metadata
 excluded_by_key = config.get_section('alembic:excluded')
 excluded_tables = aslist(excluded_by_key['tables'])
@@ -24,7 +21,7 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
-    engine = engine_from_config(settings, prefix='sqlalchemy.')
+    engine = get_database_engine(settings, prefix='sqlalchemy.')
     connection = engine.connect()
     context.configure(
         connection=connection,
