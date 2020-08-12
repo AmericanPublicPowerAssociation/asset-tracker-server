@@ -38,8 +38,8 @@ APPLICATION_REQUIREMENTS = [
     'xlrd',
     'odfpy',
     # shortcut
-    'invisibleroads-macros-configuration >= 1.0.5',
-    'invisibleroads-macros-database >= 1.0.1',
+    'invisibleroads-macros-configuration >= 1.0.6',
+    'invisibleroads-macros-database >= 1.0.2',
 ]
 TEST_REQUIREMENTS = [
     'pytest-cov',
