@@ -21,6 +21,7 @@ APPLICATION_REQUIREMENTS = [
     'pyramid',
     # database
     'alembic',
+    'psycopg2',
     'sqlalchemy',
     # test
     'pytest',
