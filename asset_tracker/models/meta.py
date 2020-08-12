@@ -1,6 +1,7 @@
 from geoalchemy2 import Geometry
 from geoalchemy2.shape import from_shape, to_shape
 from os import environ
+from pyramid.settings import asbool
 from sqlalchemy import Column
 from sqlalchemy.types import (
     Boolean,
@@ -44,7 +45,7 @@ class GeometryPropertyMixin(object):
         self._geometry = value
 
 
-if environ.get('SQLALCHEMY_URL', '').startswith('postgresql'):
+if asbool(environ.get('WITH_POSTGIS')):
 
     class GeometryMixin(GeometryPropertyMixin):
         _geometry = Column(Geometry)  # PostgreSQL
