@@ -3,9 +3,7 @@ from geoalchemy2.shape import from_shape, to_shape
 from os import environ
 from pyramid.settings import asbool
 from sqlalchemy import Column
-from sqlalchemy.types import (
-    Boolean,
-    PickleType)
+from sqlalchemy.types import Boolean, PickleType
 
 
 class DeletionMixin(object):

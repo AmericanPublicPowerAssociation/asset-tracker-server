@@ -46,6 +46,7 @@ class Asset(
     type_code = Column(Enum(AssetTypeCode))
     name = Column(Unicode)
     connections = relationship('Connection', cascade='all, delete-orphan')
+    utility_id = Column(String)
 
     def get_json_dictionary(self):
         d = self.get_json_dictionary_without_id()
@@ -95,8 +96,8 @@ class Connection(AttributesMixin, Base):
     # asset_id = Column(String, ForeignKey('asset.id'), primary_key=True, ondelete='CASCADE')
     asset_id = Column(String, ForeignKey('asset.id'), primary_key=True)
     asset_vertex_index = Column(Integer)
-    # bus_id = Column(String, ForeignKey('bus.id'), primary_key=True, ondelete='CASCADE')
     bus_id = Column(String, ForeignKey('bus.id'), primary_key=True)
+    # bus_id = Column(String, ForeignKey('bus.id'), primary_key=True, ondelete='CASCADE')
 
     def __repr__(self):
         argument_string = ', '.join((
