@@ -92,11 +92,11 @@ class Bus(RecordMixin, Base):
 
 class Connection(AttributesMixin, Base):
     __tablename__ = 'connection'
-    asset_id = Column(String, ForeignKey(
-        'asset.id'), primary_key=True, ondelete='CASCADE')
+    # asset_id = Column(String, ForeignKey('asset.id'), primary_key=True, ondelete='CASCADE')
+    asset_id = Column(String, ForeignKey('asset.id'), primary_key=True)
     asset_vertex_index = Column(Integer)
-    bus_id = Column(String, ForeignKey(
-        'bus.id'), primary_key=True, ondelete='CASCADE')
+    # bus_id = Column(String, ForeignKey('bus.id'), primary_key=True, ondelete='CASCADE')
+    bus_id = Column(String, ForeignKey('bus.id'), primary_key=True)
 
     def __repr__(self):
         argument_string = ', '.join((
