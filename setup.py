@@ -21,6 +21,7 @@ APPLICATION_REQUIREMENTS = [
     'invisibleroads-records >= 0.5.7',
     # web
     'pyramid',
+    'pyramid-multiauth',
     # database
     'alembic',
     'psycopg2-binary',
