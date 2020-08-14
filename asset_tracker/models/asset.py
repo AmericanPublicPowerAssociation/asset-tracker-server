@@ -84,8 +84,8 @@ class Asset(
         session = request.session
         utility_ids = get_utility_ids(session, ROLE_SPECTATOR)
         query = db.query(Class).filter(
-            Class.utility_id.in_(utility_ids)
-        ).filter_by(is_deleted=False)
+            Class.utility_id.in_(utility_ids),
+            Class.is_deleted == False)  # noqa: E712
         if with_connections:
             query = query.options(joinedload(Class.connections))
         return query
