@@ -89,7 +89,7 @@
       "attributes": {
         "phaseCount": 3,
         "winding1Winding2PercentReactance": "1.0",
-        "windingCount": "2"
+        "windingCount": "2",
 	"vendorName": "selinc",
 	"productName": "sel-2241"
       },
