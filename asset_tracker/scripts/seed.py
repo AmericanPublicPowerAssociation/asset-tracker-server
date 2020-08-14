@@ -90,7 +90,7 @@ def import_json(db, file, utility_id):
     with open(file, 'r') as f:
         json_data = json.load(f)
 
-        remove_all_entries(db)
+        # remove_all_entries(db)
 
         for asset in json_data['assets']:
             new_asset = Asset(
