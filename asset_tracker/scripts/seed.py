@@ -96,7 +96,7 @@ def import_json(db, file, utility_id):
             new_asset = Asset(
                 id=asset['id'],
                 name=asset['name'],
-                utility_id)
+                utility_id=utility_id)
             new_asset.type_code = AssetTypeCode(asset['typeCode'])
             new_asset.attributes = asset['attributes']
 
