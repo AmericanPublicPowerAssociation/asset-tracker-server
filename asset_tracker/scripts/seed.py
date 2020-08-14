@@ -86,14 +86,17 @@ def remove_all_entries(db):
     db.query(LineType).delete()
 
 
-def import_json(db, file):
+def import_json(db, file, utility_id):
     with open(file, 'r') as f:
         json_data = json.load(f)
 
         remove_all_entries(db)
 
         for asset in json_data['assets']:
-            new_asset = Asset(id=asset['id'], name=asset['name'])
+            new_asset = Asset(
+                id=asset['id'],
+                name=asset['name'],
+                utility_id)
             new_asset.type_code = AssetTypeCode(asset['typeCode'])
             new_asset.attributes = asset['attributes']
 
@@ -126,8 +129,7 @@ def init():
     usage = "usage: %prog config_uri"
     parser = optparse.OptionParser(
         usage=usage,
-        description=textwrap.dedent(description)
-    )
+        description=textwrap.dedent(description))
 
     options, args = parser.parse_args(sys.argv[1:])
     if len(args) < 1:
@@ -145,6 +147,7 @@ def init():
     subcommand = args[0]
     config_uri = args[1]
     export_file = args[2] if len(args) > 2 else ''
+    utility_id = args[3]
 
     with bootstrap(config_uri) as env:
         with env['request'].tm:
@@ -158,6 +161,4 @@ def init():
                 if export_file == 'blank':
                     remove_all_entries(db)
                 else:
-                    import_json(db, export_file)
-
-
+                    import_json(db, export_file, utility_id)
