@@ -1,4 +1,5 @@
 import enum
+from appa_auth_consumer.constants import ROLE_SPECTATOR
 from invisibleroads_records.models import (
     Base,
     CreationMixin,
@@ -6,7 +7,7 @@ from invisibleroads_records.models import (
     RecordMixin)
 from shapely.geometry import mapping as get_geojson_dictionary
 from sqlalchemy import Column, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import joinedload, relationship
 from sqlalchemy.types import (
     Enum,
     Integer,
@@ -55,6 +56,7 @@ class Asset(
 
     def get_json_dictionary_without_id(self):
         return {
+            'utilityId': self.utility_id,
             'typeCode': self.type_code.value,
             'name': self.name,
             'attributes': self.attributes,
@@ -69,16 +71,25 @@ class Asset(
             'type': 'Feature',
             'properties': {
                 'id': self.id,
-                # !!! Remove if view splits assets by type
+                # TODO: Remove if view splits assets by type
                 'typeCode': self.type_code.value,
             },
             'geometry': get_geojson_dictionary(self.geometry),
         }
 
     @classmethod
-    def get_viewable_ids(Class, request):
+    def get_viewable_query(Class, request, with_connections=False):
         db = request.db
-        return [_[0] for _ in db.query(Asset.id).filter_by(is_deleted=False)]
+        session = request.session
+        utilities = session.get('utilities', [])
+        utility_ids = [
+            _['id'] for _ in utilities if _['role'] >= ROLE_SPECTATOR]
+        query = db.query(Class).filter(
+            Class.utility_id.in_(utility_ids)
+        ).filter_by(is_deleted=False)
+        if with_connections:
+            query = query.options(joinedload(Class.connections))
+        return query
 
     def __repr__(self):
         return f'<Asset({self.id})>'
@@ -93,11 +104,9 @@ class Bus(RecordMixin, Base):
 
 class Connection(AttributesMixin, Base):
     __tablename__ = 'connection'
-    # asset_id = Column(String, ForeignKey('asset.id'), primary_key=True, ondelete='CASCADE')
     asset_id = Column(String, ForeignKey('asset.id'), primary_key=True)
     asset_vertex_index = Column(Integer)
     bus_id = Column(String, ForeignKey('bus.id'), primary_key=True)
-    # bus_id = Column(String, ForeignKey('bus.id'), primary_key=True, ondelete='CASCADE')
 
     def __repr__(self):
         argument_string = ', '.join((

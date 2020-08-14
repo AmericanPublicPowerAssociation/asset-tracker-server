@@ -1,5 +1,4 @@
 from shapely.geometry import shape
-from sqlalchemy.orm import joinedload
 
 from ..constants.asset import ASSET_TYPE_BY_CODE
 from ..exceptions import DataValidationError
@@ -18,16 +17,6 @@ def absorb_asset_type_by_code(delta_asset_type_by_code):
             if not delta_values:
                 continue
             asset_type[key] = asset_type.get(key, []) + delta_values
-
-
-def get_viewable_assets(request):
-    db = request.db
-    # TODO: Get assets for which user has view privileges
-    return db.query(Asset).filter_by(
-        is_deleted=False,
-    ).options(
-        joinedload(Asset.connections),
-    ).all()
 
 
 def get_assets_geojson_dictionary(assets):

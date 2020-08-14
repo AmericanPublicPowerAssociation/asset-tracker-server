@@ -7,7 +7,7 @@ from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.response import Response
 from pyramid.view import view_config
 from shapely import wkt
-from sqlalchemy.orm import selectinload
+# from sqlalchemy.orm import selectinload
 
 from ..constants.asset import ASSET_TYPE_BY_CODE
 from ..exceptions import DataValidationError
@@ -17,7 +17,6 @@ from ..routines.asset import (
     get_asset_dictionary_by_id,
     get_asset_feature_collection,
     get_assets_geojson_dictionary,
-    get_viewable_assets,
     update_asset_connections,
     update_asset_geometries,
     update_assets)
@@ -32,7 +31,7 @@ from ..routines.geometry import get_bounding_box
     renderer='json',
     request_method='GET')
 def see_assets_json(request):
-    assets = get_viewable_assets(request)
+    assets = Asset.get_viewable_query(request, with_connections=True).all()
     return {
         'assetTypeByCode': ASSET_TYPE_BY_CODE,
         'assetById': {
@@ -79,17 +78,11 @@ def change_assets_json(request):
     request_method='GET')
 def see_assets_csv(request):
     # TODO: Review and clean
-    # db = request.db
-    '''
-    assets = db.query(Asset).options(
-        selectinload(Asset.connections),
-    ).all()
-    '''
-    assets = get_viewable_assets(request)
+    assets = Asset.get_viewable_query(request, with_connections=True).all()
 
     base_columns = {'id', 'typeCode', 'name', 'wkt', 'connections'}
     columns = ','.join(base_columns)
-    csv = f'{columns}'
+    csv = columns
 
     if len(assets) > 0:
         flat_assets = []
@@ -114,7 +107,7 @@ def see_assets_csv(request):
 
         data = pd.DataFrame(flat_assets)
         csv_data = data[order_columns].to_csv(index=False, )
-        csv = f'{csv_data}'
+        csv = csv_data
 
     return Response(
         body=csv,
