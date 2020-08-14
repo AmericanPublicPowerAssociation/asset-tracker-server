@@ -23,6 +23,7 @@ EXAMPLE_BY_NAME = {
     },
 }
 
+
 pytest_plugins = [
     'invisibleroads_posts.tests',
     'invisibleroads_records.tests',

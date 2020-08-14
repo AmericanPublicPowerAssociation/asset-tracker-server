@@ -94,7 +94,7 @@ def update_assets(
             asset_id = asset_id_mirror.set(asset_id, asset.id)
         elif asset.utility_id not in editable_utility_ids:
             # Skip if we do not have edit permission
-            error_by_id[asset_id] = {'assetById': 'has uneditable assets'}
+            # error_by_id[asset_id] = {'assetById': 'has uneditable assets'}
             continue
 
         asset.utility_id = asset_utility_id
@@ -128,7 +128,7 @@ def update_asset_connections(
             error_by_id[asset_id] = {'assetById': 'has invalid keys'}
             continue
         elif asset.utility_id not in editable_utility_ids:
-            error_by_id[asset_id] = {'assetById': 'has uneditable assets'}
+            # error_by_id[asset_id] = {'assetById': 'has uneditable assets'}
             continue
         connections = []
         for (
@@ -178,7 +178,8 @@ def update_asset_geometries(
             # 'assetsGeoJson': 'has invalid properties'}
             continue
         elif asset.utility_id not in editable_utility_ids:
-            error_by_index[index] = {'assetsGeoJson': 'has uneditable assets'}
+            # error_by_index[index] = {
+            # 'assetsGeoJson': 'has uneditable assets'}
             continue
         if asset.geometry != asset_geometry:
             asset.geometry = asset_geometry
