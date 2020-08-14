@@ -42,6 +42,7 @@ def validate_assets_df(assets_data_frame):
     df.replace(r'^\s*$', pd.np.nan, regex=True, inplace=True)
 
     errors = validate_row_existence_df(df, [
+        'utilityId',
         'id',
         'typeCode',
         'name'
