@@ -99,7 +99,9 @@ def see_assets_csv(request):
     # TODO: Review and clean
     assets = Asset.get_viewable_query(request, with_connections=True).all()
 
-    base_columns = {'id', 'typeCode', 'name', 'wkt', 'connections'}
+    base_columns = {
+        'utilityId', 'id', 'typeCode', 'name', 'wkt', 'connections',
+    }
     columns = ','.join(base_columns)
     csv = columns
 
@@ -114,10 +116,11 @@ def see_assets_csv(request):
                 columns.update(headers - base_columns)
         '''
         order_columns = [
-            'id', 'typeCode', 'name', *sorted(columns), 'wkt', 'connections']
+            'utilityId', id', 'typeCode', 'name', *sorted(columns), 'wkt',
+            'connections']
         '''
         order_columns = [
-            'id', 'typeCode', 'name', *sorted(columns), 'wkt']
+            'utilityId', 'id', 'typeCode', 'name', *sorted(columns), 'wkt']
 
         for asset in flat_assets:
             headers = set(asset.keys())
@@ -125,7 +128,7 @@ def see_assets_csv(request):
                 asset[missing_col] = None
 
         data = pd.DataFrame(flat_assets)
-        csv_data = data[order_columns].to_csv(index=False, )
+        csv_data = data[order_columns].to_csv(index=False)
         csv = csv_data
 
     return Response(
@@ -143,22 +146,20 @@ def change_assets_csv(request):
     # TODO: Review and clean
     override_records = request.params.get('overwrite') == 'true'
 
+    session = request.session
+    # viewable_utility_ids = get_utility_ids(session, ROLE_SPECTATOR)
+    editable_utility_ids = get_utility_ids(session, ROLE_MEMBER)
+
     try:
         f = request.params['file']
     except KeyError:
         raise HTTPBadRequest(
             headers={'content_type': 'application/json'},
-            body=json.dumps({
-                'errors':
-                    {'file': 'is required'},
-                }))
+            body=json.dumps({'errors': {'file': 'is required'}}))
     if not isinstance(f, FieldStorage):
         raise HTTPBadRequest(
             headers={'content_type': 'application/json'},
-            body=json.dumps({
-                'errors':
-                    {'file': 'must be an upload'},
-                }))
+            body=json.dumps({'errors': {'file': 'must be an upload'}}))
 
     def load_json(json_string):
         try:
@@ -217,6 +218,7 @@ def change_assets_csv(request):
 
     extra_columns = get_extra_columns_df(validated_assets, [
         'id',
+        'utilityId',
         'typeCode',
         'name',
         'connections',
@@ -230,10 +232,20 @@ def change_assets_csv(request):
         asset = db.query(Asset).get(row['id'])
         if asset:
             if not override_records:
-                asset_save_errors['overwrite'] = 'Asset exist - \
-                    Check overwrite existing records.'
+                asset_save_errors['overwrite'] = (
+                    'Please select the option to overwrite existing records '
+                    'or remove the existing assets from the CSV')
+            if asset.utility_id not in editable_utility_ids:
+                asset_save_errors['authorization'] = (
+                    'You are not authorized to edit this asset')
+                continue
         else:
-            asset = Asset(id=row['id'])
+            utility_id = row['utilityId']
+            if utility_id not in editable_utility_ids:
+                asset_save_errors['authorization'] = (
+                    'You are not authorized to add assets to this utility')
+                continue
+            asset = Asset(id=row['id'], utility_id=utility_id)
 
         try:
             asset.type_code = AssetTypeCode(row['typeCode'])
@@ -266,6 +278,8 @@ def change_assets_csv(request):
 
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
+        if asset.utility_id not in editable_utility_ids:
+            continue
 
         if has_connections:
             for connection in row['connections']:
@@ -294,6 +308,5 @@ def change_assets_csv(request):
         db.rollback()
 
     return {
-        'errors': (
-            {'save_errors': save_errors} if len(save_errors) else False)
+        'errors': {'save_errors': save_errors} if len(save_errors) else False
     }
