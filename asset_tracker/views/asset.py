@@ -56,11 +56,7 @@ def change_assets_json(request):
     # print(asset_dictionary_by_id)
 
     session = request.session
-    viewable_utility_ids = get_utility_ids(session, ROLE_SPECTATOR)
     editable_utility_ids = get_utility_ids(session, ROLE_MEMBER)
-    asset_dictionary_by_id = {
-        k: v for k, v in asset_dictionary_by_id.items()
-        if v['utilityId'] in viewable_utility_ids}
 
     db = request.db
     asset_id_mirror = RecordIdMirror()
