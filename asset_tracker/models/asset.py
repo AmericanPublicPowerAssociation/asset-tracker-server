@@ -18,6 +18,7 @@ from .meta import (
     AttributesMixin,
     DeletionMixin,
     GeometryMixin)
+from ..routines import get_utility_ids
 
 
 class AssetTypeCode(enum.Enum):
@@ -81,9 +82,7 @@ class Asset(
     def get_viewable_query(Class, request, with_connections=False):
         db = request.db
         session = request.session
-        utilities = session.get('utilities', [])
-        utility_ids = [
-            _['id'] for _ in utilities if _['role'] >= ROLE_SPECTATOR]
+        utility_ids = get_utility_ids(session, ROLE_SPECTATOR)
         query = db.query(Class).filter(
             Class.utility_id.in_(utility_ids)
         ).filter_by(is_deleted=False)

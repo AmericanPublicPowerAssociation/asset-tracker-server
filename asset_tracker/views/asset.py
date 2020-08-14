@@ -2,17 +2,18 @@ import json
 import numpy as np
 import pandas as pd
 import shapely
+from appa_auth_consumer.constants import ROLE_MEMBER, ROLE_SPECTATOR
 from cgi import FieldStorage
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.response import Response
 from pyramid.view import view_config
 from shapely import wkt
-# from sqlalchemy.orm import selectinload
 
 from ..constants.asset import ASSET_TYPE_BY_CODE
 from ..exceptions import DataValidationError
 from ..macros.database import RecordIdMirror
 from ..models import Asset, Bus, Connection, AssetTypeCode
+from ..routines import get_utility_ids
 from ..routines.asset import (
     get_asset_dictionary_by_id,
     get_asset_feature_collection,
@@ -47,23 +48,41 @@ def see_assets_json(request):
     request_method='PATCH')
 def change_assets_json(request):
     params = request.json_body
-    # TODO: Check whether user has edit privileges to specified assets
     try:
         asset_dictionary_by_id = get_asset_dictionary_by_id(params)
         asset_feature_collection = get_asset_feature_collection(params)
     except DataValidationError as e:
         raise HTTPBadRequest(e.args[0])
-    print(asset_dictionary_by_id)
+    # print(asset_dictionary_by_id)
+
+    session = request.session
+    viewable_utility_ids = get_utility_ids(session, ROLE_SPECTATOR)
+    editable_utility_ids = get_utility_ids(session, ROLE_MEMBER)
+    asset_dictionary_by_id = {
+        k: v for k, v in asset_dictionary_by_id.items()
+        if v['utilityId'] in viewable_utility_ids}
 
     db = request.db
     asset_id_mirror = RecordIdMirror()
     try:
-        update_assets(db, asset_dictionary_by_id, asset_id_mirror)
-        update_asset_connections(db, asset_dictionary_by_id, asset_id_mirror)
+        update_assets(
+            db,
+            asset_dictionary_by_id,
+            asset_id_mirror,
+            editable_utility_ids)
+        update_asset_connections(
+            db,
+            asset_dictionary_by_id,
+            asset_id_mirror,
+            editable_utility_ids)
     except DataValidationError as e:
         raise HTTPBadRequest({'assets': e.args[0]})
     try:
-        update_asset_geometries(db, asset_feature_collection, asset_id_mirror)
+        update_asset_geometries(
+            db,
+            asset_feature_collection,
+            asset_id_mirror,
+            editable_utility_ids)
     except DataValidationError as e:
         raise HTTPBadRequest({'assetsGeoJson': e.args[0]})
 

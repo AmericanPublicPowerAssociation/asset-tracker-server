@@ -67,11 +67,17 @@ def get_asset_feature_collection(params):
     return asset_feature_collection
 
 
-def update_assets(db, asset_dictionary_by_id, asset_id_mirror):
+def update_assets(
+    db,
+    asset_dictionary_by_id,
+    asset_id_mirror,
+    editable_utility_ids,
+):
     error_by_id = {}
 
     for asset_id, asset_dictionary in asset_dictionary_by_id.items():
         try:
+            asset_utility_id = get_asset_utility_id(asset_dictionary)
             asset_type_code = get_asset_type_code(asset_dictionary)
             asset_name = get_asset_name(asset_dictionary)
             asset_attributes = get_asset_attributes(asset_dictionary)
@@ -82,10 +88,16 @@ def update_assets(db, asset_dictionary_by_id, asset_id_mirror):
 
         asset_id = asset_id_mirror.get(asset_id)
         asset = db.query(Asset).get(asset_id)
+
         if not asset:
             asset = Asset.make_unique_record(db)
             asset_id = asset_id_mirror.set(asset_id, asset.id)
+        elif asset.utility_id not in editable_utility_ids:
+            # Skip if we do not have edit permission
+            error_by_id[asset_id] = {'assetById': 'has uneditable assets'}
+            continue
 
+        asset.utility_id = asset_utility_id
         asset.type_code = asset_type_code
         asset.name = asset_name
         asset.attributes = asset_attributes
@@ -96,7 +108,12 @@ def update_assets(db, asset_dictionary_by_id, asset_id_mirror):
         raise DataValidationError(error_by_id)
 
 
-def update_asset_connections(db, asset_dictionary_by_id, asset_id_mirror):
+def update_asset_connections(
+    db,
+    asset_dictionary_by_id,
+    asset_id_mirror,
+    editable_utility_ids,
+):
     error_by_id = {}
     bus_id_mirror = RecordIdMirror()
     for asset_id, asset_dictionary in asset_dictionary_by_id.items():
@@ -109,6 +126,9 @@ def update_asset_connections(db, asset_dictionary_by_id, asset_id_mirror):
         asset = db.query(Asset).get(asset_id)
         if not asset:
             error_by_id[asset_id] = {'assetById': 'has invalid keys'}
+            continue
+        elif asset.utility_id not in editable_utility_ids:
+            error_by_id[asset_id] = {'assetById': 'has uneditable assets'}
             continue
         connections = []
         for (
@@ -134,7 +154,12 @@ def update_asset_connections(db, asset_dictionary_by_id, asset_id_mirror):
         raise DataValidationError(error_by_id)
 
 
-def update_asset_geometries(db, asset_feature_collection, asset_id_mirror):
+def update_asset_geometries(
+    db,
+    asset_feature_collection,
+    asset_id_mirror,
+    editable_utility_ids,
+):
     error_by_index = {}
     asset_features = asset_feature_collection['features']
 
@@ -151,12 +176,23 @@ def update_asset_geometries(db, asset_feature_collection, asset_id_mirror):
         if not asset:
             error_by_index[index] = {'assetsGeoJson': 'has invalid properties'}
             continue
+        elif asset.utility_id not in editable_utility_ids:
+            error_by_index[index] = {'assetsGeoJson': 'has uneditable assets'}
+            continue
         if asset.geometry != asset_geometry:
             asset.geometry = asset_geometry
         db.add(asset)
 
     if error_by_index:
         raise DataValidationError(error_by_index)
+
+
+def get_asset_utility_id(asset_dictionary):
+    try:
+        asset_utility_id = asset_dictionary['utilityId']
+    except KeyError:
+        raise DataValidationError({'utilityId': 'is required'})
+    return asset_utility_id
 
 
 def get_asset_type_code(asset_dictionary):
