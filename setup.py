@@ -5,6 +5,8 @@ from setuptools import find_packages, setup
 ENTRY_POINTS = '''
 [paste.app_factory]
 main = asset_tracker:main
+[console_scripts]
+db_manager = asset_tracker.scripts.seed:init
 '''
 APPLICATION_CLASSIFIERS = [
     'Programming Language :: Python',

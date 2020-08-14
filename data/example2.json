@@ -1,0 +1,104 @@
+{
+  "assets": [
+    {
+      "attributes": {},
+      "id": "9Nz6VuNG",
+      "name": "RxpKxpkTP4R4kuep1597379059842",
+      "typeCode": "g",
+      "wkt": "POINT (-93.3001114270066 37.18053916829373)"
+    },
+    {
+      "attributes": {},
+      "id": "0SjU80Wo",
+      "name": "3bOMPpYrkZqyW8YG1597379068313",
+      "typeCode": "t",
+      "wkt": "POINT (-93.29877067976196 37.18098380699652)"
+    },
+    {
+      "attributes": {},
+      "id": "RtLupImj",
+      "name": "XJ7ayjqPZA7yVTah1597379076210",
+      "typeCode": "m",
+      "wkt": "POINT (-93.29630016619053 37.18096753981589)"
+    },
+    {
+      "attributes": {},
+      "id": "SmAXIF2K",
+      "name": "JSIWjbQMfjPD9dHR1597379080328",
+      "typeCode": "l",
+      "wkt": "LINESTRING (-93.3001114270066 37.18066388423853, -93.29879790315641 37.18081028974016)"
+    },
+    {
+      "attributes": {},
+      "id": "EH70U6Ws",
+      "name": "F7FZaSjF7g2X9pJ01597379089232",
+      "typeCode": "l",
+      "wkt": "LINESTRING (-93.29879790315641 37.18111394472904, -93.29630016619053 37.18110852220724)"
+    }
+  ],
+  "buses": [
+    {
+      "id": "ykwXbQqm"
+    },
+    {
+      "id": "XS6XUpRO"
+    },
+    {
+      "id": "EbFx5FVK"
+    },
+    {
+      "id": "xXlILEFe"
+    }
+  ],
+  "connections": [
+    {
+      "asset_id": "9Nz6VuNG",
+      "asset_vertex_index": 0,
+      "attributes": {},
+      "bus_id": "ykwXbQqm"
+    },
+    {
+      "asset_id": "0SjU80Wo",
+      "asset_vertex_index": 0,
+      "attributes": {},
+      "bus_id": "XS6XUpRO"
+    },
+    {
+      "asset_id": "0SjU80Wo",
+      "asset_vertex_index": 1,
+      "attributes": {},
+      "bus_id": "EbFx5FVK"
+    },
+    {
+      "asset_id": "RtLupImj",
+      "asset_vertex_index": 0,
+      "attributes": {},
+      "bus_id": "xXlILEFe"
+    },
+    {
+      "asset_id": "SmAXIF2K",
+      "asset_vertex_index": 0,
+      "attributes": {},
+      "bus_id": "ykwXbQqm"
+    },
+    {
+      "asset_id": "SmAXIF2K",
+      "asset_vertex_index": 1,
+      "attributes": {},
+      "bus_id": "EbFx5FVK"
+    },
+    {
+      "asset_id": "EH70U6Ws",
+      "asset_vertex_index": 0,
+      "attributes": {},
+      "bus_id": "XS6XUpRO"
+    },
+    {
+      "asset_id": "EH70U6Ws",
+      "asset_vertex_index": 1,
+      "attributes": {},
+      "bus_id": "xXlILEFe"
+    }
+  ],
+  "line_types": []
+}
