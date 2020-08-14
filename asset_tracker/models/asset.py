@@ -30,7 +30,7 @@ class AssetTypeCode(enum.Enum):
     STORAGE = 'o'
     POWERQUALITY = 'q'
     CAPACITOR = 'qc'
-    REGULATOR = 'rr'
+    REGULATOR = 'qr'
     CONTROL = 'c'
 
 
@@ -101,6 +101,7 @@ class Connection(AttributesMixin, Base):
             f'asset_id={self.asset_id}',
             f'asset_vertex_index={self.asset_vertex_index}',
             f'bus_id={self.bus_id}',
+            f'attributes={self._attributes}'
         ))
         return f'<Connection({argument_string})>'
 
