@@ -174,7 +174,8 @@ def update_asset_geometries(
         asset_id = asset_id_mirror.get(asset_id)
         asset = db.query(Asset).get(asset_id)
         if not asset:
-            error_by_index[index] = {'assetsGeoJson': 'has invalid properties'}
+            # error_by_index[index] = {
+            # 'assetsGeoJson': 'has invalid properties'}
             continue
         elif asset.utility_id not in editable_utility_ids:
             error_by_index[index] = {'assetsGeoJson': 'has uneditable assets'}
