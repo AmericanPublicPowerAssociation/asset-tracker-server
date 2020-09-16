@@ -12,6 +12,5 @@ def main(global_config, **settings):
 
 
 def includeme(config):
-    config.include('invisibleroads_posts')
     config.include('invisibleroads_records')
     config.include('.routes')

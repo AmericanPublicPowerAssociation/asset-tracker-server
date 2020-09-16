@@ -17,8 +17,7 @@ APPLICATION_CLASSIFIERS = [
 ]
 APPLICATION_REQUIREMENTS = [
     # architecture
-    'invisibleroads-posts >= 0.7.8',
-    'invisibleroads-records >= 0.5.7',
+    'invisibleroads-records >= 0.5.8.2',
     # web
     'pyramid',
     'pyramid-multiauth',
