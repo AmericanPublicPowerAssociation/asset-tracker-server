@@ -21,6 +21,7 @@ EXAMPLE_BY_NAME = {
         'assetById': load_example_json(join('basic', 'assetById.json')),
         'assetsGeoJson': load_example_json(join('basic', 'assets.geojson')),
     },
+    'bus13': load_example_json('bus13.json'),
 }
 
 pytest_plugins = [
