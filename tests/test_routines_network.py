@@ -1,3 +1,5 @@
+import shapely.wkt
+
 from asset_tracker.routines.network import (
     AssetNetwork,
     choose_shortest_path,
@@ -22,6 +24,91 @@ class TestAssetNetwork(object):
             reference_asset_id)
         assert len(meter_ids) == 3
         assert len(line_geojson['features']) == 3
+
+    def test_get_downstream_analysis_for_bus13(self):
+        assets_bus13 = populate_bus13()
+        assets_bus13_geojson = populate_bus13_geojson()
+        asset_network = AssetNetwork(
+            assets_bus13, assets_bus13_geojson)
+        reference_asset_id = 'EFtYFLdR'
+        meter_ids, line_geojson = asset_network.get_downstream_analysis(
+            reference_asset_id)
+
+        assert len(meter_ids) == 3
+        assert len(line_geojson['features']) == 3
+
+    def test_get_downstream_analysis_for_bus13_t(self):
+        assets_bus13 = populate_bus13()
+        assets_bus13_geojson = populate_bus13_geojson()
+        asset_network = AssetNetwork(
+            assets_bus13, assets_bus13_geojson)
+        reference_asset_id = '3iIAGVcv'
+        meter_ids, line_geojson = asset_network.get_downstream_analysis(
+            reference_asset_id)
+
+        assert len(meter_ids) == 12
+        assert len(line_geojson['features']) == 23
+
+
+def flat_assets(nested_assets):
+    return [item for sublist in nested_assets for item in sublist]
+
+
+def populate_bus13_geojson():
+    bus13_example = EXAMPLE_BY_NAME['bus13']
+    assets = bus13_example['assets']
+    features = []
+
+    for asset in assets:
+        shape = shapely.wkt.loads(asset['wkt'])
+        features.append({
+            "type": "Feature",
+            "properties": {
+                **asset,
+                'name': asset['id'],
+                'typeCode': asset['typeCode'],
+            },
+            "geometry": {
+               'type': shape.geom_type,
+               'coordinates': shape.coords
+            }
+        })
+
+    return {
+        "type": "FeatureCollection",
+        "features": features
+    }
+
+
+def populate_bus13():
+    bus13_example = EXAMPLE_BY_NAME['bus13']
+    assets = bus13_example['assets']
+    connections = bus13_example['connections']
+    populated_assets = []
+
+    for asset in assets:
+        populated_assets.append({
+            **asset,
+            'name': asset['id'],
+            'typeCode': asset['typeCode'],
+            'connections': get_connections_as_indexed_dict(connections, asset['id'])
+        })
+
+    return populated_assets
+
+
+def get_connections_as_indexed_dict(connections, asset_id):
+    connections = list(filter(lambda conn: conn['asset_id'] == asset_id, connections))
+    num_connections = len(connections)
+    connections_by_index = {}
+    for index, connection in zip(range(num_connections), connections):
+        connections_by_index[str(index)] = {
+            'busId': connection['bus_id'],
+            'attributes': connection['attributes'],
+            'asset_vertex_index': connection['asset_vertex_index']
+        }
+
+    return connections_by_index
 
 
 def test_get_bus_graph():

@@ -1,7 +1,7 @@
 import numpy as np
 from collections import defaultdict
 from functools import lru_cache, reduce
-from networkx import Graph, shortest_path
+from networkx import Graph, shortest_path, connected_component_subgraphs, connected_components, empty_graph, bfs_edges
 from shapely.geometry import LineString
 
 from ..macros.geometry import get_line_length_in_meters
@@ -65,11 +65,16 @@ class AssetNetwork(object):
         target_edges = reduce(
             lambda all_edges, new_edges: PairSet(all_edges).union(new_edges),
             [_[1] for _ in downstream_packs]) if downstream_packs else set()
+        print(len(target_edges))
         line_features = self.get_geojson_features_from_edges(target_edges)
+        print(len(line_features))
         line_geojson = {'type': 'FeatureCollection', 'features': line_features}
         return meter_ids, line_geojson
 
     def get_downstream_packs(self, reference_asset_id, asset_type_value):
+        output_node = None
+        input_node = None
+
         try:
             reference_bus_ids = self.bus_ids_by_asset_id[reference_asset_id]
         except KeyError:
@@ -95,8 +100,27 @@ class AssetNetwork(object):
             if not paths:
                 continue
             chosen_path = choose_shortest_path(paths)
+            first_bus = chosen_path[-1]
+            if list(reference_bus_ids)[0] != first_bus:
+                output_node = list(reference_bus_ids)[0]
+                input_node = first_bus
+            else:
+                output_node = first_bus
+                input_node = list(reference_bus_ids)[0]
             # print('GENERATOR', chosen_path)
             generator_edges.update(get_adjacent_pairs(chosen_path))
+
+        local_copy = self.bus_graph.copy()
+        current_subgraph = empty_graph()
+        for c in connected_components(self.bus_graph):
+            current_subgraph = self.bus_graph.subgraph(c)
+            if current_subgraph.has_node(output_node):
+                break
+
+        if input_node != output_node:
+            print(input_node, output_node)
+            current_subgraph = current_subgraph.copy()
+            current_subgraph.remove_edge(input_node, output_node)
 
         # Get shortest path between the reference asset and each target asset
         downstream_packs = set()
@@ -106,15 +130,23 @@ class AssetNetwork(object):
                 target_bus_ids = self.bus_ids_by_asset_id[target_asset_id]
             except KeyError:
                 continue
+
+            buses_in_same_subgraph = []
             for target_bus_id in target_bus_ids:
+                if current_subgraph.has_node(target_bus_id):
+                    buses_in_same_subgraph.append(target_bus_id)
+
+            if not buses_in_same_subgraph:
+                continue
+
+            for target_bus_id in buses_in_same_subgraph:
                 paths = []
-                for reference_bus_id in reference_bus_ids:
-                    try:
-                        path_bus_ids = shortest_path(
-                            self.bus_graph, reference_bus_id, target_bus_id)
-                    except Exception:
-                        continue
+                try:
+                    path_bus_ids = shortest_path(current_subgraph, output_node, target_bus_id)
                     paths.append(path_bus_ids)
+                except Exception:
+                    continue
+
                 if not paths:
                     continue
                 chosen_path = choose_shortest_path(paths)
@@ -140,34 +172,44 @@ class AssetNetwork(object):
     def get_geojson_features_from_edges(self, bus_edges):
         geojson_features = []
         for bus1_id, bus2_id in bus_edges:
-            try:
-                bus1_line_ids = self.line_ids_by_bus_id[bus1_id]
-                bus2_line_ids = self.line_ids_by_bus_id[bus2_id]
-            except KeyError:
-                continue
+
+            bus1_line_ids = self.line_ids_by_bus_id[bus1_id]
+            bus2_line_ids = self.line_ids_by_bus_id[bus2_id]
+
             line_ids = bus1_line_ids.intersection(bus2_line_ids)
             if not line_ids:
-                continue
+                line_ids.update(bus1_line_ids)
+                line_ids.update(bus2_line_ids)
+
             line_packs = []
             for line_id in line_ids:
-                vertex1_index = self.vertex_index_by_line_id_bus_id[(
-                    line_id, bus1_id)]
-                vertex2_index = self.vertex_index_by_line_id_bus_id[(
-                    line_id, bus2_id)]
+                try:
+                    vertex1_index = self.vertex_index_by_line_id_bus_id[(
+                        line_id, bus1_id)]
+                    vertex2_index = self.vertex_index_by_line_id_bus_id[(
+                        line_id, bus2_id)]
+
+                except Exception:
+                    continue
+
                 vertex1_index, vertex2_index = sorted((
                     vertex1_index, vertex2_index))
                 line_feature = self.line_feature_by_asset_id[line_id]
+                # print(line_feature)
                 old_line_xys = line_feature['geometry']['coordinates']
                 new_line_xys = old_line_xys[vertex1_index:vertex2_index + 1]
                 line_geometry = LineString(new_line_xys)
                 line_length_in_meters = get_line_length_in_meters(
                     line_geometry)
                 line_packs.append((line_length_in_meters, line_geometry))
-            best_line_geometry = sorted(line_packs)[0][1]
-            geojson_features.append({
-                'type': 'Feature',
-                'geometry': best_line_geometry.__geo_interface__,
-            })
+
+
+            if line_packs:
+                best_line_geometry = sorted(line_packs)[0][1]
+                geojson_features.append({
+                    'type': 'Feature',
+                    'geometry': best_line_geometry.__geo_interface__,
+                })
         return geojson_features
 
 
