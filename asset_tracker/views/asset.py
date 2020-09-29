@@ -2,22 +2,22 @@ import json
 import numpy as np
 import pandas as pd
 import shapely
+from appa_auth_consumer.constants import ROLE_MEMBER, ROLE_SPECTATOR
 from cgi import FieldStorage
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.response import Response
 from pyramid.view import view_config
 from shapely import wkt
-from sqlalchemy.orm import selectinload
 
 from ..constants.asset import ASSET_TYPE_BY_CODE
 from ..exceptions import DataValidationError
 from ..macros.database import RecordIdMirror
 from ..models import Asset, Bus, Connection, AssetTypeCode
+from ..routines import get_utility_ids
 from ..routines.asset import (
     get_asset_dictionary_by_id,
     get_asset_feature_collection,
     get_assets_geojson_dictionary,
-    get_viewable_assets,
     update_asset_connections,
     update_asset_geometries,
     update_assets)
@@ -32,7 +32,7 @@ from ..routines.geometry import get_bounding_box
     renderer='json',
     request_method='GET')
 def see_assets_json(request):
-    assets = get_viewable_assets(request)
+    assets = Asset.get_viewable_query(request, with_connections=True).all()
     return {
         'assetTypeByCode': ASSET_TYPE_BY_CODE,
         'assetById': {
@@ -48,23 +48,37 @@ def see_assets_json(request):
     request_method='PATCH')
 def change_assets_json(request):
     params = request.json_body
-    # TODO: Check whether user has edit privileges to specified assets
     try:
         asset_dictionary_by_id = get_asset_dictionary_by_id(params)
         asset_feature_collection = get_asset_feature_collection(params)
     except DataValidationError as e:
         raise HTTPBadRequest(e.args[0])
-    print(asset_dictionary_by_id)
+    # print(asset_dictionary_by_id)
+
+    session = request.session
+    editable_utility_ids = get_utility_ids(session, ROLE_MEMBER)
 
     db = request.db
     asset_id_mirror = RecordIdMirror()
     try:
-        update_assets(db, asset_dictionary_by_id, asset_id_mirror)
-        update_asset_connections(db, asset_dictionary_by_id, asset_id_mirror)
+        update_assets(
+            db,
+            asset_dictionary_by_id,
+            asset_id_mirror,
+            editable_utility_ids)
+        update_asset_connections(
+            db,
+            asset_dictionary_by_id,
+            asset_id_mirror,
+            editable_utility_ids)
     except DataValidationError as e:
         raise HTTPBadRequest({'assets': e.args[0]})
     try:
-        update_asset_geometries(db, asset_feature_collection, asset_id_mirror)
+        update_asset_geometries(
+            db,
+            asset_feature_collection,
+            asset_id_mirror,
+            editable_utility_ids)
     except DataValidationError as e:
         raise HTTPBadRequest({'assetsGeoJson': e.args[0]})
 
@@ -79,17 +93,13 @@ def change_assets_json(request):
     request_method='GET')
 def see_assets_csv(request):
     # TODO: Review and clean
-    # db = request.db
-    '''
-    assets = db.query(Asset).options(
-        selectinload(Asset.connections),
-    ).all()
-    '''
-    assets = get_viewable_assets(request)
+    assets = Asset.get_viewable_query(request, with_connections=True).all()
 
-    base_columns = {'id', 'typeCode', 'name', 'wkt', 'connections'}
+    base_columns = {
+        'utilityId', 'id', 'typeCode', 'name', 'wkt', 'connections',
+    }
     columns = ','.join(base_columns)
-    csv = f'{columns}'
+    csv = columns
 
     if len(assets) > 0:
         flat_assets = []
@@ -102,10 +112,11 @@ def see_assets_csv(request):
                 columns.update(headers - base_columns)
         '''
         order_columns = [
-            'id', 'typeCode', 'name', *sorted(columns), 'wkt', 'connections']
+            'utilityId', id', 'typeCode', 'name', *sorted(columns), 'wkt',
+            'connections']
         '''
         order_columns = [
-            'id', 'typeCode', 'name', *sorted(columns), 'wkt']
+            'utilityId', 'id', 'typeCode', 'name', *sorted(columns), 'wkt']
 
         for asset in flat_assets:
             headers = set(asset.keys())
@@ -113,8 +124,8 @@ def see_assets_csv(request):
                 asset[missing_col] = None
 
         data = pd.DataFrame(flat_assets)
-        csv_data = data[order_columns].to_csv(index=False, )
-        csv = f'{csv_data}'
+        csv_data = data[order_columns].to_csv(index=False)
+        csv = csv_data
 
     return Response(
         body=csv,
@@ -131,22 +142,20 @@ def change_assets_csv(request):
     # TODO: Review and clean
     override_records = request.params.get('overwrite') == 'true'
 
+    session = request.session
+    # viewable_utility_ids = get_utility_ids(session, ROLE_SPECTATOR)
+    editable_utility_ids = get_utility_ids(session, ROLE_MEMBER)
+
     try:
         f = request.params['file']
     except KeyError:
         raise HTTPBadRequest(
             headers={'content_type': 'application/json'},
-            body=json.dumps({
-                'errors':
-                    {'file': 'is required'},
-                }))
+            body=json.dumps({'errors': {'file': 'is required'}}))
     if not isinstance(f, FieldStorage):
         raise HTTPBadRequest(
             headers={'content_type': 'application/json'},
-            body=json.dumps({
-                'errors':
-                    {'file': 'must be an upload'},
-                }))
+            body=json.dumps({'errors': {'file': 'must be an upload'}}))
 
     def load_json(json_string):
         try:
@@ -205,6 +214,7 @@ def change_assets_csv(request):
 
     extra_columns = get_extra_columns_df(validated_assets, [
         'id',
+        'utilityId',
         'typeCode',
         'name',
         'connections',
@@ -218,10 +228,20 @@ def change_assets_csv(request):
         asset = db.query(Asset).get(row['id'])
         if asset:
             if not override_records:
-                asset_save_errors['overwrite'] = 'Asset exist - \
-                    Check overwrite existing records.'
+                asset_save_errors['overwrite'] = (
+                    'Please select the option to overwrite existing records '
+                    'or remove the existing assets from the CSV')
+            if asset.utility_id not in editable_utility_ids:
+                asset_save_errors['authorization'] = (
+                    'You are not authorized to edit this asset')
+                continue
         else:
-            asset = Asset(id=row['id'])
+            utility_id = row['utilityId']
+            if utility_id not in editable_utility_ids:
+                asset_save_errors['authorization'] = (
+                    'You are not authorized to add assets to this utility')
+                continue
+            asset = Asset(id=row['id'], utility_id=utility_id)
 
         try:
             asset.type_code = AssetTypeCode(row['typeCode'])
@@ -254,6 +274,8 @@ def change_assets_csv(request):
 
     for name, row in validated_assets.iterrows():
         asset = db.query(Asset).get(row['id'])
+        if asset.utility_id not in editable_utility_ids:
+            continue
 
         if has_connections:
             for connection in row['connections']:
@@ -282,6 +304,5 @@ def change_assets_csv(request):
         db.rollback()
 
     return {
-        'errors': (
-            {'save_errors': save_errors} if len(save_errors) else False)
+        'errors': {'save_errors': save_errors} if len(save_errors) else False
     }

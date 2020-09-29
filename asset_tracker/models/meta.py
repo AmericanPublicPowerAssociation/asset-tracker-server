@@ -1,9 +1,9 @@
 from geoalchemy2 import Geometry
 from geoalchemy2.shape import from_shape, to_shape
+from os import environ
+from pyramid.settings import asbool
 from sqlalchemy import Column
-from sqlalchemy.types import (
-    Boolean,
-    PickleType)
+from sqlalchemy.types import Boolean, PickleType
 
 
 class DeletionMixin(object):
@@ -27,10 +27,7 @@ class AttributesMixin(object):
         self._attributes = value or None
 
 
-class GeometryMixin(object):
-
-    # _geometry = Column(Geometry)  # PostgreSQL
-    _geometry = Column(Geometry(management=True))  # SQLite
+class GeometryPropertyMixin(object):
 
     @property
     def geometry(self):
@@ -44,3 +41,14 @@ class GeometryMixin(object):
         if value is not None:
             value = from_shape(value)
         self._geometry = value
+
+
+if asbool(environ.get('WITH_POSTGIS')):
+
+    class GeometryMixin(GeometryPropertyMixin):
+        _geometry = Column(Geometry)  # PostgreSQL
+
+else:
+
+    class GeometryMixin(GeometryPropertyMixin):
+        _geometry = Column(Geometry(management=True))  # SQLite

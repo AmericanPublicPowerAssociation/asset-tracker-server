@@ -1,4 +1,5 @@
 import enum
+from appa_auth_consumer.constants import ROLE_SPECTATOR
 from invisibleroads_records.models import (
     Base,
     CreationMixin,
@@ -6,7 +7,7 @@ from invisibleroads_records.models import (
     RecordMixin)
 from shapely.geometry import mapping as get_geojson_dictionary
 from sqlalchemy import Column, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import joinedload, relationship
 from sqlalchemy.types import (
     Enum,
     Integer,
@@ -17,6 +18,7 @@ from .meta import (
     AttributesMixin,
     DeletionMixin,
     GeometryMixin)
+from ..routines import get_utility_ids
 
 
 class AssetTypeCode(enum.Enum):
@@ -46,6 +48,7 @@ class Asset(
     type_code = Column(Enum(AssetTypeCode))
     name = Column(Unicode)
     connections = relationship('Connection', cascade='all, delete-orphan')
+    utility_id = Column(String)
 
     def get_json_dictionary(self):
         d = self.get_json_dictionary_without_id()
@@ -54,6 +57,7 @@ class Asset(
 
     def get_json_dictionary_without_id(self):
         return {
+            'utilityId': self.utility_id,
             'typeCode': self.type_code.value,
             'name': self.name,
             'attributes': self.attributes,
@@ -68,16 +72,23 @@ class Asset(
             'type': 'Feature',
             'properties': {
                 'id': self.id,
-                # !!! Remove if view splits assets by type
+                # TODO: Remove if view splits assets by type
                 'typeCode': self.type_code.value,
             },
             'geometry': get_geojson_dictionary(self.geometry),
         }
 
     @classmethod
-    def get_viewable_ids(Class, request):
+    def get_viewable_query(Class, request, with_connections=False):
         db = request.db
-        return [_[0] for _ in db.query(Asset.id).filter_by(is_deleted=False)]
+        session = request.session
+        utility_ids = get_utility_ids(session, ROLE_SPECTATOR)
+        query = db.query(Class).filter(
+            Class.utility_id.in_(utility_ids),
+            Class.is_deleted == False)  # noqa: E712
+        if with_connections:
+            query = query.options(joinedload(Class.connections))
+        return query
 
     def __repr__(self):
         return f'<Asset({self.id})>'

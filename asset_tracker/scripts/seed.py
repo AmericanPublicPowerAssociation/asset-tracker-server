@@ -61,12 +61,12 @@ def export_json(db, export_file, indent=2):
         print(json.dumps(db_json, indent=indent, sort_keys=True))
 
 
-def generate_connections(json_data, asset_id):
+def generate_connections(json_data, asset_id, utility_id):
     asset_connections =  list(filter(lambda c: c['asset_id'] == asset_id, json_data['connections']))
     connections = []
     hashes = []
     for connection in reversed(asset_connections):
-        connection_obj = Connection(bus_id=connection['bus_id'], _attributes=deepcopy(connection['attributes']))
+        connection_obj = Connection(bus_id=utility_id + '.' + connection['bus_id'], _attributes=deepcopy(connection['attributes']))
         connection_obj.asset_vertex_index = connection['asset_vertex_index']
         hash = f'{connection["asset_id"]}{connection["bus_id"]}'
         if hash not in hashes:
@@ -86,14 +86,17 @@ def remove_all_entries(db):
     db.query(LineType).delete()
 
 
-def import_json(db, file):
+def import_json(db, file, utility_id):
     with open(file, 'r') as f:
         json_data = json.load(f)
 
-        remove_all_entries(db)
+        # remove_all_entries(db)
 
         for asset in json_data['assets']:
-            new_asset = Asset(id=asset['id'], name=asset['name'])
+            new_asset = Asset(
+                id=utility_id + '.' + asset['id'],
+                name=asset['name'],
+                utility_id=utility_id)
             new_asset.type_code = AssetTypeCode(asset['typeCode'])
             new_asset.attributes = asset['attributes']
 
@@ -102,17 +105,17 @@ def import_json(db, file):
             except shapely.errors.WKTReadingError:
                 print(f'asset(id={new_asset.id}) invalid geometry')
 
-            connections = generate_connections(json_data, asset['id'])
+            connections = generate_connections(json_data, asset['id'], utility_id)
 
             new_asset.connections = connections
             db.add(new_asset)
 
         for bus in json_data['buses']:
-            new_bus = Bus(id=bus['id'])
+            new_bus = Bus(id=utility_id + '.' + bus['id'])
             db.add(new_bus)
 
         for line_type in json_data['line_types']:
-            new_line_type = LineType(id=line_type['id'])
+            new_line_type = LineType(id=utility_id + '.' + line_type['id'])
             new_line_type.attributes = line_type['attributes']
 
             db.add(new_line_type)
@@ -126,8 +129,7 @@ def init():
     usage = "usage: %prog config_uri"
     parser = optparse.OptionParser(
         usage=usage,
-        description=textwrap.dedent(description)
-    )
+        description=textwrap.dedent(description))
 
     options, args = parser.parse_args(sys.argv[1:])
     if len(args) < 1:
@@ -145,6 +147,7 @@ def init():
     subcommand = args[0]
     config_uri = args[1]
     export_file = args[2] if len(args) > 2 else ''
+    utility_id = args[3]
 
     with bootstrap(config_uri) as env:
         with env['request'].tm:
@@ -158,6 +161,4 @@ def init():
                 if export_file == 'blank':
                     remove_all_entries(db)
                 else:
-                    import_json(db, export_file)
-
-
+                    import_json(db, export_file, utility_id)

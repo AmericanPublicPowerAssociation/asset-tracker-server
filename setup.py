@@ -17,12 +17,14 @@ APPLICATION_CLASSIFIERS = [
 ]
 APPLICATION_REQUIREMENTS = [
     # architecture
-    'invisibleroads-posts >= 0.7.8',
-    'invisibleroads-records >= 0.5.6',
+    'invisibleroads-posts >= 0.7.15',
+    'invisibleroads-records >= 0.5.9',
     # web
     'pyramid',
+    'pyramid-multiauth',
     # database
     'alembic',
+    'psycopg2-binary',
     'sqlalchemy',
     # test
     'pytest',
@@ -40,8 +42,8 @@ APPLICATION_REQUIREMENTS = [
     'xlrd',
     'odfpy',
     # shortcut
-    'invisibleroads-macros-configuration >= 1.0.5',
-    'invisibleroads-macros-database >= 1.0.1',
+    'invisibleroads-macros-configuration >= 1.0.6',
+    'invisibleroads-macros-database >= 1.0.2',
 ]
 TEST_REQUIREMENTS = [
     'pytest-cov',
@@ -53,7 +55,7 @@ DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
 
 setup(
     name='asset-tracker',
-    version='0.0.5',
+    version='0.0.7',
     description='Asset Tracker',
     long_description=DESCRIPTION,
     long_description_content_type='text/markdown',

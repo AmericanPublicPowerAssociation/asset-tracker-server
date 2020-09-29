@@ -24,6 +24,7 @@ EXAMPLE_BY_NAME = {
     'bus13': load_example_json('bus13.json'),
 }
 
+
 pytest_plugins = [
     'invisibleroads_posts.tests',
     'invisibleroads_records.tests',
