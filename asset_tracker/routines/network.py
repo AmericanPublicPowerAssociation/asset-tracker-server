@@ -1,7 +1,8 @@
 import numpy as np
 from collections import defaultdict
 from functools import lru_cache, reduce
-from networkx import Graph, shortest_path, connected_component_subgraphs, connected_components, empty_graph, bfs_edges
+from networkx import (
+    Graph, shortest_path, connected_components, empty_graph, bfs_edges)
 from shapely.geometry import LineString
 
 from ..macros.geometry import get_line_length_in_meters
